@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Inventory2018.1</string>
+    <string name="inventory">Inventario</string>
+    <string name="import_inventory">Importar Inventario</string>
+    <string name="insert_new_number">Insertar nuevo número</string>
+    <string name="title_activity_import">importActivity</string>
+
+    <string name="error1">"Error fatal: No se puede encontrar la ruta de almacenamiento externa del dispositivo "</string>
+    <string name="error2">Error fatal: No se pudo crear la carpeta de datos de la aplicación</string>
+    <string name="error3">Error fatal: No se pudo leer el archivo</string>
+    <string name="error4">Error fatal: El archivo no es compatible!!!</string>
+    <string name="error5">Error fatal: El archivo esta corrupto o fue modificado!</string>
+    <string name="error6">Error fatal: El contenido del archivo no es seguro y no es reconocido por la aplicación!</string>
+
+    <string name="text1">"carpeta de datos creada en "</string>
+    <string name="text2">"Los archivos a importar deben ser copiados en la carpeta \"Para Importar\" ubicada en: "</string>
+    <string name="text3">"No se puede localizar el archivo ha importar. Tiene dos opciones, cerrar la aplicación y volverlo a copiar o reiniciar la importación desde el principio con otro archivo. El archivo era: "</string>
+    <string name="text4">Primero seleccione un archivo para importar!!!</string>
+    <string name="text5">"Copie los archivos a importar en la carpeta "</string>
+    <string name="text6">Ya hay una importatción en curso!!!</string>
+    <string name="text7">Ya hay una importación en curso, ¿Desa cancelarla?</string>
+    <string name="text8">La aplicación está en proceso de importación! Debe terminar la misma antes de continuar!</string>
+    <string name="text9">La última importación fue cancelada y la base de datos está corrupta, debe importar antes de continuar!</string>
+    <string name="text10">El proceso de imporación a terminado satisfactoriamente!</string>
+    <string name="text11">Proceso Terminado</string>
+    <string name="title_activity_inventory">InventoryActivity</string>
+
+</resources>
