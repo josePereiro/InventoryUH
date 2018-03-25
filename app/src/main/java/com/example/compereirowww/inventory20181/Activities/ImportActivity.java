@@ -151,7 +151,8 @@ public class ImportActivity extends AppCompatActivity {
                     Log.d(AppStatics.APP_TAG, "Hash Code test succeed");
 
                     //Starting Importing
-                    if (data.get(0).split(",", -1)[0].equals(AppStatics.UH_INVENTORY_FILE_HEAD_CODE)) {
+                    if (data.get(0).split(",", -1)[0].equals(AppStatics.
+                            Importation.UH_INVENTORY_FILE_HEAD_CODE)) {
 
                         int startIndex = Integer.
                                 parseInt(db.getPreference(RT.CURRENT_IMPORTATION_INDEX));
@@ -162,7 +163,8 @@ public class ImportActivity extends AppCompatActivity {
                         importAT = new ImportUHInventoryAT(startIndex, data, detailTV, progressBar);
                         importAT.execute();
 
-                    } else if (data.get(0).split(",", -1)[0].equals(AppStatics.SALVA_INVENTORY_FILE_HEAD_CODE)) {
+                    } else if (data.get(0).split(",", -1)[0].equals(AppStatics.
+                            Importation.SALVA_INVENTORY_FILE_HEAD_CODE)) {
 
                         int startIndex = Integer.
                                 parseInt(db.getPreference(RT.CURRENT_IMPORTATION_INDEX));
@@ -370,6 +372,26 @@ public class ImportActivity extends AppCompatActivity {
                                     try {
                                         data = Tools.readFile(filePath);
 
+                                        //Checking data internal hash Code
+                                        String fileInternalHashCode = data.get(0).split(",", -1)[1];
+                                        if (!fileInternalHashCode.equals(String.valueOf(getDataHashCode(data,
+                                                AppStatics.Importation.FIRTS_IMPORT_VALUE_INDEX)))) {
+
+                                            //TODO deb
+                                            Log.d(AppStatics.APP_TAG, "Error Internal hash code mismatch");
+
+                                            Tools.showInfoDialog(ImportActivity.this, getString(R.string.error6), "Aceptar",
+                                                    new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                                            startActivity(new Intent(ImportActivity.this, ImportActivity.class));
+                                                            finish();
+                                                        }
+                                                    });
+                                            return;
+
+                                        }
+
                                         //TODO deb
                                         Log.d(AppStatics.APP_TAG, "ImportFile data reading succeed");
 
@@ -382,13 +404,13 @@ public class ImportActivity extends AppCompatActivity {
                                                 new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                                        Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!",
+                                                        Tools.showToast(ImportActivity.this, getString(R.string.text13),
                                                                 false);
-                                                        db.setPreference(RT.APP_IMPORTING, RT.CANCELLED);
                                                         startActivity(new Intent(ImportActivity.this, ImportActivity.class));
                                                         finish();
                                                     }
                                                 });
+                                        return;
                                     }
 
                                     db.setPreference(RT.CURRENT_IMPORTATION_FILE_HASH, data.hashCode());
@@ -438,8 +460,23 @@ public class ImportActivity extends AppCompatActivity {
 
     //region methods
 
-    private static void startImportation() {
+    /**
+     * return a hash code of a given subPart of the ArrayList, it first concatenate all
+     * the data as an String, and use the HashCode method of the String class to return.
+     *
+     * @param data       the data
+     * @param startIndex the startIndex to considerate
+     * @return the hashcode
+     */
+    private static int getDataHashCode(ArrayList<String> data, int startIndex) {
 
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (; startIndex < data.size(); startIndex++) {
+            stringBuilder.append(data.get(startIndex));
+        }
+
+        return stringBuilder.toString().hashCode();
     }
 
     //endregion

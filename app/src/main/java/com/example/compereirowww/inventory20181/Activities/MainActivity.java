@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
@@ -15,7 +14,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
@@ -24,7 +22,6 @@ import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
 import java.io.File;
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,6 +53,15 @@ public class MainActivity extends AppCompatActivity {
         fab = (FloatingActionButton) findViewById(R.id.fab);
         textView = (TextView) findViewById(R.id.textView1);
 
+        //DB
+        db = new DB(getApplicationContext());
+        AppStatics.db = db;
+
+        //AppStatics
+        AppStatics.Area.updateAreas(db);
+        AppStatics.Location.updateLocations(db);
+        AppStatics.Observation.updateObservations(db);
+
     }
 
     @Override
@@ -65,54 +71,12 @@ public class MainActivity extends AppCompatActivity {
         //TODO Deb
         Log.d("JOSE", "MainActivity.onResume +++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-        //DB
-        db = new DB(getApplicationContext());
-        AppStatics.db = db;
+        //files
+        handleAppFiles();
 
-        //region Handling files
+        //importation
+        checkingImportation();
 
-        if (!handleAppFiles()) {
-            //TODO handle state
-        }
-
-        //endregion
-
-        //region Checking Importation
-        if (db.getPreference(RT.APP_IMPORTING).equals(RT.YES) || db.getPreference(RT.APP_IMPORTING).equals(RT.FINISHING)) {
-            Tools.showDialogMessage(MainActivity.this, getString(R.string.text8),
-                    "Cerrar",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            finish();
-                            System.exit(0);
-                        }
-                    },
-                    "Continuar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
-                        }
-                    });
-        } else if (db.getPreference(RT.APP_IMPORTING).equals(RT.CANCELLED)) {
-            Tools.showDialogMessage(MainActivity.this, getString(R.string.text9),
-                    "Cerrar",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            finish();
-                            System.exit(0);
-                        }
-                    },
-                    "Continuar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
-                        }
-                    });
-        }
-
-        //endregion
 
         //GUI
         //TODO Delete
@@ -147,17 +111,35 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.import_inventory) {
+
+            startActivity(new Intent(MainActivity.this, ImportActivity.class));
             return true;
+        } else if (id == R.id.see_inventory) {
+            startActivity(new Intent(MainActivity.this, InventoryActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        Tools.showDialogMessage(MainActivity.this, "Seguro desea salir?", "Sí",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                        System.exit(0);
+                    }
+                }, "No", null);
+
     }
 
     //endregion
 
     //region methods...
 
-    private boolean handleAppFiles() {
+    private void handleAppFiles() {
 
         //Permissions
         verifyStoragePermissions();
@@ -165,13 +147,19 @@ public class MainActivity extends AppCompatActivity {
         //SD Card
         File sdcard = Environment.getExternalStorageDirectory();
         if (sdcard == null || !sdcard.isDirectory()) {
-            Tools.showToast(getApplicationContext(),
-                    getString(R.string.error1), true);
-            return false;
+
+            Tools.showInfoDialog(MainActivity.this, getString(R.string.error1) +
+                    getString(R.string.text12), "Cerrar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    finish();
+                    System.exit(0);
+                }
+            });
         }
 
         //Root file
-        File appFile = new File(sdcard, AppStatics.APP_FILE);
+        File appFile = new File(sdcard, AppStatics.APP_FILE_NAME);
         if (!appFile.exists()) {
             if (appFile.mkdir()) {
                 if (appFile.isDirectory()) {
@@ -179,20 +167,31 @@ public class MainActivity extends AppCompatActivity {
                             getString(R.string.text1) + appFile.getPath(), true);
 
                 } else {
-                    Tools.showToast(getApplicationContext(),
-                            getString(R.string.error2), true);
+
+                    Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
+                            getString(R.string.text12), "Cerrar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                            System.exit(0);
+                        }
+                    });
                     appFile.delete();
-                    return false;
                 }
             } else {
-                Tools.showToast(getApplicationContext(),
-                        getString(R.string.error2), true);
-                return false;
+                Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
+                        getString(R.string.text12), "Cerrar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                        System.exit(0);
+                    }
+                });
             }
         }
 
         //To Import File
-        File toImportFile = new File(appFile, AppStatics.APP_TO_IMPORT_FILE);
+        File toImportFile = new File(appFile, AppStatics.APP_TO_IMPORT_FILE_NAME);
         if (!toImportFile.exists()) {
             if (toImportFile.mkdir()) {
                 if (toImportFile.isDirectory()) {
@@ -200,33 +199,56 @@ public class MainActivity extends AppCompatActivity {
                             getString(R.string.text1) + toImportFile.getPath(), true);
 
                 } else {
-                    Tools.showToast(getApplicationContext(),
-                            getString(R.string.error2), true);
+
+                    Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
+                            getString(R.string.text12), "Cerrar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                            System.exit(0);
+                        }
+                    });
                     toImportFile.delete();
-                    return false;
                 }
             } else {
-                Tools.showToast(getApplicationContext(),
-                        getString(R.string.error2), true);
+                Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
+                        getString(R.string.text12), "Cerrar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                        System.exit(0);
+                    }
+                });
             }
         }
 
         //To save file
-        File toSaveFile = new File(appFile, AppStatics.APP_SAVE_FILE);
+        File toSaveFile = new File(appFile, AppStatics.APP_SAVE_FILE_NAME);
         if (!toSaveFile.exists()) {
             if (toSaveFile.mkdir()) {
                 if (toSaveFile.isDirectory()) {
                     Tools.showToast(getApplicationContext(),
                             getString(R.string.text1) + toSaveFile.getPath(), true);
                 } else {
-                    Tools.showToast(getApplicationContext(),
-                            getString(R.string.error2), true);
+                    Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
+                            getString(R.string.text12), "Cerrar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                            System.exit(0);
+                        }
+                    });
                     toSaveFile.delete();
-                    return false;
                 }
             } else {
-                Tools.showToast(getApplicationContext(),
-                        getString(R.string.error2), true);
+                Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
+                        getString(R.string.text12), "Cerrar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                        System.exit(0);
+                    }
+                });
             }
         }
 
@@ -234,13 +256,48 @@ public class MainActivity extends AppCompatActivity {
         db.setPreference(DB.RT.ROOT_DIRECTORY_PATH, appFile.getPath());
         db.setPreference(DB.RT.TO_IMPORT_DIRECTORY_PATH, toImportFile.getPath());
         db.setPreference(DB.RT.SAVE_DIRECTORY_PATH, toSaveFile.getPath());
-        return true;
 
+    }
+
+    private void checkingImportation() {
+        if (db.getPreference(RT.APP_IMPORTING).equals(RT.YES) || db.getPreference(RT.APP_IMPORTING).equals(RT.FINISHING)) {
+            Tools.showDialogMessage(MainActivity.this, getString(R.string.text8),
+                    "Cerrar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                            System.exit(0);
+                        }
+                    },
+                    "Continuar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
+                        }
+                    });
+        } else if (db.getPreference(RT.APP_IMPORTING).equals(RT.CANCELLED)) {
+            Tools.showDialogMessage(MainActivity.this, getString(R.string.text9),
+                    "Cerrar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                            System.exit(0);
+                        }
+                    },
+                    "Continuar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
+                        }
+                    });
+        }
     }
 
     /**
      * Checks if the app has permission to write to device storage
-     * <p/>
+     * <p>
      * If the app does not has permission then the user will be prompted to grant permissions
      */
     public void verifyStoragePermissions() {

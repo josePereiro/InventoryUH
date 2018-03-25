@@ -10,7 +10,7 @@
     <string name="error3">Error fatal: No se pudo leer el archivo</string>
     <string name="error4">Error fatal: El archivo no es compatible!!!</string>
     <string name="error5">Error fatal: El archivo esta corrupto o fue modificado!</string>
-    <string name="error6">Error fatal: El contenido del archivo no es seguro y no es reconocido por la aplicación!</string>
+    <string name="error6">Error fatal: El contenido del archivo no es seguro y no es reconocido por la aplicación! Asegurese de que proviene de una fuente confiable!</string>
 
     <string name="text1">"carpeta de datos creada en "</string>
     <string name="text2">"Los archivos a importar deben ser copiados en la carpeta \"Para Importar\" ubicada en: "</string>
@@ -24,5 +24,9 @@
     <string name="text10">El proceso de imporación a terminado satisfactoriamente!</string>
     <string name="text11">Proceso Terminado</string>
     <string name="title_activity_inventory">InventoryActivity</string>
+    <string name="error7">"Error Fatal: Huvo un problema con el acceso o creación de las carpetas de la aplicación! "</string>
+    <string name="text12">Vuelvala a iniciar y si persiste el problema reintálela! Si aún así aparece este error busque ayuda!</string>
+    <string name="text13">El proceso de imporatción se ha cancelado!</string>
+    <string name="error8">Error fatal leyendo la base de datos!</string>
 
 </resources>

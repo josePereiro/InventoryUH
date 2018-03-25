@@ -4,7 +4,7 @@
     tools:context=".Activities.MainActivity">
 
     <item
-        android:id="@+id/inventory"
+        android:id="@+id/see_inventory"
         android:orderInCategory="100"
         android:title="@string/inventory"
         app:showAsAction="never" />

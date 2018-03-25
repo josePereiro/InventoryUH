@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.compereirowww.inventory20181.Activities.InventoryActivity;
+
 public class DB extends SQLiteOpenHelper {
 
 
@@ -144,7 +146,7 @@ public class DB extends SQLiteOpenHelper {
                 } else if (state == IGNORED_MISSING) {
                     return "Faltante Ignorado";
                 } else if (state == LEFTOVER) {
-                    return "Sobrente";
+                    return "Sobrante";
                 } else {
                     return "";
                 }
@@ -218,10 +220,6 @@ public class DB extends SQLiteOpenHelper {
                         return -1;
                 }
             }
-
-        }
-
-        public static class FollowingValues {
 
         }
 
@@ -360,6 +358,22 @@ public class DB extends SQLiteOpenHelper {
         return toReturn;
     }
 
+    public Cursor getAllData() {
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME, null);
+    }
+
+    public Cursor getLocationColumnData() {
+        return db.rawQuery(SELECT_ + IT_LOCATION_COLUMN + _FROM_ + IT_NAME, null);
+    }
+
+    public Cursor getAreaColumnData() {
+        return db.rawQuery(SELECT_ + IT_AREA_COLUMN + _FROM_ + IT_NAME, null);
+    }
+
+    public Cursor getObservationColumnData() {
+        return db.rawQuery(SELECT_ + IT_OBSERVATION_COLUMN + _FROM_ + IT_NAME, null);
+    }
+
     //endregion
 
     //endregion Inventory Methods...
@@ -402,24 +416,32 @@ public class DB extends SQLiteOpenHelper {
 
         //region Preference's names
 
-        //Importation Preference
+        //ImportActivity Preference
         public static final int CURRENT_IMPORTING_FILE_PATH = 1;
         public static final int CURRENT_IMPORTATION_INDEX = 2;
         public static final int APP_IMPORTING = 3;
+        public static final int CURRENT_IMPORTATION_FILE_HASH = 7;
+
+
+        //InventoryActivity;
+        public static final int CURRENT_INVENTORY_INDEX = 8;
+        public static final int CURRENT_FILTER1_VALUE = 9;
+        public static final int CURRENT_FILTER2_VALUE = 10;
+
+
+        //Files Preferences
         public static final int ROOT_DIRECTORY_PATH = 4;
         public static final int SAVE_DIRECTORY_PATH = 5;
         public static final int TO_IMPORT_DIRECTORY_PATH = 6;
-        public static final int CURRENT_IMPORTATION_FILE_HASH = 7;
 
         //endregion
 
-
         //region Preference's values
+
         public static final String YES = "Yes";
         public static final String CANCELLED = "Can";
         public static final String FINISHING = "Fin";
         public static final String NO = "No";
-
 
         //endregion
 
@@ -510,7 +532,7 @@ public class DB extends SQLiteOpenHelper {
      */
     private void setUpPreferences() {
 
-        //Importation state
+        //Importation
         if (getPreference(RT.CURRENT_IMPORTING_FILE_PATH).equals(RT.PREFERENCE_NOT_FOUND)) {
             setPreference(RT.CURRENT_IMPORTING_FILE_PATH, RT.EMPTY_PREFERENCE);
         }
@@ -538,6 +560,21 @@ public class DB extends SQLiteOpenHelper {
 
         if (getPreference(RT.TO_IMPORT_DIRECTORY_PATH).equals(RT.PREFERENCE_NOT_FOUND)) {
             setPreference(RT.TO_IMPORT_DIRECTORY_PATH, RT.EMPTY_PREFERENCE);
+        }
+
+        //Inventory Activity Preferences
+        if (getPreference(RT.CURRENT_INVENTORY_INDEX).equals(RT.PREFERENCE_NOT_FOUND)) {
+            setPreference(RT.CURRENT_INVENTORY_INDEX, 0);
+        }
+
+        if (getPreference(RT.CURRENT_FILTER1_VALUE).equals(RT.PREFERENCE_NOT_FOUND)) {
+            setPreference(RT.CURRENT_FILTER1_VALUE,
+                    InventoryActivity.FiltersValues.Filter1.ALL);
+        }
+
+        if (getPreference(RT.CURRENT_FILTER2_VALUE).equals(RT.PREFERENCE_NOT_FOUND)) {
+            setPreference(RT.CURRENT_FILTER2_VALUE,
+                    InventoryActivity.FiltersValues.Filter2.ALL);
         }
 
     }
