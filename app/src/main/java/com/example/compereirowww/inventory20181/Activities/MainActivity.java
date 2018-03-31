@@ -13,11 +13,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
-import com.example.compereirowww.inventory20181.DataBase.DB.IT;
 import com.example.compereirowww.inventory20181.DataBase.DB.RT;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
@@ -51,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         //GUI
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
         textView = (TextView) findViewById(R.id.textView1);
 
         //DB
@@ -63,29 +60,10 @@ public class MainActivity extends AppCompatActivity {
         AppStatics.Location.updateLocations(db);
         AppStatics.Observation.updateObservations(db);
 
+        //TODO test
+        //db.setPreference(RT.AREAS_TO_FOLLOW, "ADMINISTRACION LOCAL 284/285 ");
 
-        //TODO Test
-        db.setPreference(RT.NUMBER_TO_EDIT, "0321824");
-        startActivity(new Intent(MainActivity.this, EditActivity.class));
-        if (!db.numberExist("1")) {
-            db.insertNewNumber("1", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.MISSING, 100
-                    , IT.TypeValues.EQUIPMENT, "loc1", "");
-            db.insertNewNumber("2", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.MISSING, 100
-                    , IT.TypeValues.FURNISHING, "loc1", "");
-            db.insertNewNumber("3", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.LEFTOVER, 100
-                    , IT.TypeValues.EQUIPMENT, "loc2", "");
-            db.insertNewNumber("4", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.IGNORED_MISSING, 100
-                    , IT.TypeValues.FURNISHING, "loc1", "");
-            db.insertNewNumber("5", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.MISSING, 100
-                    , IT.TypeValues.FURNISHING, "loc2", "");
-            db.insertNewNumber("6", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.PRESENT, 100
-                    , IT.TypeValues.EQUIPMENT, "loc1", "");
-            db.insertNewNumber("7", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.PRESENT, 100
-                    , IT.TypeValues.EQUIPMENT, "loc2", "");
-            db.insertNewNumber("8", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.MISSING, 100
-                    , IT.TypeValues.EQUIPMENT, "loc1", "");
-        }
-
+        //AppStatics.AreasToFollow.updateAreasToFollow(db);
     }
 
     @Override
@@ -100,22 +78,6 @@ public class MainActivity extends AppCompatActivity {
 
         //importation
         checkingImportation();
-
-
-        //GUI
-        //TODO Delete
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, ImportActivity.class));
-            }
-        });
-
-        //TODO test
-        //textView.setText(String.valueOf(db.getAllDataIfState(IT.StateValues.
-        //        toString(IT.StateValues.IGNORED_MISSING)).getCount()));
-        //textView.setText(Arrays.toString(AppStatics.Location.locations));
-        textView.setText(String.valueOf(Tools.myStringHashCode("Hola Jose")));
 
     }
 

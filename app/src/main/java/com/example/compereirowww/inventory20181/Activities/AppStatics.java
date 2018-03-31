@@ -135,6 +135,22 @@ public class AppStatics {
 
     }
 
+    public static class AreasToFollow {
+
+        public static String[] areasToFollow = new String[]{""};
+
+        public static void updateAreasToFollow(DB db) {
+
+            if (!db.getPreference(DB.RT.AREAS_TO_FOLLOW).equals(DB.RT.PREFERENCE_NOT_FOUND)
+                    && !db.getPreference(DB.RT.AREAS_TO_FOLLOW).equals(DB.RT.EMPTY_PREFERENCE)) {
+
+                areasToFollow = db.getPreference(DB.RT.AREAS_TO_FOLLOW).split(",", -1);
+            }
+
+        }
+
+    }
+
     /**
      * The tag used for the application in the log
      */

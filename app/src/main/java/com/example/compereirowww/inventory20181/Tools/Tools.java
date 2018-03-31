@@ -308,7 +308,7 @@ public class Tools {
     }
 
     public static void showInfoDialog(Context context, String message, String buttonText,
-                                         DialogInterface.OnClickListener buttonListener) {
+                                      DialogInterface.OnClickListener buttonListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(message);
         builder.setPositiveButton(buttonText, buttonListener).
@@ -389,14 +389,20 @@ public class Tools {
         fw.close();
     }
 
-    public static int myStringHashCode(String s){
+    public static int myStringHashCode(String s) {
 
         int hash = 0;
-        for (int i = 0; i < s.length(); i++)
-        {
+        for (int i = 0; i < s.length(); i++) {
             hash += s.charAt(i) * 31 ^ (s.length() - i + 1);
         }
         return hash;
 
+    }
+
+    public static boolean contain(String[] array, String element) {
+        for (String s : array) {
+            if (element.equals(s)) return true;
+        }
+        return false;
     }
 }

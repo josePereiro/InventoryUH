@@ -1,5 +1,6 @@
 package com.example.compereirowww.inventory20181.Activities;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -69,6 +70,16 @@ public class InventoryActivity extends AppCompatActivity {
         //GUI
         textView = (TextView) findViewById(R.id.textView2);
         listView = (ListView) findViewById(R.id.listView);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedItem = (String) adapterView.getItemAtPosition(i);
+                if (!selectedItem.equals("")) {
+                    db.setPreference(DB.RT.NUMBER_TO_EDIT, selectedItem.split(",", -1)[0]);
+                    startActivity(new Intent(InventoryActivity.this, EditActivity.class));
+                }
+            }
+        });
         filter1Spinner = (Spinner) findViewById(R.id.spinner2);
         filter2Spinner = (Spinner) findViewById(R.id.spinner3);
         bBtn = (Button) findViewById(R.id.b_btn);
@@ -996,7 +1007,7 @@ public class InventoryActivity extends AppCompatActivity {
 
         //filling with data
         for (int i = 0; i < w && data.moveToNext(); i++) {
-            dataToDisplay.set(i, data.getString(0) + "\n" + data.getString(1));
+            dataToDisplay.set(i, data.getString(0) + ",\n" + data.getString(1));
         }
 
     }
@@ -1012,7 +1023,7 @@ public class InventoryActivity extends AppCompatActivity {
             String s = getIndex() + "/" + (getIndex() + w) + " de " + data.getCount();
             textView.setText(s);
         }
-        listView.setAdapter(new ArrayAdapter<String>(InventoryActivity.this,
+        listView.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
                 android.R.layout.simple_list_item_1, dataToDisplay));
 
     }

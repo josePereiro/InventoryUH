@@ -305,6 +305,30 @@ public class DB extends SQLiteOpenHelper {
         ITCV.clear();
     }
 
+    public void updateLocation(String number, String location) {
+        ITCV.put(IT_LOCATION_COLUMN, location);
+        db.update(IT_NAME, ITCV,
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
+                null);
+        ITCV.clear();
+    }
+
+    public void updateFollowing(String number, boolean following) {
+        ITCV.put(IT_FOLLOWING_COLUMN, following);
+        db.update(IT_NAME, ITCV,
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
+                null);
+        ITCV.clear();
+    }
+
+    public void updateObservation(String number, String observation) {
+        ITCV.put(IT_OBSERVATION_COLUMN, observation);
+        db.update(IT_NAME, ITCV,
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
+                null);
+        ITCV.clear();
+    }
+
     public void updateArea(String number, String area) {
         ITCV.put(IT_AREA_COLUMN, area);
         db.update(IT_NAME, ITCV,
@@ -337,6 +361,14 @@ public class DB extends SQLiteOpenHelper {
         ITCV.clear();
     }
 
+    public void updateType(String number, int type) {
+        ITCV.put(IT_STATE_COLUMN, type);
+        db.update(IT_NAME, ITCV,
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
+                null);
+        ITCV.clear();
+    }
+
     public void updateStateColumn(int state) {
         ITCV.put(IT_STATE_COLUMN, state);
         db.update(IT_NAME, ITCV, null, null);
@@ -358,6 +390,11 @@ public class DB extends SQLiteOpenHelper {
         boolean toReturn = cursor.getCount() != 0;
         cursor.close();
         return toReturn;
+    }
+
+    public Cursor getAllNumberData(String number) {
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
     }
 
     public Cursor getAllData() {
@@ -534,6 +571,123 @@ public class DB extends SQLiteOpenHelper {
                 c2Name + _EQUAL_ + c2Value, null);
     }
 
+    public String getNumberDescription(String number) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + IT_DESCRIPTION_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else {
+            return "";
+        }
+    }
+
+    public String getNumberLocation(String number) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + IT_LOCATION_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else {
+            return "";
+        }
+    }
+
+    public String getNumberObservation(String number) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + IT_OBSERVATION_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else {
+            return "";
+        }
+    }
+
+    public String getNumberArea(String number) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + IT_AREA_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else {
+            return "";
+        }
+    }
+
+    public String getNumberAltaDate(String number) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + IT_ALTA_DATE_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else {
+            return "";
+        }
+    }
+
+    public String getNumberOfficialUpdate(String number) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + IT_OFFICIAL_UPDATE_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else {
+            return "";
+        }
+    }
+
+    public long getNumberLastChecking(String number) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + IT_LAST_CHECKING_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getLong(0);
+        } else {
+            return 0;
+        }
+    }
+
+    public int getNumberFollowingValue(String number) {
+
+        cursor = db.rawQuery(SELECT_ + IT_FOLLOWING_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getInt(0);
+        } else {
+            return -1;
+        }
+
+    }
+
+    public String getNumberState(String number) {
+        cursor = db.rawQuery(SELECT_ + IT_STATE_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+        if (cursor.moveToNext()) {
+            return IT.StateValues.toString(cursor.getInt(0));
+        } else {
+            return "";
+        }
+    }
+
+    public String getNumberType(String number) {
+        cursor = db.rawQuery(SELECT_ + IT_TYPE_COLUMN + _FROM_ + IT_NAME + _WHERE_ +
+                IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE, null);
+        if (cursor.moveToNext()) {
+            return IT.TypeValues.toString(cursor.getInt(0));
+        } else {
+            return "";
+        }
+    }
+
     //endregion
 
     //endregion Inventory Methods...
@@ -568,12 +722,6 @@ public class DB extends SQLiteOpenHelper {
      */
     public static class RT {
 
-        /**
-         * it means the preference exist but is empty
-         */
-        public static String EMPTY_PREFERENCE = "";
-        public static String PREFERENCE_NOT_FOUND = "$$$NOT_FOUND$$$";
-
         //region Preference's names
 
         //ImportActivity Preference
@@ -597,10 +745,17 @@ public class DB extends SQLiteOpenHelper {
         //EditActivity
         public static final int NUMBER_TO_EDIT = 11;
 
+        //Global Preferences
+        public static final int AREAS_TO_FOLLOW = 12;
+
         //endregion
 
         //region Preference's values
-
+        /**
+         * it means the preference exist but is empty
+         */
+        public static String EMPTY_PREFERENCE = "";
+        public static String PREFERENCE_NOT_FOUND = "$$$NOT_FOUND$$$";
         public static final String YES = "Yes";
         public static final String CANCELLED = "Can";
         public static final String FINISHING = "Fin";
@@ -675,11 +830,7 @@ public class DB extends SQLiteOpenHelper {
      */
     public String getPreference(int ref) {
 
-        if (ref == RT.APP_IMPORTING) {
-            System.out.print("bla");
-        }
-
-        Cursor cursor = db.rawQuery(SELECT_ + RT_VALUE_COLUMN + _FROM_ + RT_NAME + _WHERE_ +
+        cursor = db.rawQuery(SELECT_ + RT_VALUE_COLUMN + _FROM_ + RT_NAME + _WHERE_ +
                 RT_NAME_COLUMN + _EQUAL_ + ref, null);
 
         if (cursor.moveToNext()) {
@@ -741,8 +892,14 @@ public class DB extends SQLiteOpenHelper {
         }
 
         //Edit Activity Preferences
-        if(getPreference(RT.NUMBER_TO_EDIT).equals(RT.PREFERENCE_NOT_FOUND)){
+        if (getPreference(RT.NUMBER_TO_EDIT).equals(RT.PREFERENCE_NOT_FOUND)) {
             setPreference(RT.NUMBER_TO_EDIT, 0);
+        }
+
+
+        //Global preferences
+        if (getPreference(RT.AREAS_TO_FOLLOW).equals(RT.PREFERENCE_NOT_FOUND)) {
+            setPreference(RT.AREAS_TO_FOLLOW, RT.EMPTY_PREFERENCE);
         }
 
     }

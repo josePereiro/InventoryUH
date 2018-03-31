@@ -29,5 +29,10 @@
     <string name="text13">El proceso de imporatción se ha cancelado!</string>
     <string name="error8">Error fatal leyendo la base de datos!</string>
     <string name="title_activity_detail_acivity">DetailAcivity</string>
+    <string name="text14">Este valor no es editable por estar el número en un área en seguimiento!</string>
+    <string name="text15">El estado Sobrante solo se puede modificar al importar!</string>
+    <string name="text16">Localización actualizada!</string>
+    <string name="text17">Observación actualizada!</string>
+    <string name="text18">Estado actualizado!</string>
 
 </resources>

@@ -143,6 +143,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <LinearLayout
+            android:id="@+id/following_ll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="5dp"
@@ -158,11 +159,12 @@
             <Spinner
                 android:id="@+id/following_s"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:spinnerMode="dialog" />
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/state_ll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="5dp"
@@ -178,7 +180,7 @@
             <Spinner
                 android:id="@+id/state_s"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:spinnerMode="dialog" />
         </LinearLayout>
 
@@ -219,7 +221,7 @@
             <Spinner
                 android:id="@+id/type_s"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:spinnerMode="dialog" />
         </LinearLayout>
 
@@ -241,7 +243,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Escriba o seleccione una localización"
-                 />
+                android:inputType="textShortMessage" />
 
         </LinearLayout>
 
@@ -255,29 +257,28 @@
             <Spinner
                 android:id="@+id/location_s"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:spinnerMode="dialog" />
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="5dp">
+            android:layout_margin="5dp"
+            android:orientation="vertical">
 
             <TextView
+                android:id="@+id/textView15"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="Observación: "
-                android:id="@+id/textView15" />
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText
+                android:id="@+id/observation_et"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/observation_et"
-                android:hint="Escriba o seleccione una observación"
-                />
+                android:hint="Escriba o seleccione una observación" />
         </LinearLayout>
 
         <LinearLayout
@@ -285,12 +286,12 @@
             android:layout_height="match_parent"
             android:layout_margin="5dp"
             android:gravity="right"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <Spinner
                 android:id="@+id/observation_s"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:spinnerMode="dialog" />
         </LinearLayout>
 
