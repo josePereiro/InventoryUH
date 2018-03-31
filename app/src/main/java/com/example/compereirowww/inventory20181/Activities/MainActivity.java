@@ -11,13 +11,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
-import com.example.compereirowww.inventory20181.DataBase.DB.*;
+import com.example.compereirowww.inventory20181.DataBase.DB.IT;
+import com.example.compereirowww.inventory20181.DataBase.DB.RT;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
@@ -62,6 +63,29 @@ public class MainActivity extends AppCompatActivity {
         AppStatics.Location.updateLocations(db);
         AppStatics.Observation.updateObservations(db);
 
+
+        //TODO Test
+        db.setPreference(RT.NUMBER_TO_EDIT, "0321824");
+        startActivity(new Intent(MainActivity.this, EditActivity.class));
+        if (!db.numberExist("1")) {
+            db.insertNewNumber("1", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.MISSING, 100
+                    , IT.TypeValues.EQUIPMENT, "loc1", "");
+            db.insertNewNumber("2", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.MISSING, 100
+                    , IT.TypeValues.FURNISHING, "loc1", "");
+            db.insertNewNumber("3", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.LEFTOVER, 100
+                    , IT.TypeValues.EQUIPMENT, "loc2", "");
+            db.insertNewNumber("4", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.IGNORED_MISSING, 100
+                    , IT.TypeValues.FURNISHING, "loc1", "");
+            db.insertNewNumber("5", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.MISSING, 100
+                    , IT.TypeValues.FURNISHING, "loc2", "");
+            db.insertNewNumber("6", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.PRESENT, 100
+                    , IT.TypeValues.EQUIPMENT, "loc1", "");
+            db.insertNewNumber("7", "", "Deb", "1/1/2013", "1/1/2015", true, IT.StateValues.PRESENT, 100
+                    , IT.TypeValues.EQUIPMENT, "loc2", "");
+            db.insertNewNumber("8", "", "Deb", "1/1/2013", "1/1/2015", false, IT.StateValues.MISSING, 100
+                    , IT.TypeValues.EQUIPMENT, "loc1", "");
+        }
+
     }
 
     @Override
@@ -88,7 +112,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //TODO test
-        textView.setText(String.valueOf(db.getNumberCount()));
+        //textView.setText(String.valueOf(db.getAllDataIfState(IT.StateValues.
+        //        toString(IT.StateValues.IGNORED_MISSING)).getCount()));
+        //textView.setText(Arrays.toString(AppStatics.Location.locations));
+        textView.setText(String.valueOf(Tools.myStringHashCode("Hola Jose")));
 
     }
 
@@ -292,12 +319,20 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(new Intent(MainActivity.this, ImportActivity.class));
                         }
                     });
+        } else if (db.getAllData().getCount() == 0) {
+            Tools.showInfoDialog(MainActivity.this, "La base de datos está vacía, necesita importar!",
+                    "Importar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
+                        }
+                    });
         }
     }
 
     /**
      * Checks if the app has permission to write to device storage
-     * <p>
+     * <p/>
      * If the app does not has permission then the user will be prompted to grant permissions
      */
     public void verifyStoragePermissions() {
@@ -313,7 +348,6 @@ public class MainActivity extends AppCompatActivity {
             );
         }
     }
-
 
     //endregion
 

@@ -389,5 +389,14 @@ public class Tools {
         fw.close();
     }
 
+    public static int myStringHashCode(String s){
 
+        int hash = 0;
+        for (int i = 0; i < s.length(); i++)
+        {
+            hash += s.charAt(i) * 31 ^ (s.length() - i + 1);
+        }
+        return hash;
+
+    }
 }

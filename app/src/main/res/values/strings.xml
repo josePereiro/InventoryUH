@@ -28,5 +28,6 @@
     <string name="text12">Vuelvala a iniciar y si persiste el problema reintálela! Si aún así aparece este error busque ayuda!</string>
     <string name="text13">El proceso de imporatción se ha cancelado!</string>
     <string name="error8">Error fatal leyendo la base de datos!</string>
+    <string name="title_activity_detail_acivity">DetailAcivity</string>
 
 </resources>

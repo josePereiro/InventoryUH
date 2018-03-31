@@ -48,7 +48,8 @@ public class DB extends SQLiteOpenHelper {
 
     //DB Tools
     SQLiteDatabase db;
-    private final ContentValues contentValues;
+    private final ContentValues ITCV;
+    private final ContentValues RTCV;
     private Cursor cursor;
 
     //endregion
@@ -57,7 +58,8 @@ public class DB extends SQLiteOpenHelper {
 
     public DB(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        contentValues = new ContentValues();
+        ITCV = new ContentValues();
+        RTCV = new ContentValues();
         if (db == null) {
             db = getWritableDatabase();
         }
@@ -161,7 +163,7 @@ public class DB extends SQLiteOpenHelper {
                     case "Faltante":
                         return MISSING;
 
-                    case "Faltante Ignorao":
+                    case "Faltante Ignorado":
                         return IGNORED_MISSING;
 
                     case "Sobrante":
@@ -204,8 +206,8 @@ public class DB extends SQLiteOpenHelper {
                 }
             }
 
-            public static int parse(String state) {
-                switch (state) {
+            public static int parse(String type) {
+                switch (type) {
 
                     case "Equipo":
                         return EQUIPMENT;
@@ -276,69 +278,69 @@ public class DB extends SQLiteOpenHelper {
                                 int type, String location, String observation) {
 
         //Official columns
-        contentValues.put(IT_NUMBER_COLUMN, newNumber);
-        contentValues.put(IT_DESCRIPTION_COLUMN, description);
-        contentValues.put(IT_AREA_COLUMN, area);
-        contentValues.put(IT_ALTA_DATE_COLUMN, altaDate);
-        contentValues.put(IT_OFFICIAL_UPDATE_COLUMN, officialUpdate);
+        ITCV.put(IT_NUMBER_COLUMN, newNumber);
+        ITCV.put(IT_DESCRIPTION_COLUMN, description);
+        ITCV.put(IT_AREA_COLUMN, area);
+        ITCV.put(IT_ALTA_DATE_COLUMN, altaDate);
+        ITCV.put(IT_OFFICIAL_UPDATE_COLUMN, officialUpdate);
 
         //Custom columns
-        contentValues.put(IT_FOLLOWING_COLUMN, following);
-        contentValues.put(IT_STATE_COLUMN, state);
-        contentValues.put(IT_LAST_CHECKING_COLUMN, lastChecking);
-        contentValues.put(IT_TYPE_COLUMN, type);
-        contentValues.put(IT_LOCATION_COLUMN, location);
-        contentValues.put(IT_OBSERVATION_COLUMN, observation);
+        ITCV.put(IT_FOLLOWING_COLUMN, following);
+        ITCV.put(IT_STATE_COLUMN, state);
+        ITCV.put(IT_LAST_CHECKING_COLUMN, lastChecking);
+        ITCV.put(IT_TYPE_COLUMN, type);
+        ITCV.put(IT_LOCATION_COLUMN, location);
+        ITCV.put(IT_OBSERVATION_COLUMN, observation);
 
-        db.insert(IT_NAME, null, contentValues);
-        contentValues.clear();
+        db.insert(IT_NAME, null, ITCV);
+        ITCV.clear();
 
     }
 
     public void updateDescription(String number, String description) {
-        contentValues.put(IT_DESCRIPTION_COLUMN, description);
-        db.update(IT_NAME, contentValues,
+        ITCV.put(IT_DESCRIPTION_COLUMN, description);
+        db.update(IT_NAME, ITCV,
                 IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
-        contentValues.clear();
+        ITCV.clear();
     }
 
     public void updateArea(String number, String area) {
-        contentValues.put(IT_AREA_COLUMN, area);
-        db.update(IT_NAME, contentValues,
+        ITCV.put(IT_AREA_COLUMN, area);
+        db.update(IT_NAME, ITCV,
                 IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
-        contentValues.clear();
+        ITCV.clear();
     }
 
     public void updateAltaDate(String number, String altaDate) {
-        contentValues.put(IT_ALTA_DATE_COLUMN, altaDate);
-        db.update(IT_NAME, contentValues,
+        ITCV.put(IT_ALTA_DATE_COLUMN, altaDate);
+        db.update(IT_NAME, ITCV,
                 IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
-        contentValues.clear();
+        ITCV.clear();
     }
 
     public void updateOfficialUpdate(String number, String officialUpdate) {
-        contentValues.put(IT_OFFICIAL_UPDATE_COLUMN, officialUpdate);
-        db.update(IT_NAME, contentValues,
+        ITCV.put(IT_OFFICIAL_UPDATE_COLUMN, officialUpdate);
+        db.update(IT_NAME, ITCV,
                 IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
-        contentValues.clear();
+        ITCV.clear();
     }
 
     public void updateState(String number, int state) {
-        contentValues.put(IT_STATE_COLUMN, state);
-        db.update(IT_NAME, contentValues,
+        ITCV.put(IT_STATE_COLUMN, state);
+        db.update(IT_NAME, ITCV,
                 IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
-        contentValues.clear();
+        ITCV.clear();
     }
 
     public void updateStateColumn(int state) {
-        contentValues.put(IT_STATE_COLUMN, state);
-        db.update(IT_NAME, contentValues, null, null);
-        contentValues.clear();
+        ITCV.put(IT_STATE_COLUMN, state);
+        db.update(IT_NAME, ITCV, null, null);
+        ITCV.clear();
     }
 
     //endregion
@@ -362,6 +364,140 @@ public class DB extends SQLiteOpenHelper {
         return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME, null);
     }
 
+    public Cursor getAllDataIfState(String state) {
+
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                IT_STATE_COLUMN + _EQUAL_ + IT.StateValues.parse(state), null);
+    }
+
+    public Cursor getAllDataIfType(String type) {
+
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                IT_TYPE_COLUMN + _EQUAL_ + IT.TypeValues.parse(type), null);
+    }
+
+    public Cursor getAllDataIfObservation(String observation) {
+
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                IT_OBSERVATION_COLUMN + _EQUAL_ + QUOTE + observation + QUOTE, null);
+    }
+
+    public Cursor getAllDataIfLocation(String location) {
+
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                IT_LOCATION_COLUMN + _EQUAL_ + QUOTE + location + QUOTE, null);
+    }
+
+    public Cursor getAllDataIfArea(String area) {
+
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                IT_AREA_COLUMN + _EQUAL_ + QUOTE + area + QUOTE, null);
+    }
+
+    public Cursor getAllDataIfFollowing(boolean following) {
+
+        int f = 0;
+        if (following) f = 1;
+
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                IT_FOLLOWING_COLUMN + _EQUAL_ + f, null);
+    }
+
+    public Cursor getAllDataIfFollowingAndLocation(boolean f, String l) {
+
+        int i = 0;
+        if (f) i++;
+        return getAllDataIfTwoColumn(IT_FOLLOWING_COLUMN, i, IT_LOCATION_COLUMN, l);
+    }
+
+    public Cursor getAllDataIfFollowingAndState(boolean f, String s) {
+
+        int i = 0;
+        if (f) i++;
+        return getAllDataIfTwoColumn(IT_FOLLOWING_COLUMN, i,
+                IT_STATE_COLUMN, IT.StateValues.parse(s));
+    }
+
+    public Cursor getAllDataIfFollowingAndType(boolean f, String t) {
+
+        int i = 0;
+        if (f) i++;
+        return getAllDataIfTwoColumn(IT_FOLLOWING_COLUMN, i,
+                IT_TYPE_COLUMN, IT.TypeValues.parse(t));
+    }
+
+    public Cursor getAllDataIfFollowingAndObservation(boolean f, String o) {
+
+        int i = 0;
+        if (f) i++;
+        return getAllDataIfTwoColumn(IT_FOLLOWING_COLUMN, i,
+                IT_STATE_COLUMN, o);
+    }
+
+    public Cursor getAllDataIfFollowingAndArea(boolean f, String a) {
+
+        int i = 0;
+        if (f) i++;
+        return getAllDataIfTwoColumn(IT_FOLLOWING_COLUMN, i,
+                IT_AREA_COLUMN, a);
+    }
+
+    public Cursor getAllDataIfLocationAndState(String l, String s) {
+        return getAllDataIfTwoColumn(IT_LOCATION_COLUMN, l,
+                IT_STATE_COLUMN, IT.StateValues.parse(s));
+    }
+
+    public Cursor getAllDataIfLocationAndType(String l, String t) {
+        return getAllDataIfTwoColumn(IT_LOCATION_COLUMN, l,
+                IT_TYPE_COLUMN, IT.TypeValues.parse(t));
+    }
+
+    public Cursor getAllDataIfLocationAndObservation(String l, String o) {
+        return getAllDataIfTwoColumn(IT_LOCATION_COLUMN, l,
+                IT_OBSERVATION_COLUMN, o);
+    }
+
+    public Cursor getAllDataIfLocationAndArea(String l, String a) {
+        return getAllDataIfTwoColumn(IT_LOCATION_COLUMN, l,
+                IT_AREA_COLUMN, a);
+    }
+
+    public Cursor getAllDataIfStateAndType(String s, String t) {
+
+        return getAllDataIfTwoColumn(IT_STATE_COLUMN, IT.StateValues.parse(s),
+                IT_TYPE_COLUMN, IT.TypeValues.parse(t));
+    }
+
+    public Cursor getAllDataIfStateAndObservation(String s, String o) {
+
+        return getAllDataIfTwoColumn(IT_STATE_COLUMN, IT.StateValues.parse(s),
+                IT_OBSERVATION_COLUMN, o);
+    }
+
+    public Cursor getAllDataIfStateAndArea(String s, String a) {
+
+        return getAllDataIfTwoColumn(IT_STATE_COLUMN, IT.StateValues.parse(s),
+                IT_AREA_COLUMN, a);
+    }
+
+    public Cursor getAllDataIfTypeAndObservation(String t, String o) {
+
+        return getAllDataIfTwoColumn(IT_TYPE_COLUMN, IT.TypeValues.parse(t),
+                IT_OBSERVATION_COLUMN, o);
+    }
+
+    public Cursor getAllDataIfTypeAndArea(String t, String a) {
+
+        return getAllDataIfTwoColumn(IT_TYPE_COLUMN, IT.TypeValues.parse(t),
+                IT_AREA_COLUMN, a);
+    }
+
+    public Cursor getAllDataIfObservationAndArea(String o, String a) {
+
+        return getAllDataIfTwoColumn(IT_OBSERVATION_COLUMN, o,
+                IT_AREA_COLUMN, a);
+    }
+
     public Cursor getLocationColumnData() {
         return db.rawQuery(SELECT_ + IT_LOCATION_COLUMN + _FROM_ + IT_NAME, null);
     }
@@ -372,6 +508,30 @@ public class DB extends SQLiteOpenHelper {
 
     public Cursor getObservationColumnData() {
         return db.rawQuery(SELECT_ + IT_OBSERVATION_COLUMN + _FROM_ + IT_NAME, null);
+    }
+
+    private Cursor getAllDataIfTwoColumn(String c1Name, String c1Value, String c2Name, String c2Value) {
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                c1Name + _EQUAL_ + QUOTE + c1Value + QUOTE + _AND_ +
+                c2Name + _EQUAL_ + QUOTE + c2Value + QUOTE, null);
+    }
+
+    private Cursor getAllDataIfTwoColumn(String c1Name, int c1Value, String c2Name, String c2Value) {
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                c1Name + _EQUAL_ + c1Value + _AND_ +
+                c2Name + _EQUAL_ + QUOTE + c2Value + QUOTE, null);
+    }
+
+    private Cursor getAllDataIfTwoColumn(String c1Name, String c1Value, String c2Name, int c2Value) {
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                c1Name + _EQUAL_ + QUOTE + c1Value + QUOTE + _AND_ +
+                c2Name + _EQUAL_ + c2Value, null);
+    }
+
+    private Cursor getAllDataIfTwoColumn(String c1Name, int c1Value, String c2Name, int c2Value) {
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + IT_NAME + _WHERE_ +
+                c1Name + _EQUAL_ + c1Value + _AND_ +
+                c2Name + _EQUAL_ + c2Value, null);
     }
 
     //endregion
@@ -434,6 +594,9 @@ public class DB extends SQLiteOpenHelper {
         public static final int SAVE_DIRECTORY_PATH = 5;
         public static final int TO_IMPORT_DIRECTORY_PATH = 6;
 
+        //EditActivity
+        public static final int NUMBER_TO_EDIT = 11;
+
         //endregion
 
         //region Preference's values
@@ -470,17 +633,17 @@ public class DB extends SQLiteOpenHelper {
      * @param value
      */
     public void setPreference(int ref, String value) {
-
+        RTCV.clear();
         if (!getPreference(ref).equals(RT.PREFERENCE_NOT_FOUND)) {
-            contentValues.put(RT_VALUE_COLUMN, value);
-            db.update(RT_NAME, contentValues,
+            RTCV.put(RT_VALUE_COLUMN, value);
+            db.update(RT_NAME, RTCV,
                     RT_NAME_COLUMN + _EQUAL_ + ref, null);
-            contentValues.clear();
+            RTCV.clear();
         } else {
-            contentValues.put(RT_NAME_COLUMN, ref);
-            contentValues.put(RT_VALUE_COLUMN, value);
-            db.insert(RT_NAME, null, contentValues);
-            contentValues.clear();
+            RTCV.put(RT_NAME_COLUMN, ref);
+            RTCV.put(RT_VALUE_COLUMN, value);
+            db.insert(RT_NAME, null, RTCV);
+            RTCV.clear();
         }
     }
 
@@ -491,17 +654,17 @@ public class DB extends SQLiteOpenHelper {
      * @param value
      */
     public void setPreference(int ref, long value) {
-
+        RTCV.clear();
         if (!getPreference(ref).equals(RT.PREFERENCE_NOT_FOUND)) {
-            contentValues.put(RT_VALUE_COLUMN, value);
-            db.update(RT_NAME, contentValues,
+            RTCV.put(RT_VALUE_COLUMN, value);
+            db.update(RT_NAME, RTCV,
                     RT_NAME_COLUMN + _EQUAL_ + ref, null);
-            contentValues.clear();
+            RTCV.clear();
         } else {
-            contentValues.put(RT_NAME_COLUMN, ref);
-            contentValues.put(RT_VALUE_COLUMN, value);
-            db.insert(RT_NAME, null, contentValues);
-            contentValues.clear();
+            RTCV.put(RT_NAME_COLUMN, ref);
+            RTCV.put(RT_VALUE_COLUMN, value);
+            db.insert(RT_NAME, null, RTCV);
+            RTCV.clear();
         }
     }
 
@@ -569,12 +732,17 @@ public class DB extends SQLiteOpenHelper {
 
         if (getPreference(RT.CURRENT_FILTER1_VALUE).equals(RT.PREFERENCE_NOT_FOUND)) {
             setPreference(RT.CURRENT_FILTER1_VALUE,
-                    InventoryActivity.FiltersValues.Filter1.ALL);
+                    InventoryActivity.FiltersValues.ALL);
         }
 
         if (getPreference(RT.CURRENT_FILTER2_VALUE).equals(RT.PREFERENCE_NOT_FOUND)) {
             setPreference(RT.CURRENT_FILTER2_VALUE,
-                    InventoryActivity.FiltersValues.Filter2.ALL);
+                    InventoryActivity.FiltersValues.ALL);
+        }
+
+        //Edit Activity Preferences
+        if(getPreference(RT.NUMBER_TO_EDIT).equals(RT.PREFERENCE_NOT_FOUND)){
+            setPreference(RT.NUMBER_TO_EDIT, 0);
         }
 
     }

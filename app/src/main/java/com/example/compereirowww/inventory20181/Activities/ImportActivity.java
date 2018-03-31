@@ -16,8 +16,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
-import com.example.compereirowww.inventory20181.DataBase.DB.*;
-
+import com.example.compereirowww.inventory20181.DataBase.DB.IT;
+import com.example.compereirowww.inventory20181.DataBase.DB.RT;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
@@ -144,7 +144,7 @@ public class ImportActivity extends AppCompatActivity {
                 //endregion
 
                 //region Checking HashCode
-                if (String.valueOf(data.hashCode()).
+                if (String.valueOf(getDataHashCode(data, AppStatics.Importation.FIRTS_IMPORT_VALUE_INDEX)).
                         equals(db.getPreference(RT.CURRENT_IMPORTATION_FILE_HASH))) {
 
                     //TODO deb
@@ -172,7 +172,7 @@ public class ImportActivity extends AppCompatActivity {
                         //TODO deb
                         Log.d(AppStatics.APP_TAG, "Importing a salva file, start index " + startIndex);
 
-                        importAT = new ImportSalvaAT();
+                        importAT = new ImportSaveAT();
                         importAT.execute();
 
                     } else {
@@ -413,7 +413,7 @@ public class ImportActivity extends AppCompatActivity {
                                         return;
                                     }
 
-                                    db.setPreference(RT.CURRENT_IMPORTATION_FILE_HASH, data.hashCode());
+                                    db.setPreference(RT.CURRENT_IMPORTATION_FILE_HASH, data.get(0).split(",", -1)[1]);
                                     db.setPreference(RT.CURRENT_IMPORTING_FILE_PATH, filePath);
                                     db.setPreference(RT.CURRENT_IMPORTATION_INDEX,
                                             AppStatics.Importation.FIRTS_IMPORT_VALUE_INDEX);
@@ -453,16 +453,11 @@ public class ImportActivity extends AppCompatActivity {
 
     //endregion
 
-    //region override methods
-
-
-    //endregion
-
     //region methods
 
     /**
      * return a hash code of a given subPart of the ArrayList, it first concatenate all
-     * the data as an String, and use the HashCode method of the String class to return.
+     * the data as an String, and use the myStringHashCode method of the Tools class to return.
      *
      * @param data       the data
      * @param startIndex the startIndex to considerate
@@ -476,7 +471,7 @@ public class ImportActivity extends AppCompatActivity {
             stringBuilder.append(data.get(startIndex));
         }
 
-        return stringBuilder.toString().hashCode();
+        return Tools.myStringHashCode(stringBuilder.toString());
     }
 
     //endregion
@@ -540,6 +535,7 @@ public class ImportActivity extends AppCompatActivity {
                     db.updateArea(number, area);
                     db.updateAltaDate(number, altaDate);
                     db.updateOfficialUpdate(number, officialUpdate);
+                    db.updateStateColumn(IT.StateValues.MISSING);
                     publishProgress("" + index,
                             index + "/" + numberCount + "\n" +
                                     "(Actualizando Número)\n" +
@@ -551,8 +547,15 @@ public class ImportActivity extends AppCompatActivity {
 
                 } else {
 
-                    db.insertNewNumber(number, description, area, altaDate, officialUpdate, false, IT.StateValues.MISSING,
-                            Tools.getDate(), IT.TypeValues.UNKNOWN, "", "");
+                    db.insertNewNumber(number,
+                            description,
+                            area,
+                            altaDate,
+                            officialUpdate,
+                            false,
+                            IT.StateValues.MISSING,
+                            Tools.getDate(),
+                            IT.TypeValues.UNKNOWN, "", "");
 
                     publishProgress("" + index,
                             index + "/" + numberCount + "\n" +
@@ -608,7 +611,7 @@ public class ImportActivity extends AppCompatActivity {
     }
 
 
-    private class ImportSalvaAT extends AsyncTask<Void, String, Integer> {
+    private class ImportSaveAT extends AsyncTask<Void, String, Integer> {
 
         @Override
         protected Integer doInBackground(Void... voids) {
