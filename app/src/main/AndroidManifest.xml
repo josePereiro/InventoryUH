@@ -32,6 +32,10 @@
         <activity
             android:name=".Activities.EditActivity"
             android:label="@string/title_activity_detail_acivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.ConfigurationActivity"
+            android:label="@string/title_activity_configuration"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

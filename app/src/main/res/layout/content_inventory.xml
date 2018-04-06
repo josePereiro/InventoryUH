@@ -8,6 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/icon_highlight_rectangle"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.compereirowww.inventory20181.Activities.InventoryActivity"
     tools:showIn="@layout/activity_inventory">
@@ -18,6 +19,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
+        android:background="@android:color/transparent"
         android:id="@+id/textView2"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
@@ -33,6 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listView"
+        android:background="@drawable/icon_highlight_rectangle"
         android:layout_below="@+id/textView2"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/bb_btn"
@@ -47,45 +50,46 @@
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="&lt;--"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:background="@drawable/ic_media_rew"
         android:id="@+id/bb_btn"
         android:layout_above="@+id/b_btn"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignEnd="@+id/space2" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="&lt;-"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:background="@drawable/ic_media_previous"
         android:id="@+id/b_btn"
-        android:layout_above="@+id/space2"
-        android:layout_alignParentEnd="true" />
+        android:layout_above="@+id/f_btn"
+        android:layout_alignEnd="@+id/space2" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="-->"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:background="@drawable/ic_media_ff"
         android:id="@+id/ff_btn"
-        android:layout_below="@+id/f_btn"
-        android:layout_alignParentEnd="true" />
+        android:layout_above="@+id/qr_btn"
+        android:layout_alignEnd="@+id/space2" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="->"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:background="@drawable/ic_media_next"
         android:id="@+id/f_btn"
-        android:layout_below="@+id/space2"
-        android:layout_alignParentEnd="true" />
+        android:layout_above="@+id/ff_btn"
+        android:layout_alignEnd="@+id/space2" />
 
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/spinner2"
         android:layout_alignParentBottom="true"
+        android:background="@android:color/transparent"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/space"
         android:spinnerMode="dialog" />
@@ -95,9 +99,19 @@
         android:layout_height="wrap_content"
         android:id="@+id/spinner3"
         android:layout_alignParentBottom="true"
+        android:background="@android:color/transparent"
         android:spinnerMode="dialog"
         android:layout_toEndOf="@+id/space"
         android:layout_toStartOf="@+id/ff_btn"
         android:layout_below="@+id/listView" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:background="@drawable/ic_menu_camera"
+        android:id="@+id/qr_btn"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/space2" />
 
 </RelativeLayout>

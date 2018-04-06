@@ -3,6 +3,7 @@
     <string name="inventory">Inventario</string>
     <string name="import_inventory">Importar Inventario</string>
     <string name="insert_new_number">Insertar nuevo número</string>
+    <string name="configuration">Configuración</string>
     <string name="title_activity_import">importActivity</string>
 
     <string name="error1">"Error fatal: No se puede encontrar la ruta de almacenamiento externa del dispositivo "</string>
@@ -34,5 +35,9 @@
     <string name="text16">Localización actualizada!</string>
     <string name="text17">Observación actualizada!</string>
     <string name="text18">Estado actualizado!</string>
+    <string name="title_activity_configuration">ConfigurationActivity</string>
+    <string name="text19">No ha seleccionado nigún área</string>
+    <string name="text20">Cambios Guardados!</string>
+    <string name="text21">Este tipo se le adjudicará a todos los números de la misma descripción</string>
 
 </resources>

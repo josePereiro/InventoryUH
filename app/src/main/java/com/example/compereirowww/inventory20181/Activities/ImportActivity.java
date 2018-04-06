@@ -55,8 +55,6 @@ public class ImportActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_import);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         //TODO deb
         Log.d(AppStatics.APP_TAG, "ImportActivity.onCreate");
@@ -93,6 +91,7 @@ public class ImportActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             db.setPreference(RT.APP_IMPORTING, RT.NO);
+                            db.setPreference(RT.AREAS_TO_FOLLOW_CSV, RT.EMPTY_PREFERENCE);
                             startActivity(new Intent(ImportActivity.this, MainActivity.class));
                         }
                     });
@@ -257,7 +256,7 @@ public class ImportActivity extends AppCompatActivity {
             //endregion Spinner
 
             //region Fab
-
+            fab.setBackgroundResource(R.drawable.ic_media_stop);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -350,6 +349,7 @@ public class ImportActivity extends AppCompatActivity {
             //endregion Spinner
 
             //region fab
+            fab.setBackgroundResource(R.drawable.ic_media_play);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -531,11 +531,9 @@ public class ImportActivity extends AppCompatActivity {
 
                 if (db.numberExist(number)) {
 
-                    db.updateDescription(number, description);
-                    db.updateArea(number, area);
-                    db.updateAltaDate(number, altaDate);
-                    db.updateOfficialUpdate(number, officialUpdate);
+                    db.updateOfficialData(number, description, area, altaDate, officialUpdate);
                     db.updateStateColumn(IT.StateValues.MISSING);
+
                     publishProgress("" + index,
                             index + "/" + numberCount + "\n" +
                                     "(Actualizando Número)\n" +
@@ -552,7 +550,7 @@ public class ImportActivity extends AppCompatActivity {
                             area,
                             altaDate,
                             officialUpdate,
-                            false,
+                            IT.FollowingType.NO,
                             IT.StateValues.MISSING,
                             Tools.getDate(),
                             IT.TypeValues.UNKNOWN, "", "");
@@ -597,6 +595,8 @@ public class ImportActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 db.setPreference(RT.APP_IMPORTING, RT.NO);
+                                db.setPreference(RT.AREAS_TO_FOLLOW_CSV, RT.EMPTY_PREFERENCE);
+                                AppStatics.AreasToFollow.updateAreasToFollow(db);
                                 startActivity(new Intent(ImportActivity.this, MainActivity.class));
                             }
                         });

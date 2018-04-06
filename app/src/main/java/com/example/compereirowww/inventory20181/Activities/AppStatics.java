@@ -141,12 +141,31 @@ public class AppStatics {
 
         public static void updateAreasToFollow(DB db) {
 
-            if (!db.getPreference(DB.RT.AREAS_TO_FOLLOW).equals(DB.RT.PREFERENCE_NOT_FOUND)
-                    && !db.getPreference(DB.RT.AREAS_TO_FOLLOW).equals(DB.RT.EMPTY_PREFERENCE)) {
+            if (!db.getPreference(DB.RT.AREAS_TO_FOLLOW_CSV).equals(DB.RT.PREFERENCE_NOT_FOUND)
+                    && !db.getPreference(DB.RT.AREAS_TO_FOLLOW_CSV).equals(DB.RT.EMPTY_PREFERENCE)) {
 
-                areasToFollow = db.getPreference(DB.RT.AREAS_TO_FOLLOW).split(",", -1);
+                areasToFollow = splitAreasCSV(db.getPreference(DB.RT.AREAS_TO_FOLLOW_CSV));
+
+            } else {
+                areasToFollow = new String[]{""};
             }
 
+        }
+
+        public static String[] splitAreasCSV(String areas) {
+            if (!areas.equals("")) return areas.split(",", -1);
+            else return new String[]{""};
+        }
+
+        public static String getAreasAsCSV(String[] areas) {
+            String areasAsCSV = "";
+            for (int i = 0; i < areas.length; i++) {
+                if (areas[i] == null) continue;
+                if (i < areas.length - 1) areasAsCSV += areas[i] + ",";
+                else areasAsCSV += areas[i];
+            }
+
+            return areasAsCSV;
         }
 
     }

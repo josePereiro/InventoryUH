@@ -325,9 +325,9 @@ public class Tools {
         return -1;
     }
 
-    public static int getIndexOf(String[] arrayList, String element) {
-        for (int i = 0; i < arrayList.length; i++) {
-            if (arrayList[i].equals(element)) {
+    public static int getIndexOf(String[] array, String element) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equals(element)) {
                 return i;
             }
         }

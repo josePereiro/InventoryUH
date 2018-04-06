@@ -21,4 +21,10 @@
         android:title="@string/insert_new_number"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/configuration"
+        android:orderInCategory="100"
+        android:title="@string/configuration"
+        app:showAsAction="never" />
+
 </menu>

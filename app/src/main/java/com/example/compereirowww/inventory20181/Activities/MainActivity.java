@@ -21,6 +21,7 @@ import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
 import java.io.File;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,8 +48,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         //GUI
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         textView = (TextView) findViewById(R.id.textView1);
 
         //DB
@@ -59,11 +58,7 @@ public class MainActivity extends AppCompatActivity {
         AppStatics.Area.updateAreas(db);
         AppStatics.Location.updateLocations(db);
         AppStatics.Observation.updateObservations(db);
-
-        //TODO test
-        //db.setPreference(RT.AREAS_TO_FOLLOW, "ADMINISTRACION LOCAL 284/285 ");
-
-        //AppStatics.AreasToFollow.updateAreasToFollow(db);
+        AppStatics.AreasToFollow.updateAreasToFollow(db);
     }
 
     @Override
@@ -74,10 +69,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d("JOSE", "MainActivity.onResume +++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
         //files
-        handleAppFiles();
+        if (handleAppFiles())
+            if (checkingImportation())
+                checkingAreaToFollow();
 
-        //importation
-        checkingImportation();
+        //TODO test
+        textView.setText(db.getPreference(RT.UPDATE_CRITERIA));
 
     }
 
@@ -100,11 +97,13 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.import_inventory) {
-
             startActivity(new Intent(MainActivity.this, ImportActivity.class));
             return true;
         } else if (id == R.id.see_inventory) {
             startActivity(new Intent(MainActivity.this, InventoryActivity.class));
+        } else if (id == R.id.configuration) {
+            db.setPreference(RT.TEMP_AREAS_TO_FOLLOW_CSV, RT.EMPTY_PREFERENCE);
+            startActivity(new Intent(MainActivity.this, ConfigurationActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
@@ -128,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
     //region methods...
 
-    private void handleAppFiles() {
+    private boolean handleAppFiles() {
 
         //Permissions
         verifyStoragePermissions();
@@ -145,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
                     System.exit(0);
                 }
             });
+            return false;
         }
 
         //Root file
@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     appFile.delete();
+                    return false;
                 }
             } else {
                 Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                         System.exit(0);
                     }
                 });
+                return false;
             }
         }
 
@@ -198,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     toImportFile.delete();
+                    return false;
                 }
             } else {
                 Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
@@ -208,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
                         System.exit(0);
                     }
                 });
+                return false;
             }
         }
 
@@ -228,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     toSaveFile.delete();
+                    return false;
                 }
             } else {
                 Tools.showInfoDialog(MainActivity.this, getString(R.string.error2) +
@@ -238,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
                         System.exit(0);
                     }
                 });
+                return false;
             }
         }
 
@@ -245,10 +251,11 @@ public class MainActivity extends AppCompatActivity {
         db.setPreference(DB.RT.ROOT_DIRECTORY_PATH, appFile.getPath());
         db.setPreference(DB.RT.TO_IMPORT_DIRECTORY_PATH, toImportFile.getPath());
         db.setPreference(DB.RT.SAVE_DIRECTORY_PATH, toSaveFile.getPath());
+        return true;
 
     }
 
-    private void checkingImportation() {
+    private boolean checkingImportation() {
         if (db.getPreference(RT.APP_IMPORTING).equals(RT.YES) || db.getPreference(RT.APP_IMPORTING).equals(RT.FINISHING)) {
             Tools.showDialogMessage(MainActivity.this, getString(R.string.text8),
                     "Cerrar",
@@ -265,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(new Intent(MainActivity.this, ImportActivity.class));
                         }
                     });
+            return false;
         } else if (db.getPreference(RT.APP_IMPORTING).equals(RT.CANCELLED)) {
             Tools.showDialogMessage(MainActivity.this, getString(R.string.text9),
                     "Cerrar",
@@ -281,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(new Intent(MainActivity.this, ImportActivity.class));
                         }
                     });
+            return false;
         } else if (db.getAllData().getCount() == 0) {
             Tools.showInfoDialog(MainActivity.this, "La base de datos está vacía, necesita importar!",
                     "Importar", new DialogInterface.OnClickListener() {
@@ -289,7 +298,25 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(new Intent(MainActivity.this, ImportActivity.class));
                         }
                     });
+            return false;
         }
+        return true;
+    }
+
+    private boolean checkingAreaToFollow() {
+        //area
+        if (Arrays.equals(AppStatics.AreasToFollow.areasToFollow, new String[]{""})) {
+            Tools.showInfoDialog(MainActivity.this, "Debe seleccionar un área a seguir!", "Seleccionar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            db.setPreference(RT.TEMP_AREAS_TO_FOLLOW_CSV, RT.EMPTY_PREFERENCE);
+                            startActivity(new Intent(MainActivity.this, ConfigurationActivity.class));
+                        }
+                    });
+            return false;
+        }
+        return true;
     }
 
     /**
