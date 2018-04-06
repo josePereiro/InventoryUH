@@ -157,12 +157,12 @@ public class AppStatics {
             else return new String[]{""};
         }
 
-        public static String getAreasAsCSV(String[] areas) {
+        public static String getAreasAsCSV(ArrayList<String> areas) {
             String areasAsCSV = "";
-            for (int i = 0; i < areas.length; i++) {
-                if (areas[i] == null) continue;
-                if (i < areas.length - 1) areasAsCSV += areas[i] + ",";
-                else areasAsCSV += areas[i];
+            for (int i = 0; i < areas.size(); i++) {
+                if (areas.get(i) == null) continue;
+                if (i < areas.size() - 1) areasAsCSV += areas.get(i) + ",";
+                else areasAsCSV += areas.get(i);
             }
 
             return areasAsCSV;

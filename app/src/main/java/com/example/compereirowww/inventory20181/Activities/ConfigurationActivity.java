@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -22,9 +21,10 @@ import java.util.Collections;
 public class ConfigurationActivity extends AppCompatActivity {
 
     //GUI
-    TextView areasTV;
     ListView areasLV;
+    ListView selectedAreasLV;
     Spinner criteriaS;
+    TextView selectedAreasTV;
 
     //DB
     private DB db;
@@ -32,8 +32,6 @@ public class ConfigurationActivity extends AppCompatActivity {
     //data
     ArrayList<String> areasToFollowAL;
     ArrayList<String> allAreasAL;
-
-    private static final String MARKER = "(*) ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +43,7 @@ public class ConfigurationActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 db.setPreference(DB.RT.AREAS_TO_FOLLOW_CSV,
-                        AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL.toArray(new String[]{""})));
+                        AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL));
                 AppStatics.AreasToFollow.updateAreasToFollow(db);
                 db.updateFollowingColumn(DB.IT.FollowingType.NO);
                 db.updateFollowingByAreas(AppStatics.AreasToFollow.areasToFollow, DB.IT.FollowingType.YES);
@@ -70,58 +68,56 @@ public class ConfigurationActivity extends AppCompatActivity {
         }
 
         //GUI
+        selectedAreasTV = (TextView) findViewById(R.id.selected_areas_tv);
         areasLV = (ListView) findViewById(R.id.areas_lv);
-        areasTV = (TextView) findViewById(R.id.areas_tv);
-        if (areasToFollowAL.size() == 0) {
-            areasTV.setText(R.string.text19);
-        } else {
-            areasTV.setText(AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL.toArray(new String[]{""})));
-        }
-
         allAreasAL = new ArrayList<>();
         Collections.addAll(allAreasAL, AppStatics.Area.areas);
-        for (int i = 0; i < allAreasAL.size(); i++) {
-            if (areasToFollowAL.contains(allAreasAL.get(i))) {
-                allAreasAL.set(i, MARKER + allAreasAL.get(i));
-            }
-        }
+
         areasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
                 android.R.layout.simple_list_item_1, allAreasAL));
         areasLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String clickedItem = (String) adapterView.getItemAtPosition(i);
-                clickedItem = clickedItem.replace(MARKER, "");
 
                 if (areasToFollowAL.contains(clickedItem)) {
 
-                    //Remove
-                    areasToFollowAL.remove(clickedItem);
-                    allAreasAL.set(i, clickedItem);
+                    Tools.showToast(ConfigurationActivity.this, "Esa área ya fue seleccionada!", false);
 
                 } else {
 
                     //Add
                     areasToFollowAL.add(clickedItem);
-                    allAreasAL.set(i, MARKER + allAreasAL.get(i));
+                    selectedAreasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
+                            android.R.layout.simple_list_item_1, areasToFollowAL));
+                    db.setPreference(DB.RT.TEMP_AREAS_TO_FOLLOW_CSV,
+                            AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL));
                 }
 
-                db.setPreference(DB.RT.TEMP_AREAS_TO_FOLLOW_CSV,
-                        AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL.
-                                toArray(new String[]{""})));
-
-                int firstVisiblePosition = adapterView.getFirstVisiblePosition();
-                areasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
-                        android.R.layout.simple_list_item_1, allAreasAL));
-                areasLV.setSelection(firstVisiblePosition);
-                if (areasToFollowAL.size() == 0) {
-                    areasTV.setText(R.string.text19);
-                } else {
-                    areasTV.setText(AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL.toArray(new String[]{""})));
-                }
+                selectedAreasTV.setText(getString(R.string.text22) + areasToFollowAL.size());
+                selectedAreasLV.setSelection(Tools.getIndexOf(areasToFollowAL, clickedItem));
 
             }
         });
+
+        selectedAreasLV = (ListView) findViewById(R.id.selected_areas_lv);
+        selectedAreasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
+                android.R.layout.simple_list_item_1, areasToFollowAL));
+        selectedAreasLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                //Remove
+                areasToFollowAL.remove(i);
+                int firstVisibleView = adapterView.getFirstVisiblePosition();
+                selectedAreasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
+                        android.R.layout.simple_list_item_1, areasToFollowAL));
+                selectedAreasLV.setSelection(firstVisibleView);
+                selectedAreasTV.setText(getString(R.string.text22) + areasToFollowAL.size());
+
+            }
+        });
+
 
         criteriaS = (Spinner) findViewById(R.id.criteria_s);
         String[] criteriaValues = new String[]{"0", "1", "7", "30", "45", "60", "120", "365", "730", "1095"};
@@ -145,6 +141,7 @@ public class ConfigurationActivity extends AppCompatActivity {
             }
         });
 
+        selectedAreasTV.setText(getString(R.string.text22) + areasToFollowAL.size());
     }
 
 
