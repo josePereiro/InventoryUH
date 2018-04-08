@@ -133,6 +133,11 @@ public class DB extends SQLiteOpenHelper {
              * imported the last time.
              */
             public static final int LEFTOVER = 53;
+            /**
+             * This value represent that the object in the inventory wasn't
+             * imported the last time but its qr code was founded
+             */
+            public static final int LEFTOVER_PRESENT = 54;
 
 
             public static String toString(int state) {
@@ -144,6 +149,8 @@ public class DB extends SQLiteOpenHelper {
                     return "Faltante Ignorado";
                 } else if (state == LEFTOVER) {
                     return "Sobrante";
+                } else if (state == LEFTOVER_PRESENT) {
+                    return "Sobrante Presente";
                 } else {
                     return "";
                 }
@@ -163,6 +170,9 @@ public class DB extends SQLiteOpenHelper {
 
                     case "Sobrante":
                         return LEFTOVER;
+
+                    case "Sobrante Presente":
+                        return LEFTOVER_PRESENT;
 
                     default:
                         return -1;
@@ -316,17 +326,17 @@ public class DB extends SQLiteOpenHelper {
 
     }
 
-    public void updateOfficialData(String number, String description, String area, String altaDate,
-                                   String officialUpdate) {
+    public int updateOfficialDataAndState(String number, String description, String area, String altaDate,
+                                   String officialUpdate, int state) {
         ContentValues contents = new ContentValues();
         contents.put(IT_DESCRIPTION_COLUMN, description);
         contents.put(IT_AREA_COLUMN, area);
         contents.put(IT_ALTA_DATE_COLUMN, altaDate);
         contents.put(IT_OFFICIAL_UPDATE_COLUMN, officialUpdate);
-        db.update(IT_NAME, contents,
+        contents.put(IT_STATE_COLUMN, state);
+        return db.update(IT_NAME, contents,
                 IT_NUMBER_COLUMN + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
-        contents.clear();
     }
 
     public void updateDescription(String number, String description) {
@@ -1003,8 +1013,6 @@ public class DB extends SQLiteOpenHelper {
         if (getPreference(RT.TEMP_UPDATE_CRITERIA).equals(RT.PREFERENCE_NOT_FOUND)) {
             setPreference(RT.TEMP_UPDATE_CRITERIA, RT.EMPTY_PREFERENCE);
         }
-
-
 
 
     }

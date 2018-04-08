@@ -15,35 +15,38 @@
     tools:showIn="@layout/activity_import">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp">
-
-        <ProgressBar
-            android:id="@+id/importation_pb"
-            style="@android:style/Widget.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="3dp"
-            android:indeterminate="false" />
-
-        <Space
-            android:layout_width="5dp"
-            android:layout_height="5dp" />
+        android:layout_gravity="center"
+        android:layout_margin="5dp"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="8dp"
             android:text="Seleccione un archivo para importar"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <Spinner
-            android:id="@+id/spinner"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:popupBackground="@drawable/background2"
-            />
+            android:background="@drawable/background2"
+
+            >
+
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:background="@drawable/background4"
+                android:popupBackground="@drawable/background2"
+                android:spinnerMode="dropdown" />
+
+        </LinearLayout>
+
 
     </LinearLayout>
 
@@ -51,12 +54,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/background2"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:scrollbars="none">
 
         <TextView
             android:id="@+id/detail_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="15dp"
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </ScrollView>
 

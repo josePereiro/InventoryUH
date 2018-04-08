@@ -3,7 +3,6 @@ package com.example.compereirowww.inventory20181.Activities;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -164,7 +163,7 @@ public class EditActivity extends AppCompatActivity {
         //endregion following spinner
 
         //region state spinner
-        if (state == DB.IT.StateValues.LEFTOVER) {
+        if (db.getNumberState(getNumber()) == DB.IT.StateValues.LEFTOVER) {
             stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
                     android.R.layout.simple_list_item_1,
                     new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}));
@@ -179,6 +178,26 @@ public class EditActivity extends AppCompatActivity {
                         Tools.showToast(EditActivity.this, getString(R.string.text15), false);
                     }
                     c++;
+                }
+            });
+
+        } else if (db.getNumberState(getNumber()) == DB.IT.StateValues.LEFTOVER_PRESENT) {
+            ArrayList<String> stateAL = new ArrayList<>();
+            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER_PRESENT));
+            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER));
+            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+                    android.R.layout.simple_list_item_1,
+                    stateAL));
+            stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(state)));
+            stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    setTempState(DB.IT.StateValues.parse((String) adapterView.getSelectedItem()));
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+
                 }
             });
 

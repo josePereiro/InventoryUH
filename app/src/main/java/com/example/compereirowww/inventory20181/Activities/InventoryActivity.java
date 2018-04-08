@@ -3,6 +3,7 @@ package com.example.compereirowww.inventory20181.Activities;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -27,6 +28,7 @@ public class InventoryActivity extends AppCompatActivity {
     //Statics
     private static final int WINDOW = 10;
     private static final int QR_REQUEST = 626;
+    private FloatingActionButton fab;
 
     //Filters values
     public class FiltersValues {
@@ -67,6 +69,13 @@ public class InventoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_inventory);
 
         //GUI
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                callQRDecoder(QR_REQUEST);
+            }
+        });
         textView = (TextView) findViewById(R.id.textView2);
         listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -80,8 +89,8 @@ public class InventoryActivity extends AppCompatActivity {
                 }
             }
         });
-        filter1Spinner = (Spinner) findViewById(R.id.spinner2);
-        filter2Spinner = (Spinner) findViewById(R.id.spinner3);
+        filter1Spinner = (Spinner) findViewById(R.id.filter1_s);
+        filter2Spinner = (Spinner) findViewById(R.id.filter2_s);
         bBtn = (Button) findViewById(R.id.b_btn);
         bBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,13 +156,6 @@ public class InventoryActivity extends AppCompatActivity {
                 }
             }
         });
-        qrBtn = (Button)findViewById(R.id.qr_btn);
-        qrBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callQRDecoder(QR_REQUEST);
-            }
-        });
 
         //DB
         db = AppStatics.db;
@@ -171,40 +173,41 @@ public class InventoryActivity extends AppCompatActivity {
 
         //GUI
         //region filter1Spinner...
-        ArrayList<String> filter1AL = new ArrayList<>();
-        filter1AL.add(FiltersValues.ALL);
-        filter1AL.add(FiltersValues.FOLLOWED);
-        filter1AL.add(FiltersValues.NOT_FOLLOWED);
-        filter1AL.add(FiltersValues.STATE_ + IT.StateValues.toString(DB.IT.StateValues.MISSING));
-        filter1AL.add(FiltersValues.STATE_ + IT.StateValues.toString(IT.StateValues.PRESENT));
-        filter1AL.add(FiltersValues.STATE_ + IT.StateValues.toString(IT.StateValues.IGNORED_MISSING));
-        filter1AL.add(FiltersValues.STATE_ + IT.StateValues.toString(IT.StateValues.LEFTOVER));
-        filter1AL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.EQUIPMENT));
-        filter1AL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.FURNISHING));
-        filter1AL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.UNKNOWN));
-        filter1AL.add(FiltersValues.OBSERVATION_EMPTY);
-        filter1AL.add(FiltersValues.LOCATION_EMPTY);
+        ArrayList<String> filterAL = new ArrayList<>();
+        filterAL.add(FiltersValues.ALL);
+        filterAL.add(FiltersValues.FOLLOWED);
+        filterAL.add(FiltersValues.NOT_FOLLOWED);
+        filterAL.add(FiltersValues.STATE_ + IT.StateValues.toString(DB.IT.StateValues.MISSING));
+        filterAL.add(FiltersValues.STATE_ + IT.StateValues.toString(IT.StateValues.PRESENT));
+        filterAL.add(FiltersValues.STATE_ + IT.StateValues.toString(IT.StateValues.IGNORED_MISSING));
+        filterAL.add(FiltersValues.STATE_ + IT.StateValues.toString(IT.StateValues.LEFTOVER));
+        filterAL.add(FiltersValues.STATE_ + IT.StateValues.toString(IT.StateValues.LEFTOVER_PRESENT));
+        filterAL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.EQUIPMENT));
+        filterAL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.FURNISHING));
+        filterAL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.UNKNOWN));
+        filterAL.add(FiltersValues.OBSERVATION_EMPTY);
+        filterAL.add(FiltersValues.LOCATION_EMPTY);
         if (!Arrays.equals(AppStatics.Location.locations, new String[]{""})) {
             for (int i = 0; i < AppStatics.Location.locations.length; i++) {
-                filter1AL.add(FiltersValues.LOCATION_ +
+                filterAL.add(FiltersValues.LOCATION_ +
                         AppStatics.Location.locations[i]);
             }
         }
         if (!Arrays.equals(AppStatics.Area.areas, new String[]{""})) {
             for (int i = 0; i < AppStatics.Area.areas.length; i++) {
-                filter1AL.add(FiltersValues.AREA_ +
+                filterAL.add(FiltersValues.AREA_ +
                         AppStatics.Area.areas[i]);
             }
         }
         if (!Arrays.equals(AppStatics.Observation.observations, new String[]{""})) {
             for (int i = 0; i < AppStatics.Observation.observations.length; i++) {
-                filter1AL.add(FiltersValues.OBSERVATION_ +
+                filterAL.add(FiltersValues.OBSERVATION_ +
                         AppStatics.Observation.observations[i]);
             }
         }
         filter1Spinner.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
-                android.R.layout.simple_list_item_1, filter1AL));
-        filter1Spinner.setSelection(Tools.getIndexOf(filter1AL, getFilter1()));
+                android.R.layout.simple_list_item_1, filterAL));
+        filter1Spinner.setSelection(Tools.getIndexOf(filterAL, getFilter1()));
         filter1Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -229,8 +232,8 @@ public class InventoryActivity extends AppCompatActivity {
         //region filter2Spinner...
 
         filter2Spinner.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
-                android.R.layout.simple_list_item_1, filter1AL));
-        filter2Spinner.setSelection(Tools.getIndexOf(filter1AL, getFilter2()));
+                android.R.layout.simple_list_item_1, filterAL));
+        filter2Spinner.setSelection(Tools.getIndexOf(filterAL, getFilter2()));
         filter2Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -256,6 +259,40 @@ public class InventoryActivity extends AppCompatActivity {
         updateData();
         updateDataToDisplay();
         displayData();
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == QR_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String result = data.getStringExtra("SCAN_RESULT");
+
+                if (db.numberExist(result)) {
+
+                    //Change state
+                    if (db.getNumberState(result) != IT.StateValues.LEFTOVER) {
+
+                        db.updateState(result, IT.StateValues.PRESENT);
+                        Tools.showToast(InventoryActivity.this,
+                                "El número ha sido marcado como " +
+                                        IT.StateValues.toString(IT.StateValues.PRESENT), false);
+
+                    } else {
+                        db.updateState(result, IT.StateValues.LEFTOVER_PRESENT);
+                        Tools.showToast(InventoryActivity.this,
+                                "El número ha sido marcado como " +
+                                        IT.StateValues.toString(IT.StateValues.LEFTOVER_PRESENT), false);
+                    }
+
+                } else {
+                    Tools.showToast(InventoryActivity.this, "Ningún número válido leído!", false);
+                }
+
+
+            }
+        }
 
     }
 
@@ -859,7 +896,7 @@ public class InventoryActivity extends AppCompatActivity {
 
                 data = db.getAllDataIfStateAndArea(getFilter2().
                                 substring(FiltersValues.STATE_.length()),
-                        getFilter2().substring(FiltersValues.AREA_.length()));
+                        getFilter1().substring(FiltersValues.AREA_.length()));
 
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.AREA_);

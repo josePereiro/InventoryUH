@@ -6,12 +6,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -36,7 +34,6 @@ public class ImportActivity extends AppCompatActivity {
 
     //GUI
     TextView detailTV;
-    ProgressBar progressBar;
     Spinner spinner;
     FloatingActionButton fab;
 
@@ -65,7 +62,6 @@ public class ImportActivity extends AppCompatActivity {
         //GUI
         detailTV = (TextView) findViewById(R.id.detail_tv);
         spinner = (Spinner) findViewById(R.id.spinner);
-        progressBar = (ProgressBar) findViewById(R.id.importation_pb);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
 
@@ -83,8 +79,6 @@ public class ImportActivity extends AppCompatActivity {
         if (db.getPreference(RT.APP_IMPORTING).equals(RT.FINISHING)) {
 
             detailTV.setText(R.string.text11);
-            progressBar.setMax(1);
-            progressBar.setProgress(1);
 
             Tools.showInfoDialog(ImportActivity.this, getString(R.string.text10),
                     "Terminar", new DialogInterface.OnClickListener() {
@@ -159,7 +153,7 @@ public class ImportActivity extends AppCompatActivity {
                         //TODO deb
                         Log.d(AppStatics.APP_TAG, "Importing an UH inventory file, start index " + startIndex);
 
-                        importAT = new ImportUHInventoryAT(startIndex, data, detailTV, progressBar);
+                        importAT = new ImportUHInventoryAT(startIndex, data, detailTV);
                         importAT.execute();
 
                     } else if (data.get(0).split(",", -1)[0].equals(AppStatics.
@@ -481,17 +475,12 @@ public class ImportActivity extends AppCompatActivity {
         //import asyncTask
         //GUI
         private final TextView textView;
-        private final ProgressBar progressBar;
         private int index;
         ArrayList<String> data;
 
-        public ImportUHInventoryAT(int startIndex, ArrayList<String> data, TextView textView,
-                                   ProgressBar progressBar) {
+        public ImportUHInventoryAT(int startIndex, ArrayList<String> data, TextView textView) {
 
             this.textView = textView;
-            this.progressBar = progressBar;
-            this.progressBar.setMax(data.size() -
-                    AppStatics.Importation.FIRTS_IMPORT_VALUE_INDEX);
             this.data = data;
             index = startIndex;
 
@@ -508,12 +497,15 @@ public class ImportActivity extends AppCompatActivity {
             //everybody to LEFTOVER
             if (index == AppStatics.Importation.FIRTS_IMPORT_VALUE_INDEX) {
                 db.updateStateColumn(IT.StateValues.LEFTOVER);
+                //TODO deb
+                Log.d(AppStatics.APP_TAG, "state column to LEFTOVER");
             }
 
             //Importing
             String number, description, area, altaDate, officialUpdate;
             int numberCount = data.size() - AppStatics.Importation.FIRTS_IMPORT_VALUE_INDEX;
             String[] line;
+            String action;
             for (; index < data.size(); index++) {
 
                 if (isCancelled()) {
@@ -529,19 +521,12 @@ public class ImportActivity extends AppCompatActivity {
                 altaDate = line[AppStatics.Importation.ALTA_DATE_INDEX];
                 officialUpdate = line[AppStatics.Importation.OFFICIAL_UPDATE_INDEX];
 
-                if (db.numberExist(number)) {
 
-                    db.updateOfficialData(number, description, area, altaDate, officialUpdate);
-                    db.updateStateColumn(IT.StateValues.MISSING);
+                if (db.updateOfficialDataAndState(
+                        number, description, area, altaDate,
+                        officialUpdate, IT.StateValues.MISSING) != 0) {
 
-                    publishProgress("" + index,
-                            index + "/" + numberCount + "\n" +
-                                    "(Actualizando Número)\n" +
-                                    "Numero: " + number + "\n" +
-                                    "Descripción: " + description + "\n" +
-                                    "Area: " + area + "\n" +
-                                    "AltaDate: " + altaDate + "\n" +
-                                    "Última Actualización oficial: " + officialUpdate);
+                    action = "(Actualizando Número)";
 
                 } else {
 
@@ -555,19 +540,21 @@ public class ImportActivity extends AppCompatActivity {
                             Tools.getDate(),
                             IT.TypeValues.UNKNOWN, "", "");
 
-                    publishProgress("" + index,
-                            index + "/" + numberCount + "\n" +
-                                    "(Nuevo Número)\n" +
-                                    "Numero: " + number + "\n" +
-                                    "Descripción: " + description + "\n" +
-                                    "Area: " + area + "\n" +
-                                    "AltaDate: " + altaDate + "\n" +
-                                    "Última Actualización oficial: " + officialUpdate);
-
+                    action = "(Nuevo número)";
                 }
 
                 //Updating Preferences
                 db.setPreference(RT.CURRENT_IMPORTATION_INDEX, index);
+
+                //Publishing
+                publishProgress(
+                        index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
+                        action + "\n" +
+                        "Numero: " + number + "\n" +
+                        "Descripción: " + description + "\n" +
+                        "Area: " + area + "\n" +
+                        "AltaDate: " + altaDate + "\n" +
+                        "Última Actualización oficial: " + officialUpdate);
             }
 
             return 1;
@@ -576,8 +563,7 @@ public class ImportActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(String... values) {
 
-            progressBar.setProgress(Integer.parseInt(values[0]));
-            textView.setText(values[1]);
+            textView.setText(values[0]);
         }
 
         @Override
@@ -587,8 +573,6 @@ public class ImportActivity extends AppCompatActivity {
                 db.setPreference(RT.APP_IMPORTING, RT.FINISHING);
 
                 textView.setText(R.string.text11);
-                progressBar.setMax(1);
-                progressBar.setProgress(1);
 
                 Tools.showInfoDialog(ImportActivity.this, getString(R.string.text10),
                         "Terminar", new DialogInterface.OnClickListener() {
@@ -605,6 +589,10 @@ public class ImportActivity extends AppCompatActivity {
                 db.setPreference(RT.CURRENT_IMPORTATION_INDEX, index);
             }
             Log.d(AppStatics.APP_TAG, "Async Task onPostExecute, result " + i);
+        }
+
+        private String getPerCent(int part, int total) {
+            return String.valueOf((part * 100) / total) + " %";
         }
 
 
