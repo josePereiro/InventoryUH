@@ -18,7 +18,7 @@ import com.example.compereirowww.inventory20181.Tools.Tools;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class EditActivity extends AppCompatActivity {
+public class NewNumberActivity extends AppCompatActivity {
 
     //GUI
     private TextView numberTV, descriptionTV, areaTV, altaDateTV, officialUpdateTV, lastCheckingTV;
@@ -27,17 +27,19 @@ public class EditActivity extends AppCompatActivity {
     private LinearLayout followingLL, stateLL;
 
     //DB
-    private DB db;
+    DB db;
 
     //STATIC VALUES
     private static final String LOCATIONS = "Localizaciones...";
-    private static final String OBSERVATION = "Observaciones...";
+    private static final String OBSERVATIONS = "Observaciones...";
+    private static final String DESCRIPTIONS = "Descripciones...";
     private static final String EMPTY = "Vacía...";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_activity);
+        setContentView(R.layout.activity_new_number);
 
         //DB
         db = AppStatics.db;
@@ -73,12 +75,12 @@ public class EditActivity extends AppCompatActivity {
                 }
                 db.updateLocation(getNumber(), locationET.getText().toString());
                 db.updateObservation(getNumber(), observationET.getText().toString());
-                Tools.showToast(EditActivity.this, "Cambios guardados!", false);
+                Tools.showToast(NewNumberActivity.this, "Cambios guardados!", false);
             }
         });
 
-
-
+        //DB
+        db = AppStatics.db;
     }
 
     @Override
@@ -109,7 +111,7 @@ public class EditActivity extends AppCompatActivity {
 
         //region following spinner
         if (Tools.contain(AppStatics.AreasToFollow.areasToFollow, db.getNumberArea(getNumber()))) {
-            followingS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+            followingS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                     android.R.layout.simple_list_item_1, new String[]{DB.PT.Values.YES}));
             followingS.setFocusable(false);
             followingS.setClickable(false);
@@ -119,13 +121,13 @@ public class EditActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     if (c % 2 == 0) {
-                        Tools.showToast(EditActivity.this, getString(R.string.text14), false);
+                        Tools.showToast(NewNumberActivity.this, getString(R.string.text14), false);
                     }
                     c++;
                 }
             });
         } else {
-            followingS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+            followingS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                     android.R.layout.simple_list_item_1, new String[]{DB.PT.Values.NO, DB.PT.Values.YES}));
             followingS.setSelection(getTempFollowing());
             followingS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -150,7 +152,7 @@ public class EditActivity extends AppCompatActivity {
 
         //region state spinner
         if (db.getNumberState(getNumber()) == DB.IT.StateValues.LEFTOVER) {
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                     android.R.layout.simple_list_item_1,
                     new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}));
             stateS.setClickable(false);
@@ -161,7 +163,7 @@ public class EditActivity extends AppCompatActivity {
                 public void onClick(View view) {
 
                     if (c % 2 == 0) {
-                        Tools.showToast(EditActivity.this, getString(R.string.text15), false);
+                        Tools.showToast(NewNumberActivity.this, getString(R.string.text15), false);
                     }
                     c++;
                 }
@@ -171,7 +173,7 @@ public class EditActivity extends AppCompatActivity {
             ArrayList<String> stateAL = new ArrayList<>();
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER_PRESENT));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER));
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                     android.R.layout.simple_list_item_1,
                     stateAL));
             stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
@@ -192,7 +194,7 @@ public class EditActivity extends AppCompatActivity {
             ArrayList<String> stateAL = new ArrayList<>();
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.MISSING));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.IGNORED_MISSING));
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                     android.R.layout.simple_list_item_1, stateAL));
             stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
             stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -212,7 +214,7 @@ public class EditActivity extends AppCompatActivity {
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.PRESENT));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.MISSING));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.IGNORED_MISSING));
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                     android.R.layout.simple_list_item_1, stateAL));
             stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
             stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -236,7 +238,7 @@ public class EditActivity extends AppCompatActivity {
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.UNKNOWN));
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.FURNISHING));
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.EQUIPMENT));
-        typeS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+        typeS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                 android.R.layout.simple_list_item_1, typeAL));
         typeS.setSelection(Tools.getIndexOf(typeAL, DB.IT.TypeValues.toString(getTempType())));
         typeS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -264,7 +266,7 @@ public class EditActivity extends AppCompatActivity {
                 break;
             }
         }
-        locationsS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+        locationsS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                 android.R.layout.simple_list_item_1, locationAL));
         locationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -297,21 +299,21 @@ public class EditActivity extends AppCompatActivity {
 
         //region observation spinner
         final ArrayList<String> observationAL = new ArrayList<>();
-        observationAL.add(OBSERVATION);
+        observationAL.add(OBSERVATIONS);
         Collections.addAll(observationAL, AppStatics.Observation.observations);
         for (int i = 0; i < observationAL.size(); i++) {
             if (observationAL.get(i).equals("")) {
                 observationAL.set(i, EMPTY);
             }
         }
-        observationsS.setAdapter(new ArrayAdapter<>(EditActivity.this,
+        observationsS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                 android.R.layout.simple_list_item_1, observationAL));
         observationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String selectedItem = (String) adapterView.getSelectedItem();
-                if (!selectedItem.equals(OBSERVATION)) {
+                if (!selectedItem.equals(OBSERVATIONS)) {
 
                     if (selectedItem.equals(EMPTY)) {
                         observationET.setText("");
@@ -366,6 +368,10 @@ public class EditActivity extends AppCompatActivity {
         return db.getPreference(DB.PT.PNames.TEMP_OBSERVATION);
     }
 
+    private String getTempDescription() {
+        return db.getPreference(DB.PT.PNames.TEMP_DESCRIPTION);
+    }
+
     private void setTempNumber(String number) {
         db.setPreference(DB.PT.PNames.TEMP_NUMBER, number);
     }
@@ -384,6 +390,10 @@ public class EditActivity extends AppCompatActivity {
 
     private void setTempObservation(String observation) {
         db.setPreference(DB.PT.PNames.TEMP_OBSERVATION, observation);
+    }
+
+    private void setTempDescription(String description) {
+        db.setPreference(DB.PT.PNames.TEMP_DESCRIPTION, description);
     }
 
     private void setTempFollowing(int following) {

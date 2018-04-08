@@ -42,12 +42,12 @@ public class ConfigurationActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.setPreference(DB.RT.AREAS_TO_FOLLOW_CSV,
+                db.setPreference(DB.PT.PNames.AREAS_TO_FOLLOW_CSV,
                         AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL));
                 AppStatics.AreasToFollow.updateAreasToFollow(db);
-                db.updateFollowingColumn(DB.IT.FollowingType.NO);
-                db.updateFollowingByAreas(AppStatics.AreasToFollow.areasToFollow, DB.IT.FollowingType.YES);
-                db.setPreference(DB.RT.UPDATE_CRITERIA, (String) criteriaS.getSelectedItem());
+                db.updateFollowingColumn(DB.IT.FollowingValues.NO);
+                db.updateFollowingByAreas(AppStatics.AreasToFollow.areasToFollow, DB.IT.FollowingValues.YES);
+                db.setPreference(DB.PT.PNames.UPDATE_CRITERIA, (String) criteriaS.getSelectedItem());
                 Tools.showToast(ConfigurationActivity.this, getString(R.string.text20), false);
 
             }
@@ -58,13 +58,13 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         //data
         areasToFollowAL = new ArrayList<>();
-        if (db.getPreference(DB.RT.TEMP_AREAS_TO_FOLLOW_CSV).equals(DB.RT.EMPTY_PREFERENCE)) {
+        if (db.getPreference(DB.PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV).equals(DB.PT.Values.EMPTY_PREFERENCE)) {
             if (!Arrays.equals(AppStatics.AreasToFollow.areasToFollow, new String[]{""})) {
                 Collections.addAll(areasToFollowAL, AppStatics.AreasToFollow.areasToFollow);
             }
         } else {
             Collections.addAll(areasToFollowAL,
-                    AppStatics.AreasToFollow.splitAreasCSV(db.getPreference(DB.RT.TEMP_AREAS_TO_FOLLOW_CSV)));
+                    AppStatics.AreasToFollow.splitAreasCSV(db.getPreference(DB.PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV)));
         }
 
         //GUI
@@ -90,7 +90,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                     areasToFollowAL.add(clickedItem);
                     selectedAreasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
                             android.R.layout.simple_list_item_1, areasToFollowAL));
-                    db.setPreference(DB.RT.TEMP_AREAS_TO_FOLLOW_CSV,
+                    db.setPreference(DB.PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV,
                             AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL));
                 }
 
@@ -124,15 +124,15 @@ public class ConfigurationActivity extends AppCompatActivity {
         criteriaS.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
                 android.R.layout.simple_list_item_1,
                 criteriaValues));
-        if (db.getPreference(DB.RT.TEMP_UPDATE_CRITERIA).equals(DB.RT.EMPTY_PREFERENCE)) {
-            criteriaS.setSelection(Tools.getIndexOf(criteriaValues, db.getPreference(DB.RT.UPDATE_CRITERIA)));
+        if (db.getPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA).equals(DB.PT.Values.EMPTY_PREFERENCE)) {
+            criteriaS.setSelection(Tools.getIndexOf(criteriaValues, db.getPreference(DB.PT.PNames.UPDATE_CRITERIA)));
         } else {
-            criteriaS.setSelection(Tools.getIndexOf(criteriaValues, db.getPreference(DB.RT.TEMP_UPDATE_CRITERIA)));
+            criteriaS.setSelection(Tools.getIndexOf(criteriaValues, db.getPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA)));
         }
         criteriaS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                db.setPreference(DB.RT.TEMP_UPDATE_CRITERIA, (String) adapterView.getSelectedItem());
+                db.setPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA, (String) adapterView.getSelectedItem());
             }
 
             @Override

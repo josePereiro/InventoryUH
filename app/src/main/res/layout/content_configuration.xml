@@ -17,60 +17,102 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textView17"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Criterio de actualización:"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
+            android:layout_margin="3dp"
+            >
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:background="@drawable/background2"
-                >
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:layout_marginEnd="5dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/background4"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:text="Critério de actualización: "
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                </LinearLayout>
 
                 <Spinner
                     android:id="@+id/criteria_s"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:popupBackground="@drawable/background2"
-                    />
+                    android:background="@drawable/background2"
+                    android:popupBackground="@drawable/background2" />
 
-                <TextView
-                    android:id="@+id/textView18"
-                    android:layout_width="wrap_content"
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="  días    "
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </LinearLayout>
+                    android:layout_margin="2dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/background4"
+                    android:orientation="vertical">
 
-        </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:text="días "
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="10dp"
+                    android:layout_height="10dp" />
+
+                 </LinearLayout>
+
+
+        </HorizontalScrollView>
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_margin="3dp"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/selected_areas_tv"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:layout_margin="2dp"
+                android:background="@drawable/background4"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/selected_areas_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:text="Áreas seleccionadas: 1"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+
+
+
+            </LinearLayout>
+
 
             <ListView
                 android:id="@+id/selected_areas_lv"
                 android:layout_width="wrap_content"
+                android:layout_marginTop="2dp"
                 android:layout_height="?android:attr/listPreferredItemHeight"
                 android:background="@drawable/background2" />
 
@@ -79,23 +121,36 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_margin="3dp"
             android:orientation="vertical">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Todas las áreas"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:layout_margin="2dp"
+                android:background="@drawable/background4"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:text="Áreas en el inventario"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+
+
+
+            </LinearLayout>
 
             <ListView
                 android:id="@+id/areas_lv"
                 android:layout_width="wrap_content"
+                android:layout_marginTop="2dp"
                 android:layout_height="match_parent"
                 android:background="@drawable/background2" />
 
         </LinearLayout>
-
 
 
     </LinearLayout>

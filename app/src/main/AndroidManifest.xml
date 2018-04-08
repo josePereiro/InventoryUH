@@ -36,6 +36,18 @@
         <activity
             android:name=".Activities.ConfigurationActivity"
             android:label="@string/title_activity_configuration"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.SearchActivity"
+            android:label="@string/title_activity_search"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.SearchByQRActivity"
+            android:label="@string/title_activity_search_by_qr"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.NewNumberActivity"
+            android:label="@string/title_activity_new_number"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

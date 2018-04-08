@@ -40,5 +40,10 @@
     <string name="text20">Cambios Guardados!</string>
     <string name="text21">Este tipo se le adjudicará a todos los números de la misma descripción</string>
     <string name="text22">"Áreas en seguimiento: "</string>
+    <string name="title_activity_search">SearchActivity</string>
+    <string name="search">Buscar</string>
+    <string name="title_activity_search_by_qr">SearchByQRActivity</string>
+    <string name="search_by_qr">Buscar por qr</string>
+    <string name="title_activity_new_number">NewNumberActivity</string>
 
 </resources>

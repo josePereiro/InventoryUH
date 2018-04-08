@@ -9,14 +9,14 @@ import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
-import com.example.compereirowww.inventory20181.DataBase.DB.RT;
+import com.example.compereirowww.inventory20181.DataBase.DB.PT;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
@@ -33,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
     //DB
     private DB db;
+
+    //Qr decoder
+    private static final int QR_DECODER_REQUEST = 626;
 
     //endregion
 
@@ -59,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         AppStatics.Location.updateLocations(db);
         AppStatics.Observation.updateObservations(db);
         AppStatics.AreasToFollow.updateAreasToFollow(db);
+
+
     }
 
     @Override
@@ -73,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
             if (checkingImportation())
                 checkingAreaToFollow();
 
-        //TODO test
-        textView.setText(db.getPreference(RT.UPDATE_CRITERIA));
+        //Checking out of date
+        db.updatePresentToMissingIfOutOfDate(Integer.parseInt(db.getPreference(PT.PNames.UPDATE_CRITERIA)));
 
     }
 
@@ -102,8 +107,15 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.see_inventory) {
             startActivity(new Intent(MainActivity.this, InventoryActivity.class));
         } else if (id == R.id.configuration) {
-            db.setPreference(RT.TEMP_AREAS_TO_FOLLOW_CSV, RT.EMPTY_PREFERENCE);
+            db.setPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV, PT.Values.EMPTY_PREFERENCE);
             startActivity(new Intent(MainActivity.this, ConfigurationActivity.class));
+        } else if (id == R.id.search) {
+            db.setPreference(PT.PNames.TEMP_SEARCH_CRITERIA, PT.Values.EMPTY_PREFERENCE);
+            startActivity(new Intent(MainActivity.this, SearchActivity.class));
+        } else if (id == R.id.search_by_qr) {
+            callQRDecoder(QR_DECODER_REQUEST);
+        } else if (id == R.id.insert_new_number) {
+            startActivity(new Intent(MainActivity.this, NewNumberActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
@@ -120,6 +132,46 @@ public class MainActivity extends AppCompatActivity {
                         System.exit(0);
                     }
                 }, "No", null);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == QR_DECODER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String result = data.getStringExtra("SCAN_RESULT");
+
+                if (db.numberExist(result)) {
+
+                    if (db.getNumberState(result) != DB.IT.StateValues.LEFTOVER) {
+
+                        db.updateState(result, DB.IT.StateValues.PRESENT);
+                        db.updateLastChecking(result, Tools.getDate());
+                        Tools.showToast(MainActivity.this,
+                                "El número ha sido marcado como " +
+                                        DB.IT.StateValues.toString(DB.IT.StateValues.PRESENT), false);
+
+                    } else {
+                        db.updateState(result, DB.IT.StateValues.LEFTOVER_PRESENT);
+                        db.updateLastChecking(result, Tools.getDate());
+                        Tools.showToast(MainActivity.this,
+                                "El número ha sido marcado como " +
+                                        DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER_PRESENT), false);
+                    }
+
+                    db.setPreference(PT.PNames.NUMBER_TO_EDIT, result);
+                    db.setPreference(DB.PT.PNames.TEMP_NUMBER, PT.Values.EMPTY_PREFERENCE);
+                    startActivity(new Intent(MainActivity.this, EditActivity.class));
+
+                } else {
+                    Tools.showToast(MainActivity.this, "Ningún número válido leído!", false);
+                    finish();
+                }
+
+
+            }
+        }
 
     }
 
@@ -248,15 +300,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Updating preference
-        db.setPreference(DB.RT.ROOT_DIRECTORY_PATH, appFile.getPath());
-        db.setPreference(DB.RT.TO_IMPORT_DIRECTORY_PATH, toImportFile.getPath());
-        db.setPreference(DB.RT.SAVE_DIRECTORY_PATH, toSaveFile.getPath());
+        db.setPreference(DB.PT.PNames.ROOT_DIRECTORY_PATH, appFile.getPath());
+        db.setPreference(DB.PT.PNames.TO_IMPORT_DIRECTORY_PATH, toImportFile.getPath());
+        db.setPreference(DB.PT.PNames.SAVE_DIRECTORY_PATH, toSaveFile.getPath());
         return true;
 
     }
 
     private boolean checkingImportation() {
-        if (db.getPreference(RT.APP_IMPORTING).equals(RT.YES) || db.getPreference(RT.APP_IMPORTING).equals(RT.FINISHING)) {
+        if (db.getPreference(PT.PNames.APP_IMPORTING).equals(PT.Values.YES) || db.getPreference(PT.PNames.APP_IMPORTING).equals(PT.Values.FINISHING)) {
             Tools.showDialogMessage(MainActivity.this, getString(R.string.text8),
                     "Cerrar",
                     new DialogInterface.OnClickListener() {
@@ -273,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
             return false;
-        } else if (db.getPreference(RT.APP_IMPORTING).equals(RT.CANCELLED)) {
+        } else if (db.getPreference(PT.PNames.APP_IMPORTING).equals(PT.Values.CANCELLED)) {
             Tools.showDialogMessage(MainActivity.this, getString(R.string.text9),
                     "Cerrar",
                     new DialogInterface.OnClickListener() {
@@ -310,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            db.setPreference(RT.TEMP_AREAS_TO_FOLLOW_CSV, RT.EMPTY_PREFERENCE);
+                            db.setPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV, PT.Values.EMPTY_PREFERENCE);
                             startActivity(new Intent(MainActivity.this, ConfigurationActivity.class));
                         }
                     });
@@ -335,6 +387,20 @@ public class MainActivity extends AppCompatActivity {
                     AppStatics.PERMISSIONS_STORAGE,
                     AppStatics.REQUEST_EXTERNAL_STORAGE
             );
+        }
+    }
+
+    private void callQRDecoder(int requestCode) {
+        try {
+            Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+            intent.putExtra("SCAN_MODE", "QR_CODE_MODE"); // "PRODUCT_MODE for bar codes
+            startActivityForResult(intent, requestCode);
+
+        } catch (Exception e) {
+
+            Toast.makeText(MainActivity.this, "Error: Debe instalar primero la aplicación " +
+                            "de escanear código QR: com.google.zxing.client.android-4.7.3-103-minAPI15",
+                    Toast.LENGTH_LONG).show();
         }
     }
 

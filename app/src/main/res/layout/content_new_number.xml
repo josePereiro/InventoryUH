@@ -4,14 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background1"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".Activities.EditActivity"
-    tools:showIn="@layout/activity_edit_activity">
+    tools:context="com.example.compereirowww.inventory20181.Activities.NewNumberActivity"
+    tools:showIn="@layout/activity_new_number">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -75,22 +74,45 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_margin="5dp"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/textView4"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:text="Descripción: "
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                    <TextView
-                        android:id="@+id/description_tv"
+                    <EditText
+                        android:id="@+id/description_et"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:hint="Escriba o seleccione una descripción"
+                        android:inputType="text"
+                        android:lines="1"
+                        android:maxLength="30"
+                        android:maxLines="1" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:gravity="end"
+                    android:orientation="vertical">
+
+                    <Spinner
+                        android:id="@+id/description_s"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Small Text"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/background2"
+                        android:popupBackground="@drawable/background2"
+                        android:scrollbars="none" />
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -280,33 +302,6 @@
                         android:scrollbars="none" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="5dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/textView14"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:text="Localización: "
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                    <EditText
-                        android:id="@+id/location_et"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:hint="Escriba o seleccione una localización"
-                        android:inputType="text"
-                        android:lines="1"
-                        android:maxLength="30"
-                        android:maxLines="1" />
-
-
-                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

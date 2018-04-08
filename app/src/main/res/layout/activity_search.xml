@@ -5,17 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".Activities.EditActivity">
+    tools:context="com.example.compereirowww.inventory20181.Activities.SearchActivity">
 
-    <include layout="@layout/content_edit_activity" />
+    <include layout="@layout/content_search" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:backgroundTint="@android:color/transparent"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_menu_save" />
+        android:src="@drawable/ic_search_api_holo_dark"
+        app:backgroundTint="@android:color/transparent"
+        />
 
 </android.support.design.widget.CoordinatorLayout>

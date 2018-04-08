@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.DataBase.DB.IT;
+import com.example.compereirowww.inventory20181.DataBase.DB.PT.PNames;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
@@ -27,7 +28,7 @@ public class InventoryActivity extends AppCompatActivity {
 
     //Statics
     private static final int WINDOW = 10;
-    private static final int QR_REQUEST = 626;
+    private static final int QR_DECODER_REQUEST = 626;
     private FloatingActionButton fab;
 
     //Filters values
@@ -59,7 +60,6 @@ public class InventoryActivity extends AppCompatActivity {
     Cursor data;
     ArrayList<String> dataToDisplay;
 
-
     //DB
     private DB db;
 
@@ -73,7 +73,7 @@ public class InventoryActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                callQRDecoder(QR_REQUEST);
+                callQRDecoder(QR_DECODER_REQUEST);
             }
         });
         textView = (TextView) findViewById(R.id.textView2);
@@ -83,9 +83,9 @@ public class InventoryActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String selectedItem = (String) adapterView.getItemAtPosition(i);
                 if (!selectedItem.equals("")) {
-                    db.setPreference(DB.RT.NUMBER_TO_EDIT, selectedItem.split(",", -1)[0]);
+                    db.setPreference(PNames.NUMBER_TO_EDIT, selectedItem.split(",", -1)[0]);
+                    db.setPreference(PNames.TEMP_NUMBER, DB.PT.Values.EMPTY_PREFERENCE);
                     startActivity(new Intent(InventoryActivity.this, EditActivity.class));
-                    db.setPreference(DB.RT.TEMP_NUMBER, DB.RT.EMPTY_PREFERENCE);
                 }
             }
         });
@@ -265,7 +265,7 @@ public class InventoryActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == QR_REQUEST) {
+        if (requestCode == QR_DECODER_REQUEST) {
             if (resultCode == RESULT_OK) {
                 String result = data.getStringExtra("SCAN_RESULT");
 
@@ -275,12 +275,14 @@ public class InventoryActivity extends AppCompatActivity {
                     if (db.getNumberState(result) != IT.StateValues.LEFTOVER) {
 
                         db.updateState(result, IT.StateValues.PRESENT);
+                        db.updateLastChecking(result, Tools.getDate());
                         Tools.showToast(InventoryActivity.this,
                                 "El número ha sido marcado como " +
                                         IT.StateValues.toString(IT.StateValues.PRESENT), false);
 
                     } else {
                         db.updateState(result, IT.StateValues.LEFTOVER_PRESENT);
+                        db.updateLastChecking(result, Tools.getDate());
                         Tools.showToast(InventoryActivity.this,
                                 "El número ha sido marcado como " +
                                         IT.StateValues.toString(IT.StateValues.LEFTOVER_PRESENT), false);
@@ -318,7 +320,7 @@ public class InventoryActivity extends AppCompatActivity {
             if (getFilter1().equals(FiltersValues.FOLLOWED) ||
                     getFilter2().equals(FiltersValues.FOLLOWED)) {
 
-                data = db.getAllDataIfFollowing(IT.FollowingType.YES);
+                data = db.getAllDataIfFollowing(IT.FollowingValues.YES);
 
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.FOLLOWED);
@@ -326,7 +328,7 @@ public class InventoryActivity extends AppCompatActivity {
             } else if (getFilter1().equals(FiltersValues.NOT_FOLLOWED) ||
                     getFilter2().equals(FiltersValues.NOT_FOLLOWED)) {
 
-                data = db.getAllDataIfFollowing(IT.FollowingType.NO);
+                data = db.getAllDataIfFollowing(IT.FollowingValues.NO);
 
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.NOT_FOLLOWED);
@@ -439,7 +441,7 @@ public class InventoryActivity extends AppCompatActivity {
             if (getFilter1().equals(FiltersValues.LOCATION_EMPTY) ||
                     getFilter2().equals(FiltersValues.LOCATION_EMPTY)) {
 
-                data = db.getAllDataIfFollowingAndLocation(IT.FollowingType.YES, "");
+                data = db.getAllDataIfFollowingAndLocation(IT.FollowingValues.YES, "");
 
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.LOCATION_EMPTY);
@@ -448,7 +450,7 @@ public class InventoryActivity extends AppCompatActivity {
                     getFilter1().substring(0, FiltersValues.LOCATION_.length()).
                             equals(FiltersValues.LOCATION_))) {
 
-                data = db.getAllDataIfFollowingAndLocation(IT.FollowingType.YES,
+                data = db.getAllDataIfFollowingAndLocation(IT.FollowingValues.YES,
                         getFilter1().substring(FiltersValues.LOCATION_.length()));
 
                 //TODO deb
@@ -458,7 +460,7 @@ public class InventoryActivity extends AppCompatActivity {
                     getFilter2().substring(0, FiltersValues.LOCATION_.length()).
                             equals(FiltersValues.LOCATION_)) {
 
-                data = db.getAllDataIfFollowingAndLocation(IT.FollowingType.YES,
+                data = db.getAllDataIfFollowingAndLocation(IT.FollowingValues.YES,
                         getFilter2().substring(FiltersValues.LOCATION_.length()));
 
                 //TODO deb
@@ -466,7 +468,7 @@ public class InventoryActivity extends AppCompatActivity {
 
             } else if (getFilter1().contains(FiltersValues.STATE_)) {
 
-                data = db.getAllDataIfFollowingAndState(IT.FollowingType.YES,
+                data = db.getAllDataIfFollowingAndState(IT.FollowingValues.YES,
                         getFilter1().substring(FiltersValues.STATE_.length()));
 
                 //TODO deb
@@ -477,7 +479,7 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.STATE_);
 
-                data = db.getAllDataIfFollowingAndState(IT.FollowingType.YES,
+                data = db.getAllDataIfFollowingAndState(IT.FollowingValues.YES,
                         getFilter2().substring(FiltersValues.STATE_.length()));
 
             } else if (getFilter1().contains(FiltersValues.TYPE_)) {
@@ -485,7 +487,7 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.TYPE_);
 
-                data = db.getAllDataIfFollowingAndType(IT.FollowingType.YES,
+                data = db.getAllDataIfFollowingAndType(IT.FollowingValues.YES,
                         getFilter1().substring(FiltersValues.TYPE_.length()));
 
             } else if (getFilter2().contains(FiltersValues.TYPE_)) {
@@ -493,7 +495,7 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.TYPE_);
 
-                data = db.getAllDataIfFollowingAndType(IT.FollowingType.YES,
+                data = db.getAllDataIfFollowingAndType(IT.FollowingValues.YES,
                         getFilter2().substring(FiltersValues.TYPE_.length()));
 
             } else if (getFilter1().equals(FiltersValues.OBSERVATION_EMPTY) ||
@@ -502,13 +504,13 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.OBSERVATION_EMPTY);
 
-                data = db.getAllDataIfFollowingAndObservation(IT.FollowingType.YES, "");
+                data = db.getAllDataIfFollowingAndObservation(IT.FollowingValues.YES, "");
 
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
 
-                data = db.getAllDataIfFollowingAndArea(IT.FollowingType.YES, getFilter1().
+                data = db.getAllDataIfFollowingAndArea(IT.FollowingValues.YES, getFilter1().
                         substring(FiltersValues.AREA_.length()));
 
                 //TODO deb
@@ -519,7 +521,7 @@ public class InventoryActivity extends AppCompatActivity {
                     getFilter2().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
 
-                data = db.getAllDataIfFollowingAndArea(IT.FollowingType.YES, getFilter2().
+                data = db.getAllDataIfFollowingAndArea(IT.FollowingValues.YES, getFilter2().
                         substring(FiltersValues.AREA_.length()));
 
                 //TODO deb
@@ -544,7 +546,7 @@ public class InventoryActivity extends AppCompatActivity {
             if (getFilter1().equals(FiltersValues.LOCATION_EMPTY) ||
                     getFilter2().equals(FiltersValues.LOCATION_EMPTY)) {
 
-                data = db.getAllDataIfFollowingAndLocation(IT.FollowingType.NO, "");
+                data = db.getAllDataIfFollowingAndLocation(IT.FollowingValues.NO, "");
 
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.LOCATION_EMPTY);
@@ -553,7 +555,7 @@ public class InventoryActivity extends AppCompatActivity {
                     getFilter1().substring(0, FiltersValues.LOCATION_.length()).
                             equals(FiltersValues.LOCATION_))) {
 
-                data = db.getAllDataIfFollowingAndLocation(IT.FollowingType.NO, getFilter1().
+                data = db.getAllDataIfFollowingAndLocation(IT.FollowingValues.NO, getFilter1().
                         substring(FiltersValues.LOCATION_.length()));
 
                 //TODO deb
@@ -563,7 +565,7 @@ public class InventoryActivity extends AppCompatActivity {
                     getFilter2().substring(0, FiltersValues.LOCATION_.length()).
                             equals(FiltersValues.LOCATION_)) {
 
-                data = db.getAllDataIfFollowingAndLocation(IT.FollowingType.NO, getFilter2().
+                data = db.getAllDataIfFollowingAndLocation(IT.FollowingValues.NO, getFilter2().
                         substring(FiltersValues.LOCATION_.length()));
 
                 //TODO deb
@@ -571,7 +573,7 @@ public class InventoryActivity extends AppCompatActivity {
 
             } else if (getFilter1().contains(FiltersValues.STATE_)) {
 
-                data = db.getAllDataIfFollowingAndState(IT.FollowingType.NO, getFilter1().
+                data = db.getAllDataIfFollowingAndState(IT.FollowingValues.NO, getFilter1().
                         substring(FiltersValues.STATE_.length()));
 
                 //TODO deb
@@ -579,7 +581,7 @@ public class InventoryActivity extends AppCompatActivity {
 
             } else if (getFilter2().contains(FiltersValues.STATE_)) {
 
-                data = db.getAllDataIfFollowingAndState(IT.FollowingType.NO, getFilter2().
+                data = db.getAllDataIfFollowingAndState(IT.FollowingValues.NO, getFilter2().
                         substring(FiltersValues.STATE_.length()));
 
                 //TODO deb
@@ -587,7 +589,7 @@ public class InventoryActivity extends AppCompatActivity {
 
             } else if (getFilter1().contains(FiltersValues.TYPE_)) {
 
-                data = db.getAllDataIfFollowingAndType(IT.FollowingType.NO, getFilter1().
+                data = db.getAllDataIfFollowingAndType(IT.FollowingValues.NO, getFilter1().
                         substring(FiltersValues.TYPE_.length()));
 
                 //TODO deb
@@ -595,7 +597,7 @@ public class InventoryActivity extends AppCompatActivity {
 
             } else if (getFilter2().contains(FiltersValues.TYPE_)) {
 
-                data = db.getAllDataIfFollowingAndType(IT.FollowingType.NO, getFilter2().
+                data = db.getAllDataIfFollowingAndType(IT.FollowingValues.NO, getFilter2().
                         substring(FiltersValues.TYPE_.length()));
 
                 //TODO deb
@@ -604,7 +606,7 @@ public class InventoryActivity extends AppCompatActivity {
             } else if (getFilter1().equals(FiltersValues.OBSERVATION_EMPTY) ||
                     getFilter2().equals(FiltersValues.OBSERVATION_EMPTY)) {
 
-                data = db.getAllDataIfFollowingAndObservation(IT.FollowingType.NO, "");
+                data = db.getAllDataIfFollowingAndObservation(IT.FollowingValues.NO, "");
 
                 //TODO deb
                 Log.d(AppStatics.APP_TAG, FiltersValues.OBSERVATION_EMPTY);
@@ -613,7 +615,7 @@ public class InventoryActivity extends AppCompatActivity {
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
 
-                data = db.getAllDataIfFollowingAndArea(IT.FollowingType.NO, getFilter1().
+                data = db.getAllDataIfFollowingAndArea(IT.FollowingValues.NO, getFilter1().
                         substring(FiltersValues.AREA_.length()));
 
                 //TODO deb
@@ -624,7 +626,7 @@ public class InventoryActivity extends AppCompatActivity {
                     getFilter2().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
 
-                data = db.getAllDataIfFollowingAndArea(IT.FollowingType.NO, getFilter2().
+                data = db.getAllDataIfFollowingAndArea(IT.FollowingValues.NO, getFilter2().
                         substring(FiltersValues.AREA_.length()));
 
                 //TODO deb
@@ -1078,27 +1080,27 @@ public class InventoryActivity extends AppCompatActivity {
     }
 
     private String getFilter1() {
-        return db.getPreference(DB.RT.CURRENT_FILTER1_VALUE);
+        return db.getPreference(PNames.CURRENT_FILTER1_VALUE);
     }
 
     private void setFilter1(String filter) {
-        db.setPreference(DB.RT.CURRENT_FILTER1_VALUE, filter);
+        db.setPreference(PNames.CURRENT_FILTER1_VALUE, filter);
     }
 
     private String getFilter2() {
-        return db.getPreference(DB.RT.CURRENT_FILTER2_VALUE);
+        return db.getPreference(PNames.CURRENT_FILTER2_VALUE);
     }
 
     private void setFilter2(String filter) {
-        db.setPreference(DB.RT.CURRENT_FILTER2_VALUE, filter);
+        db.setPreference(PNames.CURRENT_FILTER2_VALUE, filter);
     }
 
     private int getIndex() {
-        return Integer.valueOf(db.getPreference(DB.RT.CURRENT_INVENTORY_INDEX));
+        return Integer.valueOf(db.getPreference(PNames.CURRENT_INVENTORY_INDEX));
     }
 
     private void setIndex(int index) {
-        db.setPreference(DB.RT.CURRENT_INVENTORY_INDEX, index);
+        db.setPreference(PNames.CURRENT_INVENTORY_INDEX, index);
     }
 
     private void callQRDecoder(int requestCode) {

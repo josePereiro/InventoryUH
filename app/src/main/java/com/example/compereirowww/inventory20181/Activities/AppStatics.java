@@ -108,6 +108,8 @@ public class AppStatics {
 
         }
 
+        public static final String MANUAL_INTRODUCTION_AREA = "Introducidos manualmente";
+
     }
 
     public static class Observation {
@@ -135,16 +137,41 @@ public class AppStatics {
 
     }
 
+    public static class Description {
+
+        /**
+         * Track statically the current observations
+         */
+        public static String[] descriptions = new String[]{""};
+
+        public static void updateDescriptions(DB db) {
+
+            //get areas
+            Cursor allDescriptions = db.getDescriptionColumnData();
+            ArrayList<String> descriptionsAL = new ArrayList<>();
+            String current;
+            while (allDescriptions.moveToNext()) {
+                current = allDescriptions.getString(0);
+                if (!descriptionsAL.contains(current)) {
+                    descriptionsAL.add(current);
+                }
+            }
+            descriptions = descriptionsAL.toArray(new String[]{""});
+
+        }
+
+    }
+
     public static class AreasToFollow {
 
         public static String[] areasToFollow = new String[]{""};
 
         public static void updateAreasToFollow(DB db) {
 
-            if (!db.getPreference(DB.RT.AREAS_TO_FOLLOW_CSV).equals(DB.RT.PREFERENCE_NOT_FOUND)
-                    && !db.getPreference(DB.RT.AREAS_TO_FOLLOW_CSV).equals(DB.RT.EMPTY_PREFERENCE)) {
+            if (!db.getPreference(DB.PT.AREAS_TO_FOLLOW_CSV).equals(DB.PT.Values.PREFERENCE_NOT_FOUND)
+                    && !db.getPreference(DB.PT.AREAS_TO_FOLLOW_CSV).equals(DB.PT.Values.EMPTY_PREFERENCE)) {
 
-                areasToFollow = splitAreasCSV(db.getPreference(DB.RT.AREAS_TO_FOLLOW_CSV));
+                areasToFollow = splitAreasCSV(db.getPreference(DB.PT.AREAS_TO_FOLLOW_CSV));
 
             } else {
                 areasToFollow = new String[]{""};
