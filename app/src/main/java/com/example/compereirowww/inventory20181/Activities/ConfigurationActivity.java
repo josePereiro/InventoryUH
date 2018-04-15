@@ -29,7 +29,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     //DB
     private DB db;
 
-    //data
+    //CSVData
     ArrayList<String> areasToFollowAL;
     ArrayList<String> allAreasAL;
 
@@ -56,9 +56,9 @@ public class ConfigurationActivity extends AppCompatActivity {
         //db
         db = AppStatics.db;
 
-        //data
+        //CSVData
         areasToFollowAL = new ArrayList<>();
-        if (db.getPreference(DB.PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV).equals(DB.PT.Values.EMPTY_PREFERENCE)) {
+        if (db.getPreference(DB.PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV).equals(DB.PT.PDefaultValues.EMPTY_PREFERENCE)) {
             if (!Arrays.equals(AppStatics.AreasToFollow.areasToFollow, new String[]{""})) {
                 Collections.addAll(areasToFollowAL, AppStatics.AreasToFollow.areasToFollow);
             }
@@ -124,7 +124,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         criteriaS.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
                 android.R.layout.simple_list_item_1,
                 criteriaValues));
-        if (db.getPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA).equals(DB.PT.Values.EMPTY_PREFERENCE)) {
+        if (db.getPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA).equals(DB.PT.PDefaultValues.EMPTY_PREFERENCE)) {
             criteriaS.setSelection(Tools.getIndexOf(criteriaValues, db.getPreference(DB.PT.PNames.UPDATE_CRITERIA)));
         } else {
             criteriaS.setSelection(Tools.getIndexOf(criteriaValues, db.getPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA)));

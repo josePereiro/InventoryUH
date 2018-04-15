@@ -3,6 +3,8 @@ package com.example.compereirowww.inventory20181.Activities;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -25,6 +27,8 @@ public class EditActivity extends AppCompatActivity {
     private EditText locationET, observationET;
     private Spinner followingS, stateS, typeS, locationsS, observationsS;
     private LinearLayout followingLL, stateLL;
+    private static final String YES = "Sí";
+    private static final String NO = "No";
 
     //DB
     private DB db;
@@ -50,8 +54,40 @@ public class EditActivity extends AppCompatActivity {
         officialUpdateTV = (TextView) findViewById(R.id.official_update_tv);
         lastCheckingTV = (TextView) findViewById(R.id.last_check_tv);
         locationET = (EditText) findViewById(R.id.location_et);
+        locationET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                setTempLocation(editable.toString());
+            }
+        });
         locationsS = (Spinner) findViewById(R.id.location_s);
         observationET = (EditText) findViewById(R.id.observation_et);
+        observationET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                setTempObservation(editable.toString());
+            }
+        });
         observationsS = (Spinner) findViewById(R.id.observation_s);
         followingS = (Spinner) findViewById(R.id.following_s);
         followingLL = (LinearLayout) findViewById(R.id.following_ll);
@@ -69,14 +105,10 @@ public class EditActivity extends AppCompatActivity {
                 db.updateTypeIfDescription(db.getNumberDescription(getNumber()), getTempType());
                 if (db.getNumberState(getNumber()) != getTempState()) {
                     db.updateState(getNumber(), getTempState());
-                    db.updateLastChecking(getNumber(), Tools.getDate());
                 }
-                db.updateLocation(getNumber(), locationET.getText().toString());
-                db.updateObservation(getNumber(), observationET.getText().toString());
                 Tools.showToast(EditActivity.this, "Cambios guardados!", false);
             }
         });
-
 
 
     }
@@ -85,7 +117,7 @@ public class EditActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        //region Values
+        //region PDefaultValues
 
         if (!getNumber().equals(getTempNumber())) {
             setTempNumber(getNumber());
@@ -110,8 +142,8 @@ public class EditActivity extends AppCompatActivity {
         //region following spinner
         if (Tools.contain(AppStatics.AreasToFollow.areasToFollow, db.getNumberArea(getNumber()))) {
             followingS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1, new String[]{DB.PT.Values.YES}));
-            followingS.setFocusable(false);
+                    android.R.layout.simple_list_item_1, new String[]{YES}));
+            followingS.setEnabled(false);
             followingS.setClickable(false);
             followingLL.setOnClickListener(new View.OnClickListener() {
                 int c = -1;
@@ -126,13 +158,13 @@ public class EditActivity extends AppCompatActivity {
             });
         } else {
             followingS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1, new String[]{DB.PT.Values.NO, DB.PT.Values.YES}));
+                    android.R.layout.simple_list_item_1, new String[]{NO, YES}));
             followingS.setSelection(getTempFollowing());
             followingS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                     String selectedItem = (String) adapterView.getSelectedItem();
-                    if (selectedItem.equals(DB.PT.Values.YES)) {
+                    if (selectedItem.equals(YES)) {
                         setTempFollowing(1);
                     } else {
                         setTempFollowing(0);
@@ -153,6 +185,7 @@ public class EditActivity extends AppCompatActivity {
             stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
                     android.R.layout.simple_list_item_1,
                     new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}));
+            stateS.setEnabled(false);
             stateS.setClickable(false);
             stateLL.setOnClickListener(new View.OnClickListener() {
                 int c = -1;

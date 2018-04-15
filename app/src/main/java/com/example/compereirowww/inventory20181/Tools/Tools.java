@@ -8,13 +8,25 @@ import android.database.CharArrayBuffer;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.compereirowww.inventory20181.Activities.AppStatics;
+import com.example.compereirowww.inventory20181.R;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -404,5 +416,54 @@ public class Tools {
             if (element.equals(s)) return true;
         }
         return false;
+    }
+
+    //Statics
+    public static void test(AppCompatActivity context, String message) {
+
+        //GUI
+        TextView text;
+        Button positiveBtn;
+        Button negativeBtn;
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.activity_dialog, null);
+        builder.setView(view);
+        final AlertDialog alertDialog = builder.create();
+        text = (TextView) view.findViewById(R.id.text_tv);
+        text.setText(message);
+        positiveBtn = (Button) view.findViewById(R.id.positive_btn);
+        positiveBtn.setVisibility(View.INVISIBLE);
+        negativeBtn = (Button) view.findViewById(R.id.negative_btn);
+        negativeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.cancel();
+            }
+        });
+        alertDialog.show();
+
+
+    }
+
+    public static void saveImage(Bitmap image, String directory, String imageNameWithExtension) {
+
+        File dir = new File(directory);
+        if (dir.exists()) {
+            File imageFile = new File(dir, imageNameWithExtension);
+
+            try {
+                if (!imageFile.exists()) {
+                    FileOutputStream out = new FileOutputStream(imageFile);
+                    image.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                    out.flush();
+                    out.close();
+                    Log.d(AppStatics.APP_TAG, "OK");
+                }
+
+            } catch (IOException e) {
+                Log.d(AppStatics.APP_TAG, e.getMessage());
+
+            }
+        }
     }
 }

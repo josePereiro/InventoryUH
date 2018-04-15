@@ -7,7 +7,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_search_api_holo_dark"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -42,13 +42,14 @@
             android:label="@string/title_activity_search"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activities.SearchByQRActivity"
-            android:label="@string/title_activity_search_by_qr"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".Activities.NewNumberActivity"
             android:label="@string/title_activity_new_number"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.QRFactoryActivity"
+            android:label="@string/title_activity_qrfactory"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".Activities.DialogActivity"></activity>
     </application>
 
 </manifest>

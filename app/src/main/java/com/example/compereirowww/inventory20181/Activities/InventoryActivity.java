@@ -15,6 +15,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.compereirowww.inventory20181.Activities.AppStatics.Area;
+import com.example.compereirowww.inventory20181.Activities.AppStatics.Location;
+import com.example.compereirowww.inventory20181.Activities.AppStatics.Observation;
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.DataBase.DB.IT;
 import com.example.compereirowww.inventory20181.DataBase.DB.PT.PNames;
@@ -84,13 +87,15 @@ public class InventoryActivity extends AppCompatActivity {
                 String selectedItem = (String) adapterView.getItemAtPosition(i);
                 if (!selectedItem.equals("")) {
                     db.setPreference(PNames.NUMBER_TO_EDIT, selectedItem.split(",", -1)[0]);
-                    db.setPreference(PNames.TEMP_NUMBER, DB.PT.Values.EMPTY_PREFERENCE);
+                    db.setPreference(PNames.TEMP_NUMBER, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
                     startActivity(new Intent(InventoryActivity.this, EditActivity.class));
                 }
             }
         });
         filter1Spinner = (Spinner) findViewById(R.id.filter1_s);
         filter2Spinner = (Spinner) findViewById(R.id.filter2_s);
+
+        //region buttons...
         bBtn = (Button) findViewById(R.id.b_btn);
         bBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,13 +162,15 @@ public class InventoryActivity extends AppCompatActivity {
             }
         });
 
+        //endregion
+
         //DB
         db = AppStatics.db;
 
         //AppStatics
-        AppStatics.Area.updateAreas(db);
-        AppStatics.Location.updateLocations(db);
-        AppStatics.Observation.updateObservations(db);
+        Area.updateAreas(db);
+        Location.updateLocations(db);
+        Observation.updateObservations(db);
 
     }
 
@@ -172,7 +179,8 @@ public class InventoryActivity extends AppCompatActivity {
         super.onResume();
 
         //GUI
-        //region filter1Spinner...
+        //region filters...
+
         ArrayList<String> filterAL = new ArrayList<>();
         filterAL.add(FiltersValues.ALL);
         filterAL.add(FiltersValues.FOLLOWED);
@@ -187,22 +195,26 @@ public class InventoryActivity extends AppCompatActivity {
         filterAL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.UNKNOWN));
         filterAL.add(FiltersValues.OBSERVATION_EMPTY);
         filterAL.add(FiltersValues.LOCATION_EMPTY);
-        if (!Arrays.equals(AppStatics.Location.locations, new String[]{""})) {
-            for (int i = 0; i < AppStatics.Location.locations.length; i++) {
-                filterAL.add(FiltersValues.LOCATION_ +
-                        AppStatics.Location.locations[i]);
+        if (!Arrays.equals(Location.locations, new String[]{""})) {
+            for (int i = 0; i < Location.locations.length; i++) {
+                if (!Location.locations[i].equals("")) {
+                    filterAL.add(FiltersValues.LOCATION_ +
+                            Location.locations[i]);
+                }
             }
         }
-        if (!Arrays.equals(AppStatics.Area.areas, new String[]{""})) {
-            for (int i = 0; i < AppStatics.Area.areas.length; i++) {
-                filterAL.add(FiltersValues.AREA_ +
-                        AppStatics.Area.areas[i]);
+        if (!Arrays.equals(Area.areas, new String[]{""})) {
+            for (int i = 0; i < Area.areas.length; i++) {
+                if (!Area.areas[i].equals(""))
+                    filterAL.add(FiltersValues.AREA_ +
+                            Area.areas[i]);
             }
         }
-        if (!Arrays.equals(AppStatics.Observation.observations, new String[]{""})) {
-            for (int i = 0; i < AppStatics.Observation.observations.length; i++) {
-                filterAL.add(FiltersValues.OBSERVATION_ +
-                        AppStatics.Observation.observations[i]);
+        if (!Arrays.equals(Observation.observations, new String[]{""})) {
+            for (int i = 0; i < Observation.observations.length; i++) {
+                if (!Observation.observations[i].equals(""))
+                    filterAL.add(FiltersValues.OBSERVATION_ +
+                            Observation.observations[i]);
             }
         }
         filter1Spinner.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
@@ -227,9 +239,6 @@ public class InventoryActivity extends AppCompatActivity {
             }
         });
 
-        //endregion filter1Spinner...
-
-        //region filter2Spinner...
 
         filter2Spinner.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
                 android.R.layout.simple_list_item_1, filterAL));
@@ -253,7 +262,7 @@ public class InventoryActivity extends AppCompatActivity {
             }
         });
 
-        //endregion filter2Spinner...
+        //endregion filters...
 
         //Data
         updateData();
@@ -272,7 +281,8 @@ public class InventoryActivity extends AppCompatActivity {
                 if (db.numberExist(result)) {
 
                     //Change state
-                    if (db.getNumberState(result) != IT.StateValues.LEFTOVER) {
+                    if (db.getNumberState(result) != IT.StateValues.LEFTOVER &&
+                            db.getNumberState(result) != IT.StateValues.LEFTOVER_PRESENT) {
 
                         db.updateState(result, IT.StateValues.PRESENT);
                         db.updateLastChecking(result, Tools.getDate());
@@ -1047,7 +1057,7 @@ public class InventoryActivity extends AppCompatActivity {
             setIndex(0);
         }
 
-        //data
+        //CSVData
         data.moveToPosition(getIndex() - 1);
 
         //dataToDisplay
@@ -1056,7 +1066,7 @@ public class InventoryActivity extends AppCompatActivity {
             dataToDisplay.add("");
         }
 
-        //filling with data
+        //filling with CSVData
         for (int i = 0; i < WINDOW && data.moveToNext(); i++) {
             dataToDisplay.set(i, data.getString(0) + ",\n" + data.getString(1));
         }

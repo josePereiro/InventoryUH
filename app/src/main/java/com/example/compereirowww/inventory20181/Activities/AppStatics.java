@@ -6,6 +6,7 @@ import android.database.Cursor;
 import com.example.compereirowww.inventory20181.DataBase.DB;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class AppStatics {
 
@@ -16,7 +17,7 @@ public class AppStatics {
          * This is the index of the first value in a file to import,
          * this depend of the format of the file
          */
-        public static final int FIRTS_IMPORT_VALUE_INDEX = 1;
+        public static final int CSV_FILE_UH_INVENTORY_FIRST_DATA_LINE_INDEX = 1;
 
         /**
          * the index of the number in a line of the file to import
@@ -24,35 +25,24 @@ public class AppStatics {
         public static final int NUMBER_INDEX = 0;
 
         /**
-         * the index of the description data in a line of the file to import
+         * the index of the description CSVData in a line of the file to import
          */
         public static final int DESCRIPTION_INDEX = 1;
 
         /**
-         * the index of the area data in a line of the file to import
+         * the index of the area CSVData in a line of the file to import
          */
         public static final int AREA_INDEX = 2;
 
         /**
-         * the index of the altaDate data in a line of the file to import
+         * the index of the altaDate CSVData in a line of the file to import
          */
         public static final int ALTA_DATE_INDEX = 3;
 
         /**
-         * the index of the officialUpdate data in a line of the file to import
+         * the index of the officialUpdate CSVData in a line of the file to import
          */
         public static final int OFFICIAL_UPDATE_INDEX = 4;
-
-        /**
-         * The head that any uh inventory file most have to be imported
-         */
-        public static final String UH_INVENTORY_FILE_HEAD_CODE = "Archivo UH para importar...";
-
-        /**
-         * The head that any salva file most have to be imported
-         */
-        public static final String SALVA_INVENTORY_FILE_HEAD_CODE = "Archivo salva...";
-
 
         //endregion
     }
@@ -80,6 +70,7 @@ public class AppStatics {
                 }
             }
             locations = locationAL.toArray(new String[]{""});
+            Arrays.sort(locations, String.CASE_INSENSITIVE_ORDER);
 
         }
 
@@ -105,10 +96,8 @@ public class AppStatics {
                 }
             }
             areas = areaAL.toArray(new String[]{""});
-
+            Arrays.sort(areas, String.CASE_INSENSITIVE_ORDER);
         }
-
-        public static final String MANUAL_INTRODUCTION_AREA = "Introducidos manualmente";
 
     }
 
@@ -132,6 +121,7 @@ public class AppStatics {
                 }
             }
             observations = observationAL.toArray(new String[]{""});
+            Arrays.sort(observations, String.CASE_INSENSITIVE_ORDER);
 
         }
 
@@ -157,6 +147,7 @@ public class AppStatics {
                 }
             }
             descriptions = descriptionsAL.toArray(new String[]{""});
+            Arrays.sort(descriptions, String.CASE_INSENSITIVE_ORDER);
 
         }
 
@@ -168,10 +159,10 @@ public class AppStatics {
 
         public static void updateAreasToFollow(DB db) {
 
-            if (!db.getPreference(DB.PT.AREAS_TO_FOLLOW_CSV).equals(DB.PT.Values.PREFERENCE_NOT_FOUND)
-                    && !db.getPreference(DB.PT.AREAS_TO_FOLLOW_CSV).equals(DB.PT.Values.EMPTY_PREFERENCE)) {
+            if (!db.getPreference(DB.PT.PNames.AREAS_TO_FOLLOW_CSV).equals(DB.PT.PDefaultValues.PREFERENCE_NOT_FOUND)
+                    && !db.getPreference(DB.PT.PNames.AREAS_TO_FOLLOW_CSV).equals(DB.PT.PDefaultValues.EMPTY_PREFERENCE)) {
 
-                areasToFollow = splitAreasCSV(db.getPreference(DB.PT.AREAS_TO_FOLLOW_CSV));
+                areasToFollow = splitAreasCSV(db.getPreference(DB.PT.PNames.AREAS_TO_FOLLOW_CSV));
 
             } else {
                 areasToFollow = new String[]{""};
@@ -197,15 +188,52 @@ public class AppStatics {
 
     }
 
+    public static class AllNumbers {
+
+        public static String[] allNumbers = new String[]{""};
+
+        public static void updateAllNumbers(DB db) {
+
+            if (Arrays.equals(allNumbers, new String[]{""})) {
+                Cursor cursor = db.getAllNumbers();
+                ArrayList<String> numbersAL = new ArrayList<>();
+                String current;
+                while (cursor.moveToNext()) {
+                    current = cursor.getString(0);
+                    numbersAL.add(current);
+                }
+
+                allNumbers = numbersAL.toArray(new String[]{""});
+                Arrays.sort(allNumbers, String.CASE_INSENSITIVE_ORDER);
+            }
+        }
+
+
+    }
+
     /**
      * The tag used for the application in the log
      */
     public static final String APP_TAG = "JOSE";
 
     /**
+     * The head that any uh inventory file most have to be imported
+     */
+    public static final String UH_INVENTORY_FILE_HEAD_CODE = "Archivo UH para importar...";
+
+    /**
+     * The head that any salva file most have to be imported
+     */
+    public static final String SALVA_INVENTORY_FILE_HEAD_CODE = "Archivo salva...";
+
+
+    /**
      * The extension of the file
      */
     public static final String IMPORT_FILE_EXTENTION = ".csv";
+
+
+    public static final int QR_DECODER_REQUEST = 626;
 
     /**
      * The criteria to consider the current import file as
@@ -229,6 +257,13 @@ public class AppStatics {
     public static final String APP_SAVE_FILE_NAME = "Archivos salvados";
 
     /**
+     * The name of the qr folder where will be placed all the qr codes
+     */
+    public static final String APP_QRS_FILE_NAME = "Códigos QRs";
+
+    public static final int QRS_SIZE = 50;
+
+    /**
      * This is a tool, that allow not to load the DB every time you start an Activity
      * call!!!
      */
@@ -240,6 +275,5 @@ public class AppStatics {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
 
 }

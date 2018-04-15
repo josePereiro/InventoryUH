@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Inventory2018.1</string>
+    <string name="app_name">Inventario UH</string>
     <string name="inventory">Inventario</string>
     <string name="import_inventory">Importar Inventario</string>
     <string name="insert_new_number">Insertar nuevo número</string>
@@ -31,7 +31,7 @@
     <string name="error8">Error fatal leyendo la base de datos!</string>
     <string name="title_activity_detail_acivity">DetailAcivity</string>
     <string name="text14">Este valor no es editable por estar el número en un área en seguimiento!</string>
-    <string name="text15">El estado Sobrante solo se puede modificar al importar!</string>
+    <string name="text15">El estado Sobrante solo se puede modificar al importar o leer un QR!</string>
     <string name="text16">Localización actualizada!</string>
     <string name="text17">Observación actualizada!</string>
     <string name="text18">Estado actualizado!</string>
@@ -45,5 +45,6 @@
     <string name="title_activity_search_by_qr">SearchByQRActivity</string>
     <string name="search_by_qr">Buscar por qr</string>
     <string name="title_activity_new_number">NewNumberActivity</string>
+    <string name="title_activity_qrfactory">QRFActoryActivity</string>
 
 </resources>

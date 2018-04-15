@@ -251,6 +251,10 @@ public class DB extends SQLiteOpenHelper {
         return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + ITNames.INVENTORY_TABLE_NAME, null).getCount();
     }
 
+    public Cursor getNumbers() {
+        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME, null);
+    }
+
     public boolean numberExist(String number) {
 
         Cursor cursor = db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME +
@@ -267,6 +271,10 @@ public class DB extends SQLiteOpenHelper {
 
     public Cursor getAllData() {
         return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + ITNames.INVENTORY_TABLE_NAME, null);
+    }
+
+    public Cursor getAllNumbers() {
+        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME, null);
     }
 
     public Cursor getAllDataIfState(String state) {
@@ -553,7 +561,7 @@ public class DB extends SQLiteOpenHelper {
         int minLength = Math.min(columnsToSearch.length, matchesForEachColumn.length);
         for (int i = 0; i < minLength; i++) {
             if (i == 0) {
-                query += columnsToSearch[i] + _LIKE_ + SMALL_QUOTE + PERCENT + matchesForEachColumn[i] +
+                query += columnsToSearch[i] + _LIKE_ + SMALL_QUOTE + matchesForEachColumn[i] +
                         PERCENT + SMALL_QUOTE;
             } else {
                 query += _AND_ + columnsToSearch[i] + _LIKE_ + SMALL_QUOTE + PERCENT + matchesForEachColumn[i] +
@@ -563,6 +571,37 @@ public class DB extends SQLiteOpenHelper {
 
         return db.rawQuery(query, null);
     }
+
+    public String getFirstNumberThatStartWith(String columnToSearch, String match) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_ +
+                columnToSearch + _LIKE_ + SMALL_QUOTE + match +
+                PERCENT + SMALL_QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else return "";
+    }
+
+    public String getFirstNumberThatContains(String columnToSearch, String match) {
+
+        Cursor cursor = db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_ +
+                columnToSearch + _LIKE_ + SMALL_QUOTE + PERCENT + match +
+                PERCENT + SMALL_QUOTE, null);
+
+        if (cursor.moveToNext()) {
+            return cursor.getString(0);
+        } else return "";
+    }
+
+    public Cursor getNumbersDataThatContain(String columnToSearch, String match) {
+
+        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_ +
+                columnToSearch + _LIKE_ + SMALL_QUOTE + PERCENT + match +
+                PERCENT + SMALL_QUOTE, null);
+
+    }
+
 
     //endregion
 
@@ -578,7 +617,7 @@ public class DB extends SQLiteOpenHelper {
      */
     public void setPreference(int ref, String value) {
         ContentValues RTCV = new ContentValues();
-        if (!getPreference(ref).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (!getPreference(ref).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             RTCV.put(PT.PTNames.VALUE_COLUMN_NAME, value);
             db.update(PT.PTNames.PREFERENCE_TABLE_NAME, RTCV,
                     PT.PTNames.NAME_COLUMN_NAME + _EQUAL_ + ref, null);
@@ -599,7 +638,7 @@ public class DB extends SQLiteOpenHelper {
      */
     public void setPreference(int ref, long value) {
         ContentValues RTCV = new ContentValues();
-        if (!getPreference(ref).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (!getPreference(ref).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             RTCV.put(PT.PTNames.VALUE_COLUMN_NAME, value);
             db.update(PT.PTNames.PREFERENCE_TABLE_NAME, RTCV,
                     PT.PTNames.NAME_COLUMN_NAME + _EQUAL_ + ref, null);
@@ -627,7 +666,7 @@ public class DB extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        return PT.Values.PREFERENCE_NOT_FOUND;
+        return PT.PDefaultValues.PREFERENCE_NOT_FOUND;
     }
 
     /**
@@ -636,109 +675,114 @@ public class DB extends SQLiteOpenHelper {
     private void setUpPreferences() {
 
         //Importation
-        if (getPreference(PT.PNames.CURRENT_IMPORTING_FILE_PATH).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.CURRENT_IMPORTING_FILE_PATH, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.CURRENT_IMPORTING_FILE_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.CURRENT_IMPORTING_FILE_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.CURRENT_IMPORTATION_INDEX).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.CURRENT_IMPORTATION_INDEX).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.CURRENT_IMPORTATION_INDEX, 0);
         }
 
-        if (getPreference(PT.PNames.APP_IMPORTING).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.APP_IMPORTING, PT.Values.NO);
+        if (getPreference(PT.PNames.APP_STATE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.APP_STATE, PT.PDefaultValues.NO_IMPORTING);
         }
 
-        if (getPreference(PT.PNames.CURRENT_IMPORTATION_FILE_HASH).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.CURRENT_IMPORTATION_FILE_HASH, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.CURRENT_IMPORTATION_FILE_HASH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.CURRENT_IMPORTATION_FILE_HASH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         //App directories
-        if (getPreference(PT.PNames.ROOT_DIRECTORY_PATH).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.ROOT_DIRECTORY_PATH, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.ROOT_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.ROOT_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.SAVE_DIRECTORY_PATH).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.SAVE_DIRECTORY_PATH, PT.Values.EMPTY_PREFERENCE);
+        //App directories
+        if (getPreference(PT.PNames.QRS_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.QRS_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.SAVE_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.SAVE_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
+        if (getPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         //Inventory Activity Preferences
-        if (getPreference(PT.PNames.CURRENT_INVENTORY_INDEX).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.CURRENT_INVENTORY_INDEX).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.CURRENT_INVENTORY_INDEX, 0);
         }
 
-        if (getPreference(PT.PNames.CURRENT_FILTER1_VALUE).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.CURRENT_FILTER1_VALUE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.CURRENT_FILTER1_VALUE,
                     InventoryActivity.FiltersValues.ALL);
         }
 
-        if (getPreference(PT.PNames.CURRENT_FILTER2_VALUE).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.CURRENT_FILTER2_VALUE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.CURRENT_FILTER2_VALUE,
                     InventoryActivity.FiltersValues.ALL);
         }
 
         //Edit Activity Preferences
-        if (getPreference(PT.PNames.NUMBER_TO_EDIT).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.NUMBER_TO_EDIT).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.NUMBER_TO_EDIT, 0);
         }
 
-        if (getPreference(PT.PNames.TEMP_NUMBER).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.TEMP_NUMBER).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_NUMBER, "");
         }
 
-        if (getPreference(PT.PNames.TEMP_FOLLOWING).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.TEMP_FOLLOWING).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_FOLLOWING, "");
         }
 
-        if (getPreference(PT.PNames.TEMP_LOCATION).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.TEMP_LOCATION).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_LOCATION, "");
         }
 
-        if (getPreference(PT.PNames.TEMP_OBSERVATION).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.TEMP_OBSERVATION).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_OBSERVATION, "");
         }
 
-        if (getPreference(PT.PNames.TEMP_STATE).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.TEMP_STATE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_STATE, "");
         }
 
-        if (getPreference(PT.PNames.TEMP_TYPE).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.TEMP_TYPE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_TYPE, "");
         }
 
 
         //Configuration preferences
-        if (getPreference(PT.PNames.AREAS_TO_FOLLOW_CSV).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.AREAS_TO_FOLLOW_CSV, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.AREAS_TO_FOLLOW_CSV).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.AREAS_TO_FOLLOW_CSV, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.UPDATE_CRITERIA).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
+        if (getPreference(PT.PNames.UPDATE_CRITERIA).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.UPDATE_CRITERIA, "30");
         }
 
-        if (getPreference(PT.PNames.TEMP_UPDATE_CRITERIA).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.TEMP_UPDATE_CRITERIA, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.TEMP_UPDATE_CRITERIA).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.TEMP_UPDATE_CRITERIA, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         //Search preferences
-        if (getPreference(PT.PNames.TEMP_SEARCH_CRITERIA).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.TEMP_SEARCH_CRITERIA, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.TEMP_SEARCH_CRITERIA).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.TEMP_SEARCH_CRITERIA, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.SELECTED_CHECKBOXES).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.SELECTED_CHECKBOXES, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.SELECTED_CHECKBOXES).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.SELECTED_CHECKBOXES, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         //New number preferences
-        if (getPreference(PT.PNames.TEMP_DESCRIPTION).equals(PT.Values.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.TEMP_DESCRIPTION, PT.Values.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.TEMP_DESCRIPTION).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.TEMP_DESCRIPTION, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
     }
@@ -945,6 +989,13 @@ public class DB extends SQLiteOpenHelper {
 
         }
 
+        public static class DefaultValues {
+
+            public static final String MANUAL_INTRODUCED_NUMBER_AREA = "51 NIM";
+
+            public static String EMPTY_VALUE = "";
+        }
+
         //region Statements...
 
         //Create table
@@ -975,8 +1026,8 @@ public class DB extends SQLiteOpenHelper {
 
             //ImportActivity Preference
             public static final int CURRENT_IMPORTING_FILE_PATH = 1;
+            public static final int APP_STATE = 3;
             public static final int CURRENT_IMPORTATION_INDEX = 2;
-            public static final int APP_IMPORTING = 3;
             public static final int CURRENT_IMPORTATION_FILE_HASH = 4;
 
 
@@ -990,6 +1041,7 @@ public class DB extends SQLiteOpenHelper {
             public static final int ROOT_DIRECTORY_PATH = 8;
             public static final int SAVE_DIRECTORY_PATH = 9;
             public static final int TO_IMPORT_DIRECTORY_PATH = 10;
+            public static final int QRS_DIRECTORY_PATH = 25;
 
             //EditActivity
             public static final int NUMBER_TO_EDIT = 11;
@@ -1034,17 +1086,18 @@ public class DB extends SQLiteOpenHelper {
 
         }
 
-        public static class Values {
+        public static class PDefaultValues {
 
             /**
              * it means the preference exist but is empty
              */
             public static String EMPTY_PREFERENCE = "";
             public static String PREFERENCE_NOT_FOUND = "$$$NOT_FOUND$$$";
-            public static final String YES = "Yes";
-            public static final String CANCELLED = "Can";
-            public static final String FINISHING = "Fin";
-            public static final String NO = "No";
+            public static final String IMPORTATION_CANCELLED = "ImpCan";
+            public static final String FINISHING_IMPORTATION = "FinImp";
+            public static final String NO_IMPORTING = "NoImp";
+            public static final String IMPORTING = "Imp";
+
 
             //endregion
 

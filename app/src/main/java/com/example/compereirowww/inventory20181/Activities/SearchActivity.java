@@ -2,9 +2,13 @@ package com.example.compereirowww.inventory20181.Activities;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,8 +19,15 @@ import android.widget.ListView;
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -24,8 +35,7 @@ public class SearchActivity extends AppCompatActivity {
     private EditText criteriaET;
     private ListView resultLV;
     private static final int MAX_RESULT_TO_SHOW = 50;
-    private static final String HIGHLIGHT_L = "<<";
-    private static final String HIGHLIGHT_R = ">>";
+    private static final String HIGHLIGHT = "\"";
 
     //search
     String[] criteria;
@@ -62,7 +72,7 @@ public class SearchActivity extends AppCompatActivity {
                 String clickedItem = (String) adapterView.getItemAtPosition(i);
                 db.setPreference(DB.PT.PNames.NUMBER_TO_EDIT,
                         extractNumberFromDisplayedData(clickedItem));
-                db.setPreference(DB.PT.PNames.TEMP_NUMBER, DB.PT.Values.EMPTY_PREFERENCE);
+                db.setPreference(DB.PT.PNames.TEMP_NUMBER, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
                 startActivity(new Intent(SearchActivity.this, EditActivity.class));
             }
         });
@@ -78,6 +88,22 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
         criteriaET = (EditText) findViewById(R.id.criteria_et);
+        criteriaET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                setCriteriaPreference(editable.toString());
+            }
+        });
         criteriaET.setText(getCriteriaPreference());
         checkBoxes = new ArrayList<>();
         checkBoxes.add((CheckBox) findViewById(R.id.number_cb));
@@ -213,18 +239,18 @@ public class SearchActivity extends AppCompatActivity {
                 //State
                 if (columnsToSearchIn[i].equals(DB.IT.ITNames.STATE_COLUMN_NAME)) {
                     temp.append("Estado: ").
-                            append(HIGHLIGHT_L).
+                            append(HIGHLIGHT).
                             append(db.getNumberState(number)).
-                            append(HIGHLIGHT_R).
+                            append(HIGHLIGHT).
                             append("\n");
                 }
 
                 //Type
                 if (columnsToSearchIn[i].equals(DB.IT.ITNames.TYPE_COLUMN_NAME)) {
                     temp.append("Tipo: ").
-                            append(HIGHLIGHT_L).
+                            append(HIGHLIGHT).
                             append(db.getNumberType(number)).
-                            append(HIGHLIGHT_R).
+                            append(HIGHLIGHT).
                             append("\n");
                 }
 
@@ -232,9 +258,9 @@ public class SearchActivity extends AppCompatActivity {
             temp.deleteCharAt(temp.length() - 1);//last "\n"
             formattedSearchResults.add(temp.toString());
 
-            if (c > MAX_RESULT_TO_SHOW) {
-                break;
-            }
+            //if (c > MAX_RESULT_TO_SHOW) {
+                //break;
+            //}
             c++;
         }
 
@@ -242,10 +268,10 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private String highlightMatch(String text, String match) {
-        return text.toUpperCase().replaceAll(match.toUpperCase(), HIGHLIGHT_L + match.toUpperCase() + HIGHLIGHT_R);
+        return text.toUpperCase().replaceAll(match.toUpperCase(), HIGHLIGHT + match.toUpperCase() + HIGHLIGHT);
     }
 
-    private void parseCriteriaIfNeeded() {
+    private void parseCriteriaIfNeeded()   {
 
         for (int i = 0; i < columnsToSearchIn.length && i < criteria.length; i++) {
             if (columnsToSearchIn[i].equals(DB.IT.ITNames.STATE_COLUMN_NAME)) {
@@ -365,8 +391,10 @@ public class SearchActivity extends AppCompatActivity {
 
     private String extractNumberFromDisplayedData(String displayedData) {
         return displayedData.split("\n", -1)[0].replaceAll("Número: ", "").
-                replaceAll(HIGHLIGHT_R, "").replaceAll(HIGHLIGHT_L, "");
+                replaceAll(HIGHLIGHT, "").replaceAll(HIGHLIGHT, "");
     }
+
+
 
 
 }

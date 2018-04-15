@@ -3,28 +3,34 @@ package com.example.compereirowww.inventory20181.Activities;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
+import com.example.compereirowww.inventory20181.DataBase.DB.IT.TypeValues;
+import com.example.compereirowww.inventory20181.DataBase.DB.PT.PDefaultValues;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class NewNumberActivity extends AppCompatActivity {
 
     //GUI
-    private TextView numberTV, descriptionTV, areaTV, altaDateTV, officialUpdateTV, lastCheckingTV;
-    private EditText locationET, observationET;
-    private Spinner followingS, stateS, typeS, locationsS, observationsS;
-    private LinearLayout followingLL, stateLL;
+    private TextView areaTV, altaDateTV, officialUpdateTV, lastCheckingTV;
+    private EditText numberET;
+    private EditText locationET;
+    private EditText observationET;
+    private EditText descriptionET;
+    private Spinner followingS, stateS, typeS, locationsS, observationsS, descriptionS;
 
     //DB
     DB db;
@@ -34,6 +40,8 @@ public class NewNumberActivity extends AppCompatActivity {
     private static final String OBSERVATIONS = "Observaciones...";
     private static final String DESCRIPTIONS = "Descripciones...";
     private static final String EMPTY = "Vacía...";
+    private static final String YES = "Sí";
+    private static final String NO = "No";
 
 
     @Override
@@ -45,207 +53,211 @@ public class NewNumberActivity extends AppCompatActivity {
         db = AppStatics.db;
 
         //GUI
-        numberTV = (TextView) findViewById(R.id.number_tv);
-        descriptionTV = (TextView) findViewById(R.id.description_tv);
+        numberET = (EditText) findViewById(R.id.number_et);
+        numberET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String number = editable.toString();
+                number = number.replaceAll(",", "").
+                        replaceAll(" ", "");
+                setNumber(number);
+            }
+        });
+        descriptionET = (EditText) findViewById(R.id.description_et);
+        descriptionET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                setTempDescription(editable.toString());
+            }
+        });
+        descriptionS = (Spinner) findViewById(R.id.description_s);
         areaTV = (TextView) findViewById(R.id.area_tv);
         altaDateTV = (TextView) findViewById(R.id.alta_date_tv);
         officialUpdateTV = (TextView) findViewById(R.id.official_update_tv);
         lastCheckingTV = (TextView) findViewById(R.id.last_check_tv);
         locationET = (EditText) findViewById(R.id.location_et);
+        locationET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                setTempLocation(editable.toString());
+            }
+        });
         locationsS = (Spinner) findViewById(R.id.location_s);
         observationET = (EditText) findViewById(R.id.observation_et);
+        observationET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                setTempObservation(editable.toString());
+            }
+        });
         observationsS = (Spinner) findViewById(R.id.observation_s);
         followingS = (Spinner) findViewById(R.id.following_s);
-        followingLL = (LinearLayout) findViewById(R.id.following_ll);
         stateS = (Spinner) findViewById(R.id.state_s);
-        stateLL = (LinearLayout) findViewById(R.id.state_ll);
         typeS = (Spinner) findViewById(R.id.type_s);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                db.updateLocation(getNumber(), locationET.getText().toString());
-                db.updateObservation(getNumber(), observationET.getText().toString());
-                db.updateFollowing(getNumber(), getTempFollowing());
-                db.updateTypeIfDescription(db.getNumberDescription(getNumber()), getTempType());
-                if (db.getNumberState(getNumber()) != getTempState()) {
-                    db.updateState(getNumber(), getTempState());
-                    db.updateLastChecking(getNumber(), Tools.getDate());
+                if (db.numberExist(getNumber())) {
+
+                    if (!db.getNumberArea(getNumber()).equals(DB.IT.DefaultValues.MANUAL_INTRODUCED_NUMBER_AREA)) {
+                        Tools.showToast(NewNumberActivity.this, "Ese número ya existe, usa otro!!!", false);
+                        return;
+                    }
+                    db.updateLocation(getNumber(), getTempLocation());
+                    db.updateObservation(getNumber(), getTempObservation());
+                    db.updateDescription(getNumber(), getTempDescription());
+                    db.updateFollowing(getNumber(), getTempFollowing());
+                    db.updateTypeIfDescription(db.getNumberDescription(getNumber()), getTempType());
+                    if (db.getNumberState(getNumber()) != getTempState()) {
+                        db.updateState(getNumber(), getTempState());
+                    }
+                    Tools.showToast(NewNumberActivity.this, "Cambios guardados!", false);
+                } else {
+                    db.insertNewNumber(getNumber(),
+                            getTempDescription(),
+                            DB.IT.DefaultValues.MANUAL_INTRODUCED_NUMBER_AREA,
+                            "",
+                            "",
+                            getTempFollowing(),
+                            getTempState(),
+                            Tools.getDate(),
+                            getTempType(),
+                            getTempLocation(),
+                            getTempObservation());
+
+                    Tools.showToast(NewNumberActivity.this, "Número insertado!!!", false);
                 }
-                db.updateLocation(getNumber(), locationET.getText().toString());
-                db.updateObservation(getNumber(), observationET.getText().toString());
-                Tools.showToast(NewNumberActivity.this, "Cambios guardados!", false);
             }
         });
 
         //DB
         db = AppStatics.db;
+        if (Arrays.equals(AppStatics.Description.descriptions, new String[]{""})) {
+            AppStatics.Description.updateDescriptions(db);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        //region Values
 
-        if (!getNumber().equals(getTempNumber())) {
-            setTempNumber(getNumber());
-            setTempType(db.getNumberType(getNumber()));
-            setTempState(db.getNumberState(getNumber()));
-            setTempLocation(db.getNumberLocation(getNumber()));
-            setTempObservation(db.getNumberObservation(getNumber()));
-            setTempFollowing(db.getNumberFollowingValue(getNumber()));
+        if (getNumber().equals(PDefaultValues.EMPTY_PREFERENCE)) {
+            setNumber(getNumber());
+        } else {
+            numberET.setText(getNumber());
         }
 
-        numberTV.setText(getNumber());
-        descriptionTV.setText(db.getNumberDescription(getNumber()));
-        areaTV.setText(db.getNumberArea(getNumber()));
-        altaDateTV.setText(db.getNumberAltaDate(getNumber()));
-        officialUpdateTV.setText(db.getNumberOfficialUpdate(getNumber()));
-        lastCheckingTV.setText(Tools.formatDate(db.getNumberLastChecking(getNumber())));
-
-
+        areaTV.setText(DB.IT.DefaultValues.MANUAL_INTRODUCED_NUMBER_AREA);
+        altaDateTV.setText(DB.IT.DefaultValues.EMPTY_VALUE);
+        officialUpdateTV.setText(DB.IT.DefaultValues.EMPTY_VALUE);
+        lastCheckingTV.setText(Tools.getFormattedDate());
         locationET.setText(getTempLocation());
+        descriptionET.setText(getTempDescription());
         observationET.setText(getTempObservation());
 
         //region following spinner
-        if (Tools.contain(AppStatics.AreasToFollow.areasToFollow, db.getNumberArea(getNumber()))) {
-            followingS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                    android.R.layout.simple_list_item_1, new String[]{DB.PT.Values.YES}));
-            followingS.setFocusable(false);
-            followingS.setClickable(false);
-            followingLL.setOnClickListener(new View.OnClickListener() {
-                int c = -1;
-
-                @Override
-                public void onClick(View view) {
-                    if (c % 2 == 0) {
-                        Tools.showToast(NewNumberActivity.this, getString(R.string.text14), false);
-                    }
-                    c++;
+        followingS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
+                android.R.layout.simple_list_item_1, new String[]{NO, YES}));
+        followingS.setSelection(getTempFollowing());
+        followingS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedItem = (String) adapterView.getSelectedItem();
+                if (selectedItem.equals(YES)) {
+                    setTempFollowing(1);
+                } else {
+                    setTempFollowing(0);
                 }
-            });
-        } else {
-            followingS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                    android.R.layout.simple_list_item_1, new String[]{DB.PT.Values.NO, DB.PT.Values.YES}));
-            followingS.setSelection(getTempFollowing());
-            followingS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    String selectedItem = (String) adapterView.getSelectedItem();
-                    if (selectedItem.equals(DB.PT.Values.YES)) {
-                        setTempFollowing(1);
-                    } else {
-                        setTempFollowing(0);
-                    }
-                }
+            }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
-                }
-            });
-        }
+            }
+        });
 
         //endregion following spinner
 
         //region state spinner
-        if (db.getNumberState(getNumber()) == DB.IT.StateValues.LEFTOVER) {
-            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                    android.R.layout.simple_list_item_1,
-                    new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}));
-            stateS.setClickable(false);
-            stateLL.setOnClickListener(new View.OnClickListener() {
-                int c = -1;
 
-                @Override
-                public void onClick(View view) {
+        stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
+                android.R.layout.simple_list_item_1,
+                new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}));
+        stateS.setEnabled(false);
+        stateS.setClickable(false);
+        findViewById(R.id.state_ll).setOnClickListener(new View.OnClickListener() {
+            int c = -1;
 
-                    if (c % 2 == 0) {
-                        Tools.showToast(NewNumberActivity.this, getString(R.string.text15), false);
-                    }
-                    c++;
+            @Override
+            public void onClick(View view) {
+
+                if (c % 2 == 0) {
+                    Tools.showToast(NewNumberActivity.this, getString(R.string.text15), false);
                 }
-            });
+                c++;
+            }
+        });
 
-        } else if (db.getNumberState(getNumber()) == DB.IT.StateValues.LEFTOVER_PRESENT) {
-            ArrayList<String> stateAL = new ArrayList<>();
-            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER_PRESENT));
-            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER));
-            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                    android.R.layout.simple_list_item_1,
-                    stateAL));
-            stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
-            stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    setTempState(DB.IT.StateValues.parse((String) adapterView.getSelectedItem()));
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                }
-            });
-
-        } else if (getTempState() == DB.IT.StateValues.MISSING ||
-                getTempState() == DB.IT.StateValues.IGNORED_MISSING) {
-            ArrayList<String> stateAL = new ArrayList<>();
-            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.MISSING));
-            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.IGNORED_MISSING));
-            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                    android.R.layout.simple_list_item_1, stateAL));
-            stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
-            stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    setTempState(DB.IT.StateValues.parse((String) adapterView.getSelectedItem()));
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                }
-            });
-
-        } else {
-            ArrayList<String> stateAL = new ArrayList<>();
-            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.PRESENT));
-            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.MISSING));
-            stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.IGNORED_MISSING));
-            stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                    android.R.layout.simple_list_item_1, stateAL));
-            stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
-            stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    setTempState(DB.IT.StateValues.parse((String) adapterView.getSelectedItem()));
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                }
-            });
-
-        }
 
         //endregion
 
         //region type spinner
+
         ArrayList<String> typeAL = new ArrayList<>();
-        typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.UNKNOWN));
-        typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.FURNISHING));
-        typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.EQUIPMENT));
+        typeAL.add(TypeValues.toString(TypeValues.UNKNOWN));
+        typeAL.add(TypeValues.toString(TypeValues.FURNISHING));
+        typeAL.add(TypeValues.toString(TypeValues.EQUIPMENT));
         typeS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                 android.R.layout.simple_list_item_1, typeAL));
-        typeS.setSelection(Tools.getIndexOf(typeAL, DB.IT.TypeValues.toString(getTempType())));
+        typeS.setSelection(Tools.getIndexOf(typeAL, TypeValues.toString(getTempType())));
         typeS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                setTempType(DB.IT.TypeValues.parse((String) adapterView.getSelectedItem()));
+                setTempType(TypeValues.parse((String) adapterView.getSelectedItem()));
 
             }
 
@@ -254,18 +266,15 @@ public class NewNumberActivity extends AppCompatActivity {
 
             }
         });
+
         //endregion
 
         //region location spinner
         final ArrayList<String> locationAL = new ArrayList<>();
         locationAL.add(LOCATIONS);
+        locationAL.add(EMPTY);
         Collections.addAll(locationAL, AppStatics.Location.locations);
-        for (int i = 0; i < locationAL.size(); i++) {
-            if (locationAL.get(i).equals("")) {
-                locationAL.set(i, EMPTY);
-                break;
-            }
-        }
+        locationAL.remove("");
         locationsS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                 android.R.layout.simple_list_item_1, locationAL));
         locationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -300,12 +309,9 @@ public class NewNumberActivity extends AppCompatActivity {
         //region observation spinner
         final ArrayList<String> observationAL = new ArrayList<>();
         observationAL.add(OBSERVATIONS);
+        observationAL.add(EMPTY);
         Collections.addAll(observationAL, AppStatics.Observation.observations);
-        for (int i = 0; i < observationAL.size(); i++) {
-            if (observationAL.get(i).equals("")) {
-                observationAL.set(i, EMPTY);
-            }
-        }
+        observationAL.remove("");
         observationsS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
                 android.R.layout.simple_list_item_1, observationAL));
         observationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -333,8 +339,40 @@ public class NewNumberActivity extends AppCompatActivity {
             }
         });
 
-        //endregion location spinner
+        //endregion observation spinner
 
+        //region description spinner
+        final ArrayList<String> descriptionAL = new ArrayList<>();
+        descriptionAL.add(DESCRIPTIONS);
+        descriptionAL.add(EMPTY);
+        Collections.addAll(descriptionAL, AppStatics.Description.descriptions);
+        descriptionAL.remove("");
+        descriptionS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
+                android.R.layout.simple_list_item_1, descriptionAL));
+        descriptionS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedItem = (String) adapterView.getSelectedItem();
+                if (!selectedItem.equals(DESCRIPTIONS)) {
+
+                    if (selectedItem.equals(EMPTY)) {
+                        descriptionET.setText("");
+                        setTempDescription("");
+                    } else {
+                        descriptionET.setText(selectedItem);
+                        setTempDescription(selectedItem);
+                    }
+
+                    descriptionS.setSelection(0);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         //endregion
 
@@ -342,10 +380,6 @@ public class NewNumberActivity extends AppCompatActivity {
 
     private String getNumber() {
         return db.getPreference(DB.PT.PNames.NUMBER_TO_EDIT);
-    }
-
-    private String getTempNumber() {
-        return db.getPreference(DB.PT.PNames.TEMP_NUMBER);
     }
 
     private int getTempState() {
@@ -372,12 +406,13 @@ public class NewNumberActivity extends AppCompatActivity {
         return db.getPreference(DB.PT.PNames.TEMP_DESCRIPTION);
     }
 
-    private void setTempNumber(String number) {
-        db.setPreference(DB.PT.PNames.TEMP_NUMBER, number);
-    }
 
     private void setTempState(int state) {
         db.setPreference(DB.PT.PNames.TEMP_STATE, state);
+    }
+
+    private void setNumber(String number) {
+        db.setPreference(DB.PT.PNames.NUMBER_TO_EDIT, number);
     }
 
     private void setTempType(int type) {
