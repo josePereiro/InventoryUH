@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.format.DateUtils;
 
+import com.example.compereirowww.inventory20181.Activities.AppStatics;
 import com.example.compereirowww.inventory20181.Activities.InventoryActivity;
 import com.example.compereirowww.inventory20181.DataBase.DB.IT.ITNames;
 import com.example.compereirowww.inventory20181.Tools.Tools;
@@ -130,6 +131,16 @@ public class DB extends SQLiteOpenHelper {
         contents.put(ITNames.ALTA_DATE_COLUMN_NAME, altaDate);
         contents.put(ITNames.OFFICIAL_UPDATE_COLUMN_NAME, officialUpdate);
         contents.put(ITNames.STATE_COLUMN_NAME, state);
+        return db.update(ITNames.INVENTORY_TABLE_NAME, contents,
+                ITNames.NUMBER_COLUMN_NAME + _EQUAL_ + QUOTE + number + QUOTE,
+                null);
+    }
+
+    public int updateNonOfficialData(String number, String location, int type, String observation) {
+        ContentValues contents = new ContentValues();
+        contents.put(ITNames.LOCATION_COLUMN_NAME, location);
+        contents.put(ITNames.TYPE_COLUMN_NAME, type);
+        contents.put(ITNames.OBSERVATION_COLUMN_NAME, observation);
         return db.update(ITNames.INVENTORY_TABLE_NAME, contents,
                 ITNames.NUMBER_COLUMN_NAME + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
@@ -679,8 +690,12 @@ public class DB extends SQLiteOpenHelper {
             setPreference(PT.PNames.CURRENT_IMPORTING_FILE_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
+        if (getPreference(PT.PNames.DB_STATE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.DB_STATE, PT.PDefaultValues.DB_OK);
+        }
+
         if (getPreference(PT.PNames.CURRENT_IMPORTATION_INDEX).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.CURRENT_IMPORTATION_INDEX, 0);
+            setPreference(PT.PNames.CURRENT_IMPORTATION_INDEX, AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX);
         }
 
         if (getPreference(PT.PNames.APP_STATE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
@@ -824,8 +839,8 @@ public class DB extends SQLiteOpenHelper {
             public static final int FOLLOWING_COLUMN_INDEX = 5;
             public static final int STATE_COLUMN_INDEX = 6;
             public static final int LAST_CHECKING_COLUMN_INDEX = 7;
-            public static final int LOCATION_COLUMN_INDEX = 8;
-            public static final int TYPE_COLUMN_INDEX = 9;
+            public static final int TYPE_COLUMN_INDEX = 8;
+            public static final int LOCATION_COLUMN_INDEX = 9;
             public static final int OBSERVATION_COLUMN_INDEX = 10;
 
 
@@ -1027,6 +1042,7 @@ public class DB extends SQLiteOpenHelper {
             //ImportActivity Preference
             public static final int CURRENT_IMPORTING_FILE_PATH = 1;
             public static final int APP_STATE = 3;
+            public static final int DB_STATE = 26;
             public static final int CURRENT_IMPORTATION_INDEX = 2;
             public static final int CURRENT_IMPORTATION_FILE_HASH = 4;
 
@@ -1097,6 +1113,8 @@ public class DB extends SQLiteOpenHelper {
             public static final String FINISHING_IMPORTATION = "FinImp";
             public static final String NO_IMPORTING = "NoImp";
             public static final String IMPORTING = "Imp";
+            public static final String DB_CORRUPTED = "dbCor";
+            public static final String DB_OK = "dbOk";
 
 
             //endregion

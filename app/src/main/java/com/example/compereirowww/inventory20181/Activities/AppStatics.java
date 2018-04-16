@@ -17,7 +17,7 @@ public class AppStatics {
          * This is the index of the first value in a file to import,
          * this depend of the format of the file
          */
-        public static final int CSV_FILE_UH_INVENTORY_FIRST_DATA_LINE_INDEX = 1;
+        public static final int CSV_FIRST_DATA_LINE_INDEX = 1;
 
         /**
          * the index of the number in a line of the file to import
@@ -43,6 +43,21 @@ public class AppStatics {
          * the index of the officialUpdate CSVData in a line of the file to import
          */
         public static final int OFFICIAL_UPDATE_INDEX = 4;
+
+        /**
+         * the index of the location CSVData in a line of the file to import
+         */
+        public static final int LOCATION_INDEX = 1;
+
+        /**
+         * the index of the type CSVData in a line of the file to import
+         */
+        public static final int TYPE_INDEX = 2;
+
+        /**
+         * the index of the observation CSVData in a line of the file to import
+         */
+        public static final int OBSERVATION_INDEX = 3;
 
         //endregion
     }

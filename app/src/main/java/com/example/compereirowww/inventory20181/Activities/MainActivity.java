@@ -24,7 +24,6 @@ import com.example.compereirowww.inventory20181.Tools.Tools;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
@@ -409,6 +408,15 @@ public class MainActivity extends AppCompatActivity {
             return false;
         } else if (db.getAllData().getCount() == 0) {
             Tools.showInfoDialog(MainActivity.this, "La base de datos está vacía, necesita importar!",
+                    "Importar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
+                        }
+                    });
+            return false;
+        } else if (db.getPreference(PT.PNames.DB_STATE).equals(PT.PDefaultValues.DB_CORRUPTED)) {
+            Tools.showInfoDialog(MainActivity.this, "La base está corrupta, por favor importe un archivo de datos del inventario UH!!",
                     "Importar", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {

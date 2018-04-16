@@ -9,6 +9,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +23,12 @@ import android.widget.Toast;
 
 import com.example.compereirowww.inventory20181.Activities.AppStatics;
 import com.example.compereirowww.inventory20181.R;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,6 +40,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 
 public class Tools {
 
@@ -465,5 +473,34 @@ public class Tools {
 
             }
         }
+    }
+
+    /**
+     * @param qrCodeText the text that you want to encode
+     * @param size       the size of the image that you want to produce
+     * @return a Bitmap with the QRCode produced
+     * @throws WriterException an error in the writing occurred
+     */
+    public static Bitmap codeTextToQRAndGetBitmap(String qrCodeText, int size) throws WriterException {
+        // Create the ByteMatrix for the QR-Code that encodes the given String
+        Hashtable hintMap = new Hashtable();
+        hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix byteMatrix = qrCodeWriter.encode(qrCodeText,
+                BarcodeFormat.QR_CODE, size, size, hintMap);
+        // Make the Image that are to hold the QRCode
+        int matrixWidth = byteMatrix.getWidth();
+        Bitmap image = Bitmap.createBitmap(matrixWidth, matrixWidth, Bitmap.Config.RGB_565);
+        //Filling the image with the byteMatrix CSVData
+        for (int i = 0; i < matrixWidth; i++) {
+            for (int j = 0; j < matrixWidth; j++) {
+                if (byteMatrix.get(i, j)) {
+                    image.setPixel(i, j, Color.BLACK);
+                } else {
+                    image.setPixel(i, j, Color.WHITE);
+                }
+            }
+        }
+        return image;
     }
 }
