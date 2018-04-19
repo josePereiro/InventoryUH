@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -46,12 +47,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Test
+        try {
+            Bitmap bm = Tools.getQRCodeLabeledBitmap("154135134");
+
+            int bmw = bm.getWidth();
+            int bmh = bm.getHeight();
+
+            throw new Exception();
+        } catch (Exception e) {
+            finish();
+        }
+
+
         //Debug
         Log.d("JOSE2", "MainActivity.onCreate +++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
         //GUI
-
         textView = (TextView) findViewById(R.id.text_tv);
+
         inventoryBtn = (Button) findViewById(R.id.inventory_btn);
         inventoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         importBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, ImportActivity.class));
+                callImportActivity();
             }
         });
         insertBtn = (Button) findViewById(R.id.insert_btn);
@@ -108,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         makeQRBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, QRFactoryActivity.class));
+                startActivity(new Intent(MainActivity.this, QRViewerActivity.class));
             }
         });
         expBtn = (Button) findViewById(R.id.export);
@@ -142,15 +156,12 @@ public class MainActivity extends AppCompatActivity {
         //TODO Deb
         Log.d("JOSE", "MainActivity.onResume +++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-        //files
-        if (handleAppFiles())
-            if (checkingImportation())
-                checkingAreaToFollow();
+        if (!handleAppFiles()) return;
+        if (!checkingImportation()) return;
+        if (!checkingAreaToFollow()) return;
 
-        //Checking out of date
+        //updating out of date
         db.updatePresentToMissingIfOutOfDate(Integer.parseInt(db.getPreference(PT.PNames.UPDATE_CRITERIA)));
-        AppStatics.AllNumbers.allNumbers = new String[]{""};
-
     }
 
     @Override
@@ -160,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
+                        System.exit(0);
                     }
                 }, "No", null);
 
@@ -206,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
 
     private boolean handleAppFiles() {
 
@@ -370,61 +380,33 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkingImportation() {
 
-        if (db.getPreference(PT.PNames.APP_STATE).equals(PT.PDefaultValues.IMPORTING) ||
-                db.getPreference(PT.PNames.APP_STATE).equals(PT.PDefaultValues.FINISHING_IMPORTATION)) {
-
-            Tools.showDialogMessage(MainActivity.this, getString(R.string.text8),
-                    "Cerrar",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            finish();
-                            System.exit(0);
-                        }
-                    },
-                    "Continuar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
-                        }
-                    });
+        if (!db.getPreference(PT.PNames.CURRENT_FILE_TO_IMPORT).equals("")) {
+            Tools.showToast(MainActivity.this, "La aplicación debe terminar de importar!!!", false);
+            callImportActivity();
             return false;
-        } else if (db.getPreference(PT.PNames.APP_STATE).equals(PT.PDefaultValues.IMPORTATION_CANCELLED)) {
-            Tools.showDialogMessage(MainActivity.this, getString(R.string.text9),
-                    "Cerrar",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            finish();
-                            System.exit(0);
-                        }
-                    },
-                    "Continuar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
-                        }
-                    });
-            return false;
-        } else if (db.getAllData().getCount() == 0) {
+        }
+        if (db.getAllData().getCount() == 0) {
             Tools.showInfoDialog(MainActivity.this, "La base de datos está vacía, necesita importar!",
                     "Importar", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
-                        }
-                    });
-            return false;
-        } else if (db.getPreference(PT.PNames.DB_STATE).equals(PT.PDefaultValues.DB_CORRUPTED)) {
-            Tools.showInfoDialog(MainActivity.this, "La base está corrupta, por favor importe un archivo de datos del inventario UH!!",
-                    "Importar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            startActivity(new Intent(MainActivity.this, ImportActivity.class));
+                            callImportActivity();
                         }
                     });
             return false;
         }
+        if (db.getPreference(PT.PNames.DB_STATE).equals(PT.PDefaultValues.DB_CORRUPTED)) {
+
+            Tools.showInfoDialog(MainActivity.this, "La base está corrupta, por favor importe un archivo de datos del inventario UH!!",
+                    "Importar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            callImportActivity();
+                        }
+                    });
+            return false;
+        }
+
         return true;
     }
 
@@ -446,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Checks if the app has permission to write to device storage
-     * <p>
+     * <p/>
      * If the app does not has permission then the user will be prompted to grant permissions
      */
     public void verifyStoragePermissions() {
@@ -478,10 +460,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //region Getters and Setters
-
-
-    //endregion
+    private void callImportActivity() {
+        ImportActivity.CSVFiles = null;
+        startActivity(new Intent(MainActivity.this, ImportActivity.class));
+    }
 
     private class ExportInventoryToCSVAT extends AsyncTask<String, Void, Boolean> {
 

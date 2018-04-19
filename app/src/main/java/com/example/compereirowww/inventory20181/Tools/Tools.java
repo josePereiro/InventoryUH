@@ -9,7 +9,9 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -32,7 +34,6 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -44,9 +45,8 @@ import java.util.Hashtable;
 
 public class Tools {
 
-    private static AlertDialog heavyTaskDialog;
-
     public static String formatDate(long date) {
+
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyyHHmm");
         Date date1 = new Date();
         date1.setTime(date);
@@ -354,17 +354,6 @@ public class Tools {
         return -1;
     }
 
-    public static AlertDialog getHeavyTaskDialog(Context context, String message) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setCancelable(false);
-        builder.setMessage(message);
-        builder.setIcon(android.R.drawable.progress_horizontal);
-        heavyTaskDialog = builder.create();
-        return heavyTaskDialog;
-
-    }
-
     public static ArrayList<String> readFile(String filePath) throws IOException {
 
         File fileToLoad = new File(filePath);
@@ -374,7 +363,7 @@ public class Tools {
         while ((temp = br.readLine()) != null) {
             toReturn.add(temp);
         }
-
+        br.close();
         return toReturn;
     }
 
@@ -399,9 +388,19 @@ public class Tools {
         while ((temp = br.readLine()) != null) {
             toReturn.add(temp);
         }
+        br.close();
         return toReturn.get(line);
     }
 
+    public static String readFileFirstLine(File file) throws IOException, IndexOutOfBoundsException {
+
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line = br.readLine();
+        br.close();
+        if (line == null) return "";
+        else return line;
+
+    }
 
     public static void writeFile(File file, String data) throws IOException {
         FileWriter fw = new FileWriter(file);
@@ -502,5 +501,56 @@ public class Tools {
             }
         }
         return image;
+    }
+
+    public static Bitmap getQRCodeLabeledBitmap(String toCode) throws WriterException {
+
+        int size = 120;
+        int toCut = 17;
+        int labelH = 12;
+
+        // Create the ByteMatrix for the QR-Code that encodes the given String
+        Hashtable hintMap = new Hashtable();
+        hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix byteMatrix = qrCodeWriter.encode(toCode,
+                BarcodeFormat.QR_CODE, size, size, hintMap);
+
+        // Create the BufferImage
+        int fw = size - 2 * toCut;
+        int fh = size - 2 * toCut + labelH;
+        Bitmap image = Bitmap.createBitmap(fw, fh, Bitmap.Config.RGB_565);
+
+        Canvas canvas = new Canvas(image);
+        canvas.drawColor(Color.WHITE);
+        Paint paint = new Paint();
+        for (int i = toCut; i < byteMatrix.getWidth() - toCut; i++) {
+            for (int j = toCut; j < byteMatrix.getWidth() - toCut; j++) {
+                if (byteMatrix.get(i, j)) {
+                    canvas.drawRect(i - toCut, j - toCut, i - toCut + 1, j - toCut + 1, paint);
+                }
+            }
+        }
+        canvas.drawText(toCode, 0, fh - 2, new Paint());
+
+        return image;
+    }
+
+
+    public static void listAllFilesAndSubFiles(File rootFile, String ext,
+                                               ArrayList<File> listedFilesContainer) {
+        if (rootFile.isDirectory()) {
+            File[] files = rootFile.listFiles();
+            for (File f : files) {
+                //Filter
+                if (f.isDirectory()) {
+                    listAllFilesAndSubFiles(f, ext, listedFilesContainer);
+                } else {
+                    if (ext.equals("") || f.getName().contains(ext)) {
+                        listedFilesContainer.add(f);
+                    }
+                }
+            }
+        }
     }
 }

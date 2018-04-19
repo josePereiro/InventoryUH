@@ -12,10 +12,13 @@
     <string name="error4">Error fatal: El archivo no es compatible!!!</string>
     <string name="error5">Error fatal: El archivo esta corrupto o fue modificado!</string>
     <string name="error6">Error fatal: El contenido del archivo no es seguro y no es reconocido por la aplicación! Asegurese de que proviene de una fuente confiable!</string>
+    <string name="error7">"Error Fatal: Huvo un problema con el acceso o creación de las carpetas de la aplicación! "</string>
+    <string name="error8">Error fatal leyendo la base de datos!</string>
+    <string name="error9">Error fatal: Por algún motivo el sistema imforma que ese archivo no existe! </string>
 
     <string name="text1">"carpeta de datos creada en "</string>
     <string name="text2">"Los archivos a importar deben ser copiados en la carpeta \"Para Importar\" ubicada en: "</string>
-    <string name="text3">"No se puede localizar el archivo ha importar. Tiene dos opciones, cerrar la aplicación y volverlo a copiar o reiniciar la importación desde el principio con otro archivo. El archivo era: "</string>
+    <string name="text3">"Tiene dos opciones, cerrar la aplicación y volverlo a copiar o reiniciar la importación desde el principio con otro archivo. El archivo era: "</string>
     <string name="text4">Primero seleccione un archivo para importar!!!</string>
     <string name="text5">"Copie los archivos a importar en la carpeta "</string>
     <string name="text6">Ya hay una importatción en curso!!!</string>
@@ -25,10 +28,8 @@
     <string name="text10">El proceso de imporación a terminado satisfactoriamente!</string>
     <string name="text11">Proceso Terminado</string>
     <string name="title_activity_inventory">InventoryActivity</string>
-    <string name="error7">"Error Fatal: Huvo un problema con el acceso o creación de las carpetas de la aplicación! "</string>
     <string name="text12">Vuelvala a iniciar y si persiste el problema reintálela! Si aún así aparece este error busque ayuda!</string>
     <string name="text13">El proceso de imporatción se ha cancelado!</string>
-    <string name="error8">Error fatal leyendo la base de datos!</string>
     <string name="title_activity_detail_acivity">DetailAcivity</string>
     <string name="text14">Este valor no es editable por estar el número en un área en seguimiento!</string>
     <string name="text15">El estado Sobrante solo se puede modificar al importar o leer un QR!</string>

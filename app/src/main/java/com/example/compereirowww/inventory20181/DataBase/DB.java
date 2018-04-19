@@ -572,7 +572,7 @@ public class DB extends SQLiteOpenHelper {
         int minLength = Math.min(columnsToSearch.length, matchesForEachColumn.length);
         for (int i = 0; i < minLength; i++) {
             if (i == 0) {
-                query += columnsToSearch[i] + _LIKE_ + SMALL_QUOTE + matchesForEachColumn[i] +
+                query += columnsToSearch[i] + _LIKE_ + SMALL_QUOTE + PERCENT + matchesForEachColumn[i] +
                         PERCENT + SMALL_QUOTE;
             } else {
                 query += _AND_ + columnsToSearch[i] + _LIKE_ + SMALL_QUOTE + PERCENT + matchesForEachColumn[i] +
@@ -582,37 +582,6 @@ public class DB extends SQLiteOpenHelper {
 
         return db.rawQuery(query, null);
     }
-
-    public String getFirstNumberThatStartWith(String columnToSearch, String match) {
-
-        Cursor cursor = db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_ +
-                columnToSearch + _LIKE_ + SMALL_QUOTE + match +
-                PERCENT + SMALL_QUOTE, null);
-
-        if (cursor.moveToNext()) {
-            return cursor.getString(0);
-        } else return "";
-    }
-
-    public String getFirstNumberThatContains(String columnToSearch, String match) {
-
-        Cursor cursor = db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_ +
-                columnToSearch + _LIKE_ + SMALL_QUOTE + PERCENT + match +
-                PERCENT + SMALL_QUOTE, null);
-
-        if (cursor.moveToNext()) {
-            return cursor.getString(0);
-        } else return "";
-    }
-
-    public Cursor getNumbersDataThatContain(String columnToSearch, String match) {
-
-        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_ +
-                columnToSearch + _LIKE_ + SMALL_QUOTE + PERCENT + match +
-                PERCENT + SMALL_QUOTE, null);
-
-    }
-
 
     //endregion
 
@@ -686,24 +655,29 @@ public class DB extends SQLiteOpenHelper {
     private void setUpPreferences() {
 
         //Importation
-        if (getPreference(PT.PNames.CURRENT_IMPORTING_FILE_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.CURRENT_IMPORTING_FILE_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.CURRENT_FILE_TO_IMPORT).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.CURRENT_FILE_TO_IMPORT, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
+        if (getPreference(PT.PNames.CURRENT_FILE_TO_IMPORT_HEAD).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.CURRENT_FILE_TO_IMPORT_HEAD, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         if (getPreference(PT.PNames.DB_STATE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.DB_STATE, PT.PDefaultValues.DB_OK);
         }
 
+        if (getPreference(PT.PNames.IMPORTING_MESSAGE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.IMPORTING_MESSAGE, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
         if (getPreference(PT.PNames.CURRENT_IMPORTATION_INDEX).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.CURRENT_IMPORTATION_INDEX, AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX);
         }
 
-        if (getPreference(PT.PNames.APP_STATE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.APP_STATE, PT.PDefaultValues.NO_IMPORTING);
-        }
 
-        if (getPreference(PT.PNames.CURRENT_IMPORTATION_FILE_HASH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.CURRENT_IMPORTATION_FILE_HASH, PT.PDefaultValues.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.CURRENT_DATA_TO_IMPORT_HASH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.CURRENT_DATA_TO_IMPORT_HASH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         //App directories
@@ -1040,11 +1014,12 @@ public class DB extends SQLiteOpenHelper {
         public static class PNames {
 
             //ImportActivity Preference
-            public static final int CURRENT_IMPORTING_FILE_PATH = 1;
-            public static final int APP_STATE = 3;
+            public static final int CURRENT_FILE_TO_IMPORT = 1;
+            public static final int CURRENT_FILE_TO_IMPORT_HEAD = 28;
             public static final int DB_STATE = 26;
             public static final int CURRENT_IMPORTATION_INDEX = 2;
-            public static final int CURRENT_IMPORTATION_FILE_HASH = 4;
+            public static final int CURRENT_DATA_TO_IMPORT_HASH = 4;
+            public static final int IMPORTING_MESSAGE = 27;
 
 
             //InventoryActivity;
@@ -1109,10 +1084,6 @@ public class DB extends SQLiteOpenHelper {
              */
             public static String EMPTY_PREFERENCE = "";
             public static String PREFERENCE_NOT_FOUND = "$$$NOT_FOUND$$$";
-            public static final String IMPORTATION_CANCELLED = "ImpCan";
-            public static final String FINISHING_IMPORTATION = "FinImp";
-            public static final String NO_IMPORTING = "NoImp";
-            public static final String IMPORTING = "Imp";
             public static final String DB_CORRUPTED = "dbCor";
             public static final String DB_OK = "dbOk";
 
@@ -1127,4 +1098,5 @@ public class DB extends SQLiteOpenHelper {
                         PT.PTNames.VALUE_COLUMN_NAME + _TEXT_TYPE + CLOSE_PARENTHESIS;
 
     }
+
 }

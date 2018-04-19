@@ -189,7 +189,8 @@ public class SearchActivity extends AppCompatActivity {
         StringBuilder temp;
         int c = 0;
         String number;
-        while (searchResult.moveToNext()) {
+        while (searchResult.moveToNext() && c < MAX_RESULT_TO_SHOW) {
+
             temp = new StringBuilder();
             number = searchResult.getString(0);
 
@@ -258,9 +259,6 @@ public class SearchActivity extends AppCompatActivity {
             temp.deleteCharAt(temp.length() - 1);//last "\n"
             formattedSearchResults.add(temp.toString());
 
-            //if (c > MAX_RESULT_TO_SHOW) {
-                //break;
-            //}
             c++;
         }
 

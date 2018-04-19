@@ -203,29 +203,6 @@ public class AppStatics {
 
     }
 
-    public static class AllNumbers {
-
-        public static String[] allNumbers = new String[]{""};
-
-        public static void updateAllNumbers(DB db) {
-
-            if (Arrays.equals(allNumbers, new String[]{""})) {
-                Cursor cursor = db.getAllNumbers();
-                ArrayList<String> numbersAL = new ArrayList<>();
-                String current;
-                while (cursor.moveToNext()) {
-                    current = cursor.getString(0);
-                    numbersAL.add(current);
-                }
-
-                allNumbers = numbersAL.toArray(new String[]{""});
-                Arrays.sort(allNumbers, String.CASE_INSENSITIVE_ORDER);
-            }
-        }
-
-
-    }
-
     /**
      * The tag used for the application in the log
      */
@@ -246,7 +223,6 @@ public class AppStatics {
      * The extension of the file
      */
     public static final String IMPORT_FILE_EXTENTION = ".csv";
-
 
     public static final int QR_DECODER_REQUEST = 626;
 

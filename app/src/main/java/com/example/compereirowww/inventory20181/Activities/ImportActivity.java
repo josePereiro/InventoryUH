@@ -2,10 +2,9 @@ package com.example.compereirowww.inventory20181.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,23 +14,23 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.DataBase.DB.IT;
 import com.example.compereirowww.inventory20181.DataBase.DB.PT.PDefaultValues;
 import com.example.compereirowww.inventory20181.DataBase.DB.PT.PNames;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
+
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_TAG;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.AreasToFollow;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.Importation;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.SALVA_INVENTORY_FILE_HEAD_CODE;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UH_INVENTORY_FILE_HEAD_CODE;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.db;
 
 public class ImportActivity extends AppCompatActivity {
 
@@ -47,14 +46,11 @@ public class ImportActivity extends AppCompatActivity {
     Spinner spinner;
     FloatingActionButton fab;
 
-
     //Importation Fields
     private AsyncTask<Void, String, Boolean> importAT;
     private String selectedFile;
-    private ArrayList<String> data;
-
-    //DB
-    private DB db;
+    protected static ArrayList<File> CSVFiles;
+    private ArrayList<String> CSVData;
 
     //Activity Life cycle methods
     @Override
@@ -63,16 +59,12 @@ public class ImportActivity extends AppCompatActivity {
         setContentView(R.layout.activity_import);
 
         //TODO deb
-        Log.d(AppStatics.APP_TAG, "ImportActivity.onCreate");
-
-        //DB
-        db = AppStatics.db;
+        Log.d(APP_TAG, "ImportActivity.onCreate");
 
         //GUI
         detailTV = (TextView) findViewById(R.id.detail_tv);
         spinner = (Spinner) findViewById(R.id.spinner);
         fab = (FloatingActionButton) findViewById(R.id.fab);
-
 
     }
 
@@ -80,344 +72,18 @@ public class ImportActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        if (isAppImporting()) {
 
-        //TODO deb
-        Log.d(AppStatics.APP_TAG, ACT_TAG_ + ON_RESUME_TAG_ + SEPARATOR_TAG);
-        Log.d(AppStatics.APP_TAG, "Handling Importation");
-
-
-        if (db.getPreference(PNames.APP_STATE).equals(PDefaultValues.IMPORTING)) {
-
-            //region if AppImporting == IMPORTING
-
-            //TODO deb
-            Log.d(AppStatics.APP_TAG, "If AppImporting = Importing");
-
-            //Import File
-            File importingFile = new File(db.getPreference(PNames.CURRENT_IMPORTING_FILE_PATH));
-            if (importingFile.exists()) {
-
-                //region if importingFile.exists() == true
-
-                //TODO deb
-                Log.d(AppStatics.APP_TAG, "If ImportFile exist");
-
-                //region Reading CSVData
-                try {
-                    data = Tools.readFile(importingFile);
-
-                    //TODO deb
-                    Log.d(AppStatics.APP_TAG, "ImportFile CSVData reading succeed");
-
-                } catch (IOException e) {
-
-                    //TODO deb
-                    Log.d(AppStatics.APP_TAG, "Error reading importFile CSVData");
-
-                    Tools.showInfoDialog(ImportActivity.this, getString(R.string.error3), "Aceptar",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!",
-                                            false);
-                                    db.setPreference(PNames.APP_STATE, PDefaultValues.IMPORTATION_CANCELLED);
-                                    startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                                    finish();
-                                }
-                            });
-                }
-                //endregion
-
-                //region Checking HashCode
-                if (String.valueOf(getDataHashCode(data, AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX)).
-                        equals(db.getPreference(PNames.CURRENT_IMPORTATION_FILE_HASH))) {
-
-                    //TODO deb
-                    Log.d(AppStatics.APP_TAG, "Hash Code test succeed");
-
-                    //Start Index
-                    int startIndex = Integer.
-                            parseInt(db.getPreference(PNames.CURRENT_IMPORTATION_INDEX));
-
-                    //Starting Importing
-                    if (data.get(0).split(",", -1)[0].equals(AppStatics.
-                            UH_INVENTORY_FILE_HEAD_CODE)) {
-
-                        db.setPreference(PNames.DB_STATE, PDefaultValues.DB_CORRUPTED);
-
-                        //TODO deb
-                        Log.d(AppStatics.APP_TAG, "Importing an UH inventory file, start index " + startIndex);
-
-                        importAT = new ImportUHInventoryAT(startIndex, data, detailTV);
-                        importAT.execute();
-
-                    } else if (data.get(0).split(",", -1)[0].equals(AppStatics.
-                            SALVA_INVENTORY_FILE_HEAD_CODE)) {
-
-                        //TODO deb
-                        Log.d(AppStatics.APP_TAG, "Importing a salva file, start index " + startIndex);
-
-                        importAT = new ImportSaveAT(startIndex, data, detailTV);
-                        importAT.execute();
-
-                    } else {
-
-                        //TODO deb
-                        Log.d(AppStatics.APP_TAG, "Corrupted Head, precess cancelled");
-
-                        Tools.showInfoDialog(ImportActivity.this, getString(R.string.error6),
-                                "Aceptar",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!",
-                                                false);
-                                        db.setPreference(PNames.APP_STATE, PDefaultValues.IMPORTATION_CANCELLED);
-                                        startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                                        finish();
-                                    }
-                                });
-
-                    }
-
-
-                } else {
-
-                    //TODO deb
-                    Log.d(AppStatics.APP_TAG, "Hash Code test failed");
-
-                    Tools.showInfoDialog(ImportActivity.this, getString(R.string.error5), "Aceptar",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!",
-                                            false);
-                                    db.setPreference(PNames.APP_STATE, PDefaultValues.IMPORTATION_CANCELLED);
-                                    startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                                    finish();
-                                }
-                            });
-                }
-
-                //endregion Checking Hash
-
-                //endregion if importingFile.exists() == true
-
-            } else {
-
-                //region if importingFile.exists() == false
-
-                //TODO deb
-                Log.d(AppStatics.APP_TAG, "ImportFile do not exist");
-
-                Tools.showDialogMessage(ImportActivity.this, getString(R.string.text3) +
-                        db.getPreference(PNames.CURRENT_IMPORTING_FILE_PATH), "Cerrar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        ImportActivity.this.finish();
-                        System.exit(0);
-
-                    }
-                }, "Reiniciar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        db.setPreference(PNames.APP_STATE, PDefaultValues.IMPORTATION_CANCELLED);
-                        startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                        finish();
-                    }
-                });
-
-                //endregion if importingFile.exists() == false
-
-            }
-
-            //GUI
-            //region Spinner
-            spinner.setAdapter(new ArrayAdapter<>(ImportActivity.this,
-                    android.R.layout.simple_list_item_1,
-                    new String[]{new File(db.getPreference(PNames.CURRENT_IMPORTING_FILE_PATH)).getName()}));
-            spinner.setClickable(false);
-
-            //endregion Spinner
-
-            //region Fab
-            fab.setBackgroundResource(R.drawable.ic_media_stop);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Tools.showDialogMessage(ImportActivity.this, getString(R.string.text7), "Sí",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!",
-                                            false);
-                                    db.setPreference(PNames.APP_STATE, PDefaultValues.IMPORTATION_CANCELLED);
-                                    startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                                    finish();
-                                }
-                            }, "No", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-
-                                }
-                            });
-                }
-            });
-
-            //endregion
-
-            //endregion if AppImporting == Yes
-
-        } else if (db.getPreference(PNames.APP_STATE).equals(PDefaultValues.FINISHING_IMPORTATION)) {
-
-            //region if AppImporting == FINISHING
-            detailTV.setText(R.string.text11);
-
-            Tools.showInfoDialog(ImportActivity.this, getString(R.string.text10),
-                    "Terminar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            db.setPreference(PNames.APP_STATE, PDefaultValues.NO_IMPORTING);
-                            startActivity(new Intent(ImportActivity.this, MainActivity.class));
-                        }
-                    });
-
-            //endregion
+            checkAndImport();
+            settingUpFabIfImporting();
+            settingUpSpinnerIfImporting();
 
         } else {
 
-            //region if AppImporting == NO_IMPORTING or IMPORTATION_CANCELLED
-
-            //TODO
-            Log.d(AppStatics.APP_TAG, "AppImporting = NO_IMPORTING");
-
-            //GUI
-            //region Spinner
-            File toImportDirectory = new File(db.getPreference(PNames.TO_IMPORT_DIRECTORY_PATH));
-            if (toImportDirectory.list().length != 0) {
-
-                //TODO deb
-                Log.d(AppStatics.APP_TAG, "toImportDirectory contain files");
-
-                spinner.setAdapter(new ArrayAdapter<String>(ImportActivity.this,
-                        android.R.layout.simple_list_item_1, toImportDirectory.list()));
-                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                        selectedFile = (String) adapterView.getSelectedItem();
-
-                        //TODO deb
-                        Log.d(AppStatics.APP_TAG, "selectedFile = " + selectedFile);
-
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> adapterView) {
-
-                    }
-                });
-
-            } else {
-
-                //TODO deb
-                Log.d(AppStatics.APP_TAG, "toImportDirectory is empty");
-
-                spinner.setAdapter(new ArrayAdapter<String>(ImportActivity.this,
-                        android.R.layout.simple_list_item_1, new String[]{"No hay archivos para importar"}));
-                Tools.showToast(ImportActivity.this,
-                        getString(R.string.text5) +
-                                db.getPreference(PNames.TO_IMPORT_DIRECTORY_PATH), false);
-
-            }
-
-            //endregion Spinner
-
-            //region fab
-            fab.setBackgroundResource(R.drawable.ic_media_play);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    Tools.showDialogMessage(ImportActivity.this, "Esta por comenzar una importación!!!",
-                            "Comenzar", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-
-                                    if (selectedFile == null || selectedFile.equals("")) {
-                                        Tools.showToast(ImportActivity.this, "Nada que importar!", false);
-                                        return;
-                                    }
-
-                                    String filePath = db.getPreference(PNames.TO_IMPORT_DIRECTORY_PATH) +
-                                            File.separator + selectedFile;
-
-                                    //Reading CSVData
-                                    try {
-                                        data = Tools.readFile(filePath);
-
-                                        //Checking CSVData internal hash Code
-                                        String fileInternalHashCode = data.get(0).split(",", -1)[1];
-                                        if (!fileInternalHashCode.equals(String.valueOf(getDataHashCode(data,
-                                                AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX)))) {
-
-                                            //TODO deb
-                                            Log.d(AppStatics.APP_TAG, "Error Internal hash code mismatch");
-
-                                            Tools.showInfoDialog(ImportActivity.this, getString(R.string.error6), "Aceptar",
-                                                    new DialogInterface.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                                            startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                                                            finish();
-                                                        }
-                                                    });
-                                            return;
-
-                                        }
-
-                                        //TODO deb
-                                        Log.d(AppStatics.APP_TAG, "ImportFile CSVData reading succeed");
-
-                                    } catch (IOException e) {
-
-                                        //TODO deb
-                                        Log.d(AppStatics.APP_TAG, "Error reading importFile CSVData");
-
-                                        Tools.showInfoDialog(ImportActivity.this, getString(R.string.error3), "Aceptar",
-                                                new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                                        Tools.showToast(ImportActivity.this, getString(R.string.text13),
-                                                                false);
-                                                        startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                                                        finish();
-                                                    }
-                                                });
-                                        return;
-                                    }
-
-                                    db.setPreference(PNames.CURRENT_IMPORTATION_FILE_HASH, data.get(0).split(",", -1)[1]);
-                                    db.setPreference(PNames.CURRENT_IMPORTING_FILE_PATH, filePath);
-                                    db.setPreference(PNames.CURRENT_IMPORTATION_INDEX,
-                                            AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX);
-                                    db.setPreference(PNames.APP_STATE, PDefaultValues.IMPORTING);
-
-                                    startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                                    finish();
-
-                                }
-                            }, "Cancelar", null);
-
-                }
-            });
-
-            //endregion fab
-
-            //endregion if AppImporting == NO or IMPORTATION_CANCELLED
+            settingUpSpinnerIfNotImporting();
+            settingUpFabIfNotImporting();
 
         }
-
 
     }
 
@@ -433,28 +99,284 @@ public class ImportActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        if (isAppImporting())
+            Tools.showDialogMessage(ImportActivity.this, getString(R.string.text7), "Sí",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!",
+                                    false);
+                            db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
+                            startActivity(new Intent(ImportActivity.this, ImportActivity.class));
+                            finish();
+                        }
+                    }, "No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
 
-    //Methods
+                        }
+                    });
+        else super.onBackPressed();
+    }
 
-    /**
-     * return a hash code of a given subPart of the ArrayList, it first concatenate all
-     * the CSVData as an String, and use the myStringHashCode method of the Tools class to return.
-     *
-     * @param data       the CSVData
-     * @param startIndex the startIndex to considerate
-     * @return the hashcode
-     */
-    private int getDataHashCode(ArrayList<String> data, int startIndex) {
+
+    //region Checking...
+
+    private boolean checkIfFileToImportExist() {
+
+        File fileToImport = new File(getCurrentFileToImport());
+        if (fileToImport.exists())
+            return true;
+        else {
+            Tools.showDialogMessage(
+                    ImportActivity.this,
+                    getString(R.string.error9) + " " +
+                            getString(R.string.text3) +
+                            getCurrentFileToImport(),
+                    "Cerrar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ImportActivity.this.finish();
+                            System.exit(0);
+                        }
+                    },
+                    "Reiniciar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            cancelImportation();
+                        }
+                    });
+            return false;
+        }
+
+    }
+
+    private boolean checkCSVDataHead() {
+        try {
+            String head = CSVData.get(0).split(",", -1)[0];
+            if (head.equals(UH_INVENTORY_FILE_HEAD_CODE) || head.equals(SALVA_INVENTORY_FILE_HEAD_CODE))
+                return true;
+            else throw new Exception();
+        } catch (Exception e) {
+
+            Tools.showInfoDialog(ImportActivity.this, getString(R.string.error5), "Aceptar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            cancelImportation();
+                        }
+                    });
+            return false;
+        }
+    }
+
+    private boolean checkAppHashCodeAndCSVFileHashCode() {
+
+        try {
+            String fileHash = CSVData.get(0).split(",", -1)[1];
+            String appHash = db.getPreference(PNames.CURRENT_DATA_TO_IMPORT_HASH);
+            String dataHash = String.valueOf(getCSVDataHashCode());
+
+            if (!fileHash.equals(dataHash)) throw new Exception();
+            if (!fileHash.equals(appHash)) throw new Exception();
+            return true;
+
+        } catch (Exception e) {
+            Tools.showInfoDialog(ImportActivity.this, getString(R.string.error5), "Aceptar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            cancelImportation();
+                        }
+                    });
+            return false;
+        }
+
+    }
+
+    private boolean isAppImporting() {
+        return !db.getPreference(PNames.CURRENT_FILE_TO_IMPORT).equals(PDefaultValues.EMPTY_PREFERENCE);
+    }
+
+    //endregion Checking...
+
+
+
+    private void settingUpSpinnerIfImporting() {
+
+        File file = new File(getCurrentFileToImport());
+        spinner.setAdapter(new ArrayAdapter<>(ImportActivity.this,
+                android.R.layout.simple_list_item_1,
+                new String[]{file.getName()}));
+        spinner.setClickable(false);
+        spinner.setEnabled(false);
+
+    }
+
+    private void settingUpFabIfImporting() {
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+    }
+
+    private void checkAndImport() {
+
+        if (!checkIfFileToImportExist()) return;
+        if (!readCSVDataFromFile(new File(getCurrentFileToImport()))) return;
+        if (!checkCSVDataHead()) return;
+        if (!checkAppHashCodeAndCSVFileHashCode()) return;
+
+        if (getCurrentFileToImportHead().equals(UH_INVENTORY_FILE_HEAD_CODE)) {
+            importAT = new ImportUHInventoryAT(getCurrentImportationIndex(), CSVData, detailTV);
+            importAT.execute();
+        } else if (getCurrentFileToImportHead().equals(SALVA_INVENTORY_FILE_HEAD_CODE)) {
+            importAT = new ImportSalvaAT(getCurrentImportationIndex(), CSVData, detailTV);
+            importAT.execute();
+        }
+
+    }
+
+    private void cancelImportation() {
+
+        Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!", false);
+        db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
+        if (!getCurrentFileToImportHead().equals(SALVA_INVENTORY_FILE_HEAD_CODE))
+            db.setPreference(PNames.DB_STATE, PDefaultValues.DB_CORRUPTED);
+        startActivity(new Intent(ImportActivity.this, ImportActivity.class));
+        finish();
+
+    }
+
+    private void settingUpFabIfNotImporting() {
+
+        fab.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                if (selectedFile == null || selectedFile.equals("")) {
+                    Tools.showToast(ImportActivity.this, "Nada que importar!", false);
+                    return;
+                }
+
+                Tools.showDialogMessage(ImportActivity.this, "Esta por comenzar una importación!!!",
+                        "Comenzar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                prepareForImportation();
+                            }
+                        }, "Cancelar", null);
+            }
+        });
+
+    }
+
+    private void prepareForImportation() {
+
+        File fileToImport = new File(selectedFile);
+        if (!readCSVDataFromFile(fileToImport)) return;
+        setUpPreferencesToStartImportation(fileToImport);
+        startActivity(new Intent(ImportActivity.this, ImportActivity.class));
+        finish();
+
+    }
+
+    private void setUpPreferencesToStartImportation(File fileToImport) {
+
+        db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, fileToImport.getPath());
+        db.setPreference(PNames.CURRENT_FILE_TO_IMPORT_HEAD, CSVData.get(0).split(",", -1)[0]);
+        db.setPreference(PNames.CURRENT_DATA_TO_IMPORT_HASH, CSVData.get(0).split(",", -1)[1]);
+        db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, Importation.CSV_FIRST_DATA_LINE_INDEX);
+
+    }
+
+    private void settingUpSpinnerIfNotImporting() {
+
+        //Files to import
+        if (CSVFiles != null) {
+            spinner.setAdapter(new ArrayAdapter<>(ImportActivity.this,
+                    android.R.layout.simple_list_item_1,
+                    toStringArrayList(CSVFiles)));
+        } else {
+            startLoadingCSVFilesThread();
+        }
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (i < CSVFiles.size()) {
+                    selectedFile = CSVFiles.get(i).getPath();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+    }
+
+    private void startLoadingCSVFilesThread() {
+
+        Tools.showToast(ImportActivity.this, "Buscando archivos para importar!!", false);
+        CSVFiles = new ArrayList<>();
+        new ListCSVFilesInTheDeviseAT().execute();
+    }
+
+    private int getCSVDataHashCode() {
 
         StringBuilder stringBuilder = new StringBuilder();
-
-        for (; startIndex < data.size(); startIndex++) {
-            stringBuilder.append(data.get(startIndex));
+        for (int startIndex = Importation.CSV_FIRST_DATA_LINE_INDEX;
+             startIndex < CSVData.size(); startIndex++) {
+            stringBuilder.append(CSVData.get(startIndex));
         }
 
         return Tools.myStringHashCode(stringBuilder.toString());
     }
 
+    private ArrayList<String> toStringArrayList(ArrayList<File> files) {
+        ArrayList<String> toReturn = new ArrayList<>();
+        for (File f : files) {
+            toReturn.add(f.getName());
+        }
+        return toReturn;
+    }
+
+    private boolean readCSVDataFromFile(File fileToImport) {
+        try {
+            CSVData = Tools.readFile(fileToImport);
+            return true;
+        } catch (IOException e) {
+            Tools.showInfoDialog(ImportActivity.this, getString(R.string.error3), "Aceptar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            cancelImportation();
+                        }
+                    });
+            return false;
+        }
+    }
+
+    private String getCurrentFileToImport() {
+        return db.getPreference(PNames.CURRENT_FILE_TO_IMPORT);
+    }
+
+    private String getCurrentFileToImportHead() {
+        return db.getPreference(PNames.CURRENT_FILE_TO_IMPORT_HEAD);
+    }
+
+    private int getCurrentImportationIndex() {
+        return Integer.parseInt(db.getPreference(PNames.CURRENT_IMPORTATION_INDEX));
+    }
 
     private class ImportUHInventoryAT extends AsyncTask<Void, String, Boolean> {
 
@@ -471,27 +393,27 @@ public class ImportActivity extends AppCompatActivity {
             index = startIndex;
 
             //TODO deb
-            Log.d(AppStatics.APP_TAG, "ImportUHInventoryAT created start index " + index);
+            Log.d(APP_TAG, "ImportUHInventoryAT created start index " + index);
         }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
 
             //TODO deb
-            Log.d(AppStatics.APP_TAG, "ImportUHInventoryAT doInBackground");
+            Log.d(APP_TAG, "ImportUHInventoryAT doInBackground");
 
 
             //everybody to LEFTOVER
-            if (index == AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX) {
+            if (index == Importation.CSV_FIRST_DATA_LINE_INDEX) {
                 db.updateStateColumn(IT.StateValues.LEFTOVER);
                 db.updateLastCheckingColumn(Tools.getDate());
                 //TODO deb
-                Log.d(AppStatics.APP_TAG, "state column to LEFTOVER");
+                Log.d(APP_TAG, "state column to LEFTOVER");
             }
 
             //Importing
             String number, description, area, altaDate, officialUpdate;
-            int numberCount = CSVData.size() - AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX;
+            int numberCount = CSVData.size() - Importation.CSV_FIRST_DATA_LINE_INDEX;
             String[] line;
             String action;
             for (; index < CSVData.size(); index++) {
@@ -503,11 +425,11 @@ public class ImportActivity extends AppCompatActivity {
                 //getting Data
                 line = CSVData.get(index).split(",", -1);
 
-                number = line[AppStatics.Importation.NUMBER_INDEX];
-                description = line[AppStatics.Importation.DESCRIPTION_INDEX];
-                area = line[AppStatics.Importation.AREA_INDEX];
-                altaDate = line[AppStatics.Importation.ALTA_DATE_INDEX];
-                officialUpdate = line[AppStatics.Importation.OFFICIAL_UPDATE_INDEX];
+                number = line[Importation.NUMBER_INDEX];
+                description = line[Importation.DESCRIPTION_INDEX];
+                area = line[Importation.AREA_INDEX];
+                altaDate = line[Importation.ALTA_DATE_INDEX];
+                officialUpdate = line[Importation.OFFICIAL_UPDATE_INDEX];
 
 
                 if (db.updateOfficialDataAndState(
@@ -534,14 +456,6 @@ public class ImportActivity extends AppCompatActivity {
 
                     action = "(Nuevo número)";
 
-                }
-
-                //Generating bitmap
-                try {
-                    Tools.saveImage(Tools.codeTextToQRAndGetBitmap(number, 125), db.getPreference(PNames.QRS_DIRECTORY_PATH),
-                            number + ".jpg");
-                } catch (WriterException e) {
-                    Log.d(AppStatics.APP_TAG, e.getMessage());
                 }
 
                 //Updating Preferences
@@ -575,16 +489,13 @@ public class ImportActivity extends AppCompatActivity {
             if (b) {
 
 
-                db.setPreference(PNames.APP_STATE, PDefaultValues.FINISHING_IMPORTATION);
-                db.setPreference(PNames.DB_STATE, PDefaultValues.DB_OK);
                 textView.setText(R.string.text11);
                 Tools.showInfoDialog(ImportActivity.this, getString(R.string.text10),
                         "Terminar", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                db.setPreference(PNames.APP_STATE, PDefaultValues.NO_IMPORTING);
-                                db.setPreference(PNames.AREAS_TO_FOLLOW_CSV, PDefaultValues.EMPTY_PREFERENCE);
-                                AppStatics.AreasToFollow.updateAreasToFollow(db);
+
+                                terminateImportation();
                                 startActivity(new Intent(ImportActivity.this, MainActivity.class));
                                 finish();
                             }
@@ -593,19 +504,23 @@ public class ImportActivity extends AppCompatActivity {
             } else {
                 db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, index);
             }
-            Log.d(AppStatics.APP_TAG, "Async Task onPostExecute, result " + b);
+            Log.d(APP_TAG, "Async Task onPostExecute, result " + b);
         }
-
 
         private String getPerCent(int part, int total) {
             return String.valueOf((part * 100) / total) + " %";
         }
 
+        private void terminateImportation() {
+            db.setPreference(PNames.DB_STATE, PDefaultValues.DB_OK);
+            db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
+            db.setPreference(PNames.AREAS_TO_FOLLOW_CSV, PDefaultValues.EMPTY_PREFERENCE);
+            AreasToFollow.updateAreasToFollow(db);
+        }
 
     }
 
-    private class ImportSaveAT extends AsyncTask<Void, String, Boolean> {
-
+    private class ImportSalvaAT extends AsyncTask<Void, String, Boolean> {
 
         //import asyncTask
         //GUI
@@ -613,25 +528,25 @@ public class ImportActivity extends AppCompatActivity {
         private int index;
         ArrayList<String> CSVData;
 
-        public ImportSaveAT(int startIndex, ArrayList<String> CSVData, TextView textView) {
+        public ImportSalvaAT(int startIndex, ArrayList<String> CSVData, TextView textView) {
 
             this.textView = textView;
             this.CSVData = CSVData;
             index = startIndex;
 
             //TODO deb
-            Log.d(AppStatics.APP_TAG, "ImportSaveAT created start index " + index);
+            Log.d(APP_TAG, "ImportSalvaAT created start index " + index);
         }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
 
             //TODO deb
-            Log.d(AppStatics.APP_TAG, "ImportSaveAT doInBackground");
+            Log.d(APP_TAG, "ImportSalvaAT doInBackground");
 
             //Importing
             String number, location, observation;
-            int numberCount = CSVData.size() - AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX;
+            int numberCount = CSVData.size() - Importation.CSV_FIRST_DATA_LINE_INDEX;
             int type;
             String[] line;
             for (; index < CSVData.size(); index++) {
@@ -642,16 +557,25 @@ public class ImportActivity extends AppCompatActivity {
 
                 line = CSVData.get(index).split(",", -1);
 
-                number = line[AppStatics.Importation.NUMBER_INDEX];
-                location = line[AppStatics.Importation.LOCATION_INDEX];
-                type = Integer.parseInt(line[AppStatics.Importation.TYPE_INDEX]);
-                observation = line[AppStatics.Importation.OBSERVATION_INDEX];
+                number = line[Importation.NUMBER_INDEX];
+                location = line[Importation.LOCATION_INDEX];
+                type = Integer.parseInt(line[Importation.TYPE_INDEX]);
+                observation = line[Importation.OBSERVATION_INDEX];
 
-                if (db.updateNonOfficialData(number, location, type, observation) != -1) {
+                if (db.updateNonOfficialData(number, location, type, observation) != 0) {
 
                     publishProgress("Importando archivo salva..." + "\n" +
                             index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
-                            "(Actualizando úmero)" + "\n" +
+                            "(Actualizando número)" + "\n" +
+                            "Numero: " + number + "\n" +
+                            "Localización: " + location + "\n" +
+                            "Type: " + IT.TypeValues.toString(type) + "\n" +
+                            "Observación: " + observation);
+                } else {
+
+                    publishProgress("Importando archivo salva..." + "\n" +
+                            index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
+                            "(número ausente)" + "\n" +
                             "Numero: " + number + "\n" +
                             "Localización: " + location + "\n" +
                             "Type: " + IT.TypeValues.toString(type) + "\n" +
@@ -677,13 +601,12 @@ public class ImportActivity extends AppCompatActivity {
 
             if (b) {
 
-                db.setPreference(PNames.APP_STATE, PDefaultValues.FINISHING_IMPORTATION);
                 textView.setText(R.string.text11);
                 Tools.showInfoDialog(ImportActivity.this, getString(R.string.text10),
                         "Terminar", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                db.setPreference(PNames.APP_STATE, PDefaultValues.NO_IMPORTING);
+                                terminateImportation();
                                 startActivity(new Intent(ImportActivity.this, MainActivity.class));
                                 finish();
                             }
@@ -694,8 +617,7 @@ public class ImportActivity extends AppCompatActivity {
             }
 
 
-
-            Log.d(AppStatics.APP_TAG, "Async Task onPostExecute, result " + b);
+            Log.d(APP_TAG, "Async Task onPostExecute, result " + b);
 
 
         }
@@ -703,6 +625,56 @@ public class ImportActivity extends AppCompatActivity {
         private String getPerCent(int part, int total) {
             return String.valueOf((part * 100) / total) + " %";
         }
+
+        private void terminateImportation() {
+
+            db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
+        }
+    }
+
+    private class ListCSVFilesInTheDeviseAT extends AsyncTask<Void, Void, Void> {
+
+
+        private ArrayList<String> files;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            CSVFiles.clear();
+            ArrayList<File> anyCSVFile = new ArrayList<>();
+            Tools.listAllFilesAndSubFiles(Environment.getExternalStorageDirectory(), ".csv", anyCSVFile);
+            for (File f : anyCSVFile) {
+                try {
+                    String line = Tools.readFileFirstLine(f);
+                    if (checkHeadLine(line)) {
+                        CSVFiles.add(f);
+                    }
+
+                } catch (IOException e) {
+                }
+            }
+            files = toStringArrayList(CSVFiles);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            spinner.setAdapter(new ArrayAdapter<>(ImportActivity.this,
+                    android.R.layout.simple_list_item_1,
+                    files));
+
+            Tools.showToast(ImportActivity.this, "Búsqueda finalizada, encontrados " +
+                    CSVFiles.size() + " posibles arhivos .csv con datos de inventario!", true);
+
+        }
+
+        private boolean checkHeadLine(String line) {
+            if (line.contains(AppStatics.UH_INVENTORY_FILE_HEAD_CODE)
+                    || line.contains(AppStatics.SALVA_INVENTORY_FILE_HEAD_CODE))
+                return true;
+            else return false;
+        }
+
     }
 
 }
