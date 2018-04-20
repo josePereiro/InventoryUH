@@ -47,5 +47,7 @@
     <string name="search_by_qr">Buscar por qr</string>
     <string name="title_activity_new_number">NewNumberActivity</string>
     <string name="title_activity_qrfactory">QRFActoryActivity</string>
+    <string name="title_activity_printable_qrs_factory">PrintableQRsFactoryActivity</string>
+    <string name="title_activity_export_inventory">ExportInventoryActivity</string>
 
 </resources>

@@ -49,7 +49,15 @@
             android:name=".Activities.QRViewerActivity"
             android:label="@string/title_activity_qrfactory"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Activities.DialogActivity"></activity>
+        <activity android:name=".Activities.DialogActivity" />
+        <activity
+            android:name=".Activities.PrintableQRsFactoryActivity"
+            android:label="@string/title_activity_printable_qrs_factory"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.ExportInventoryActivity"
+            android:label="@string/title_activity_export_inventory"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -534,6 +535,52 @@ public class Tools {
         canvas.drawText(toCode, 0, fh - 2, new Paint());
 
         return image;
+    }
+
+    public static Bitmap getGrid(Bitmap[] images, int rawCount, int margin) {
+
+        //region startPoints
+
+        ArrayList<Point> startsPoints = new ArrayList<>();
+        int r = 0;
+        int c = 0;
+        for (Bitmap image : images) {
+            startsPoints.add(new Point(r * (image.getWidth() + margin) + margin,
+                    c * (image.getHeight() + margin) + margin));
+
+            if (r < rawCount - 1) {
+                r++;
+            } else {
+                r = 0;
+                c++;
+            }
+        }
+
+        //endregion
+
+        int bw = startsPoints.get(rawCount - 1).x + images[0].getWidth() + margin;
+        int bh = startsPoints.get(startsPoints.size() - 1).y + images[0].getHeight() + margin;
+
+        Bitmap gridImage = Bitmap.createBitmap(bw, bh, Bitmap.Config.RGB_565);
+        new Canvas(gridImage).drawColor(Color.GRAY);
+
+        //drawing images
+        for (int i = 0; i < images.length; i++) {
+            drawImage(startsPoints.get(i), gridImage, images[i]);
+        }
+
+        return gridImage;
+    }
+
+    public static void drawImage(Point p, Bitmap bigImage, Bitmap image) {
+        int sx = p.x;
+        int sy = p.y;
+
+        for (int x = 0; x < image.getWidth() - 1; x++) {
+            for (int y = 0; y < image.getHeight() - 1; y++) {
+                bigImage.setPixel(x + sx, y + sy, image.getPixel(x, y));
+            }
+        }
     }
 
 

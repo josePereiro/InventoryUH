@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -41,24 +40,12 @@ public class MainActivity extends AppCompatActivity {
     ExportInventoryToCSVAT expAsyncTask;
     private static String EXPORTED_FILE = "";
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Test
-        try {
-            Bitmap bm = Tools.getQRCodeLabeledBitmap("154135134");
-
-            int bmw = bm.getWidth();
-            int bmh = bm.getHeight();
-
-            throw new Exception();
-        } catch (Exception e) {
-            finish();
-        }
-
+        startActivity(new Intent(MainActivity.this, PrintableQRsFactoryActivity.class));
 
         //Debug
         Log.d("JOSE2", "MainActivity.onCreate +++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -84,23 +71,14 @@ public class MainActivity extends AppCompatActivity {
         insertBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.setPreference(PT.PNames.NUMBER_TO_EDIT, PT.PDefaultValues.EMPTY_PREFERENCE);
-                db.setPreference(PT.PNames.TEMP_NUMBER, PT.PDefaultValues.EMPTY_PREFERENCE);
-                db.setPreference(PT.PNames.TEMP_DESCRIPTION, PT.PDefaultValues.EMPTY_PREFERENCE);
-                db.setPreference(PT.PNames.TEMP_LOCATION, PT.PDefaultValues.EMPTY_PREFERENCE);
-                db.setPreference(PT.PNames.TEMP_FOLLOWING, IT.FollowingValues.NO);
-                db.setPreference(PT.PNames.TEMP_STATE, IT.StateValues.LEFTOVER);
-                db.setPreference(PT.PNames.TEMP_TYPE, IT.TypeValues.UNKNOWN);
-                db.setPreference(PT.PNames.TEMP_OBSERVATION, PT.PDefaultValues.EMPTY_PREFERENCE);
-                startActivity(new Intent(MainActivity.this, NewNumberActivity.class));
+                callNewNumberActivity();
             }
         });
         searchBtn = (Button) findViewById(R.id.search_btn);
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.setPreference(PT.PNames.TEMP_SEARCH_CRITERIA, PT.PDefaultValues.EMPTY_PREFERENCE);
-                startActivity(new Intent(MainActivity.this, SearchActivity.class));
+                callSearchActivity();
             }
         });
         readQRBtn = (Button) findViewById(R.id.read_qr);
@@ -114,15 +92,15 @@ public class MainActivity extends AppCompatActivity {
         confBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.setPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV, PT.PDefaultValues.EMPTY_PREFERENCE);
-                startActivity(new Intent(MainActivity.this, ConfigurationActivity.class));
+                callConfigurationActivity();
             }
         });
         makeQRBtn = (Button) findViewById(R.id.make_qr);
         makeQRBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, QRViewerActivity.class));
+                callQRViewerActivity();
+
             }
         });
         expBtn = (Button) findViewById(R.id.export);
@@ -147,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
         AppStatics.Description.descriptions = new String[]{""};
 
     }
-
 
     @Override
     protected void onResume() {
@@ -463,6 +440,31 @@ public class MainActivity extends AppCompatActivity {
     private void callImportActivity() {
         ImportActivity.CSVFiles = null;
         startActivity(new Intent(MainActivity.this, ImportActivity.class));
+    }
+
+    private void callQRViewerActivity() {
+        startActivity(new Intent(MainActivity.this, QRViewerActivity.class));
+    }
+
+    private void callNewNumberActivity() {
+        db.setPreference(PT.PNames.NUMBER_TO_EDIT, PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(PT.PNames.TEMP_NUMBER, PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(PT.PNames.TEMP_DESCRIPTION, PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(PT.PNames.TEMP_LOCATION, PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(PT.PNames.TEMP_FOLLOWING, IT.FollowingValues.NO);
+        db.setPreference(PT.PNames.TEMP_STATE, IT.StateValues.LEFTOVER);
+        db.setPreference(PT.PNames.TEMP_TYPE, IT.TypeValues.UNKNOWN);
+        db.setPreference(PT.PNames.TEMP_OBSERVATION, PT.PDefaultValues.EMPTY_PREFERENCE);
+        startActivity(new Intent(MainActivity.this, NewNumberActivity.class));
+    }
+
+    private void callConfigurationActivity() {
+        startActivity(new Intent(MainActivity.this, ConfigurationActivity.class));
+    }
+
+    private void callSearchActivity() {
+        db.setPreference(PT.PNames.TEMP_SEARCH_CRITERIA, PT.PDefaultValues.EMPTY_PREFERENCE);
+        startActivity(new Intent(MainActivity.this, SearchActivity.class));
     }
 
     private class ExportInventoryToCSVAT extends AsyncTask<String, Void, Boolean> {
