@@ -23,29 +23,21 @@ import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
+
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.*;
 
 public class MainActivity extends AppCompatActivity {
 
 
     //GUI
     TextView textView;
-    Button inventoryBtn, importBtn, insertBtn, searchBtn, readQRBtn, confBtn, makeQRBtn, expBtn;
-
-    //DB
-    private DB db;
-
-    //Exporting
-    ExportInventoryToCSVAT expAsyncTask;
-    private static String EXPORTED_FILE = "";
+    Button inventoryBtn, importBtn, insertBtn, searchBtn, readQRBtn, confBtn, makeQRBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        startActivity(new Intent(MainActivity.this, PrintableQRsFactoryActivity.class));
 
         //Debug
         Log.d("JOSE2", "MainActivity.onCreate +++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -85,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         readQRBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                callQRDecoder(AppStatics.QR_DECODER_REQUEST);
+                callQRDecoder(QR_DECODER_REQUEST);
             }
         });
         confBtn = (Button) findViewById(R.id.configuration_btn);
@@ -103,26 +95,17 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        expBtn = (Button) findViewById(R.id.export);
-        expBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                expAsyncTask = new ExportInventoryToCSVAT();
-                expAsyncTask.execute();
-            }
-        });
 
 
         //DB
         db = new DB(getApplicationContext());
-        AppStatics.db = db;
 
         //AppStatics
-        AppStatics.Area.updateAreas(db);
-        AppStatics.Location.updateLocations(db);
-        AppStatics.Observation.updateObservations(db);
-        AppStatics.AreasToFollow.updateAreasToFollow(db);
-        AppStatics.Description.descriptions = new String[]{""};
+        Area.updateAreas();
+        Location.updateLocations();
+        Observation.updateObservations();
+        AreasToFollow.updateAreasToFollow();
+        Description.descriptions = new String[]{""};
 
     }
 
@@ -157,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == AppStatics.QR_DECODER_REQUEST) {
+        if (requestCode == QR_DECODER_REQUEST) {
             if (resultCode == RESULT_OK) {
                 String result = data.getStringExtra("SCAN_RESULT");
 
@@ -216,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Root file
-        File appFile = new File(sdcard, AppStatics.APP_FILE_NAME);
+        File appFile = new File(sdcard, APP_FILE_NAME);
         if (!appFile.exists()) {
             if (appFile.mkdir()) {
                 if (appFile.isDirectory()) {
@@ -250,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //To Import File
-        File toImportFile = new File(appFile, AppStatics.APP_TO_IMPORT_FILE_NAME);
+        File toImportFile = new File(appFile, APP_TO_IMPORT_FILE_NAME);
         if (!toImportFile.exists()) {
             if (toImportFile.mkdir()) {
                 if (toImportFile.isDirectory()) {
@@ -283,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //To save file
-        File toSaveFile = new File(appFile, AppStatics.APP_SAVE_FILE_NAME);
+        File toSaveFile = new File(appFile, APP_SAVE_FILE_NAME);
         if (!toSaveFile.exists()) {
             if (toSaveFile.mkdir()) {
                 if (toSaveFile.isDirectory()) {
@@ -315,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //QR codes file
-        File qrsFile = new File(appFile, AppStatics.APP_QRS_FILE_NAME);
+        File qrsFile = new File(appFile, APP_QRS_FILE_NAME);
         if (!qrsFile.exists()) {
             if (qrsFile.mkdir()) {
                 if (qrsFile.isDirectory()) {
@@ -349,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
         //Updating preference
         db.setPreference(DB.PT.PNames.ROOT_DIRECTORY_PATH, appFile.getPath());
         db.setPreference(DB.PT.PNames.TO_IMPORT_DIRECTORY_PATH, toImportFile.getPath());
-        db.setPreference(DB.PT.PNames.SAVE_DIRECTORY_PATH, toSaveFile.getPath());
+        db.setPreference(DB.PT.PNames.BACKUPS_DIRECTORY_PATH, toSaveFile.getPath());
         db.setPreference(PT.PNames.QRS_DIRECTORY_PATH, qrsFile.getPath());
         return true;
 
@@ -389,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkingAreaToFollow() {
         //area
-        if (Arrays.equals(AppStatics.AreasToFollow.areasToFollow, new String[]{""})) {
+        if (Arrays.equals(AreasToFollow.areasToFollow, new String[]{""})) {
             Tools.showInfoDialog(MainActivity.this, "Debe seleccionar un área a seguir!", "Seleccionar",
                     new DialogInterface.OnClickListener() {
                         @Override
@@ -416,8 +399,8 @@ public class MainActivity extends AppCompatActivity {
             // We don't have permission so prompt the user
             ActivityCompat.requestPermissions(
                     this,
-                    AppStatics.PERMISSIONS_STORAGE,
-                    AppStatics.REQUEST_EXTERNAL_STORAGE
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
             );
         }
     }
@@ -467,75 +450,14 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(MainActivity.this, SearchActivity.class));
     }
 
-    private class ExportInventoryToCSVAT extends AsyncTask<String, Void, Boolean> {
-
-        StringBuilder data;
+    private class showReportAT extends AsyncTask<Void, Void, String> {
 
         @Override
-        protected Boolean doInBackground(String... strings) {
+        protected String doInBackground(Void... voids) {
 
-            //CSV Inventory Save Format
-            //Head
-            //Data: Number, Location, Type, Observation
+            Cursor data = db.getAllDataIfFollowing(IT.FollowingValues.YES);
 
-            File csvFile;
-            if (EXPORTED_FILE.equals("")) {
-                String fName = "Salva Inventario " + Tools.getFormattedDateForFileNaming() + ".csv";
-                csvFile = new File(AppStatics.db.getPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH),
-                        fName);
-                EXPORTED_FILE = fName;
-            } else {
-                csvFile = new File(AppStatics.db.getPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH),
-                        EXPORTED_FILE);
-            }
-
-            if (isCancelled()) {
-                return false;
-            }
-
-            Cursor cursor = AppStatics.db.getAllData();
-            data = new StringBuilder();
-            String line;
-            while (cursor.moveToNext()) {
-
-                if (isCancelled()) {
-                    return false;
-                }
-
-
-                line = cursor.getString(IT.Indexes.NUMBER_COLUMN_INDEX);
-                line += ",";
-                line += cursor.getString(IT.Indexes.LOCATION_COLUMN_INDEX);
-                line += ",";
-                line += cursor.getString(IT.Indexes.TYPE_COLUMN_INDEX);
-                line += ",";
-                line += cursor.getString(IT.Indexes.OBSERVATION_COLUMN_INDEX);
-                line += "\n";
-
-                data.append(line);
-            }
-
-            String head = AppStatics.SALVA_INVENTORY_FILE_HEAD_CODE + "," +
-                    Tools.myStringHashCode(data.toString().replaceAll("\n", "")) + "\n";
-
-            if (isCancelled()) {
-                return false;
-            }
-
-            try {
-                Tools.writeFile(csvFile, head + data.toString());
-            } catch (IOException e) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean r) {
-            if (r) {
-                Tools.showToast(MainActivity.this, "Inventario Exportado!", false);
-                EXPORTED_FILE = "";
-            }
+            return "";
         }
     }
 

@@ -19,7 +19,6 @@ import com.example.compereirowww.inventory20181.DataBase.DB.PT.PDefaultValues;
 import com.example.compereirowww.inventory20181.DataBase.DB.PT.PNames;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
-import com.google.zxing.WriterException;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,30 +26,30 @@ import java.util.ArrayList;
 
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_TAG;
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.AreasToFollow;
-import static com.example.compereirowww.inventory20181.Activities.AppStatics.Importation;
-import static com.example.compereirowww.inventory20181.Activities.AppStatics.SALVA_INVENTORY_FILE_HEAD_CODE;
-import static com.example.compereirowww.inventory20181.Activities.AppStatics.UH_INVENTORY_FILE_HEAD_CODE;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.BackupInventoryFile.INVENTORY_BACKUP_FILE_HEAD_CODE;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.ALTA_DATE_INDEX;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.AREA_INDEX;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.CSV_FIRST_DATA_LINE_INDEX;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.DESCRIPTION_INDEX;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.NUMBER_INDEX;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.OFFICIAL_UPDATE_INDEX;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.UH_INVENTORY_FILE_HEAD_CODE;
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.db;
 
 public class ImportActivity extends AppCompatActivity {
-
-    //DEB
-    static final String ACT_TAG_ = "ImportActivity ";
-    static final String ON_CREATE_TAG_ = "OnCreate ";
-    static final String ON_RESUME_TAG_ = "OnResume ";
-    static final String ON_PAUSE_TAG_ = "OnPause ";
-    static final String SEPARATOR_TAG = "+++++++++++++++++++++++++++++++++++++++++++++";
 
     //GUI
     TextView detailTV;
     Spinner spinner;
     FloatingActionButton fab;
 
-    //Importation Fields
+    //UHInventoryFile Fields
     private AsyncTask<Void, String, Boolean> importAT;
     private String selectedFile;
     protected static ArrayList<File> CSVFiles;
     private ArrayList<String> CSVData;
+
+    //File hash code 1337277359
 
     //Activity Life cycle methods
     @Override
@@ -121,12 +120,28 @@ public class ImportActivity extends AppCompatActivity {
         else super.onBackPressed();
     }
 
+    private boolean performAllChecking(File fileToImport, boolean corruptDB) {
+        if (!checkIfFileToImportExist(fileToImport, corruptDB)) {
+            Log.d(APP_TAG, "checkIfFileToImportExist fail");
+            return false;
+        }
+        if (!readCSVDataFromFile(fileToImport, corruptDB)) {
+            Log.d(APP_TAG, "readCSVDataFromFile fail");
+            return false;
+        }
+        if (!checkCSVDataHead(corruptDB)) {
+            Log.d(APP_TAG, "readCSVDataFromFile fail");
+            return false;
+        }
+        if (!checkAppHashCodeAndCSVFileHashCode(corruptDB)) {
+            Log.d(APP_TAG, "checkAppHashCodeAndCSVFileHashCode fail");
+            return false;
+        }
+        return true;
+    }
 
-    //region Checking...
+    private boolean checkIfFileToImportExist(File fileToImport, final boolean corruptDB) {
 
-    private boolean checkIfFileToImportExist() {
-
-        File fileToImport = new File(getCurrentFileToImport());
         if (fileToImport.exists())
             return true;
         else {
@@ -147,7 +162,7 @@ public class ImportActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            cancelImportation();
+                            cancelImportation(corruptDB);
                         }
                     });
             return false;
@@ -155,26 +170,25 @@ public class ImportActivity extends AppCompatActivity {
 
     }
 
-    private boolean checkCSVDataHead() {
+    private boolean checkCSVDataHead(final boolean corruptDB) {
         try {
             String head = CSVData.get(0).split(",", -1)[0];
-            if (head.equals(UH_INVENTORY_FILE_HEAD_CODE) || head.equals(SALVA_INVENTORY_FILE_HEAD_CODE))
+            if (head.equals(UH_INVENTORY_FILE_HEAD_CODE) || head.equals(INVENTORY_BACKUP_FILE_HEAD_CODE))
                 return true;
-            else throw new Exception();
+            throw new Exception();
         } catch (Exception e) {
-
             Tools.showInfoDialog(ImportActivity.this, getString(R.string.error5), "Aceptar",
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            cancelImportation();
+                            cancelImportation(corruptDB);
                         }
                     });
             return false;
         }
     }
 
-    private boolean checkAppHashCodeAndCSVFileHashCode() {
+    private boolean checkAppHashCodeAndCSVFileHashCode(final boolean corruptDB) {
 
         try {
             String fileHash = CSVData.get(0).split(",", -1)[1];
@@ -190,7 +204,29 @@ public class ImportActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            cancelImportation();
+                            cancelImportation(corruptDB);
+                        }
+                    });
+            return false;
+        }
+
+    }
+
+    private boolean checkCSVFileHash(final boolean corruptDB) {
+
+        try {
+            String fileHash = CSVData.get(0).split(",", -1)[1];
+            String dataHash = String.valueOf(getCSVDataHashCode());
+
+            if (!fileHash.equals(dataHash)) throw new Exception();
+            return true;
+
+        } catch (Exception e) {
+            Tools.showInfoDialog(ImportActivity.this, getString(R.string.error5), "Aceptar",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            cancelImportation(corruptDB);
                         }
                     });
             return false;
@@ -201,10 +237,6 @@ public class ImportActivity extends AppCompatActivity {
     private boolean isAppImporting() {
         return !db.getPreference(PNames.CURRENT_FILE_TO_IMPORT).equals(PDefaultValues.EMPTY_PREFERENCE);
     }
-
-    //endregion Checking...
-
-
 
     private void settingUpSpinnerIfImporting() {
 
@@ -228,27 +260,29 @@ public class ImportActivity extends AppCompatActivity {
 
     private void checkAndImport() {
 
-        if (!checkIfFileToImportExist()) return;
-        if (!readCSVDataFromFile(new File(getCurrentFileToImport()))) return;
-        if (!checkCSVDataHead()) return;
-        if (!checkAppHashCodeAndCSVFileHashCode()) return;
+        if (!performAllChecking(new File(getCurrentFileToImport()), true)) return;
 
         if (getCurrentFileToImportHead().equals(UH_INVENTORY_FILE_HEAD_CODE)) {
             importAT = new ImportUHInventoryAT(getCurrentImportationIndex(), CSVData, detailTV);
             importAT.execute();
-        } else if (getCurrentFileToImportHead().equals(SALVA_INVENTORY_FILE_HEAD_CODE)) {
-            importAT = new ImportSalvaAT(getCurrentImportationIndex(), CSVData, detailTV);
+        } else if (getCurrentFileToImportHead().equals(INVENTORY_BACKUP_FILE_HEAD_CODE)) {
+            importAT = new ImportBackUpAT(getCurrentImportationIndex(), CSVData, detailTV);
             importAT.execute();
         }
 
     }
 
-    private void cancelImportation() {
+    private void cancelImportation(boolean corruptDB) {
 
         Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!", false);
         db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
-        if (!getCurrentFileToImportHead().equals(SALVA_INVENTORY_FILE_HEAD_CODE))
-            db.setPreference(PNames.DB_STATE, PDefaultValues.DB_CORRUPTED);
+        if (!getCurrentFileToImportHead().equals(INVENTORY_BACKUP_FILE_HEAD_CODE)) {
+            if (corruptDB)
+                db.setPreference(PNames.DB_STATE, PDefaultValues.DB_CORRUPTED);
+            db.setPreference(PNames.LAST_IMPORTED_UH_DATA_HASH, PDefaultValues.EMPTY_PREFERENCE);
+        } else {
+            db.setPreference(PNames.LAST_IMPORTED_UH_DATA_HASH, PDefaultValues.EMPTY_PREFERENCE);
+        }
         startActivity(new Intent(ImportActivity.this, ImportActivity.class));
         finish();
 
@@ -270,7 +304,30 @@ public class ImportActivity extends AppCompatActivity {
                         "Comenzar", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
+
+                                File file = new File(selectedFile);
+                                if (!checkIfFileToImportExist(file, false)) {
+                                    Log.d(APP_TAG, "checkIfFileToImportExist fail");
+                                    return;
+                                }
+                                if (!readCSVDataFromFile(file, false)) {
+                                    Log.d(APP_TAG, "readCSVDataFromFile fail");
+                                    return;
+                                }
+                                if (!checkCSVDataHead(false)) {
+                                    Log.d(APP_TAG, "readCSVDataFromFile fail");
+                                    return;
+                                }
+                                if (!checkCSVFileHash(false)) {
+                                    Log.d(APP_TAG, "checkCSVFileHash fail");
+                                    return;
+                                }
+
                                 prepareForImportation();
+
+                                startActivity(new Intent(ImportActivity.this, ImportActivity.class));
+                                finish();
+
                             }
                         }, "Cancelar", null);
             }
@@ -281,10 +338,8 @@ public class ImportActivity extends AppCompatActivity {
     private void prepareForImportation() {
 
         File fileToImport = new File(selectedFile);
-        if (!readCSVDataFromFile(fileToImport)) return;
+        if (!readCSVDataFromFile(fileToImport, false)) return;
         setUpPreferencesToStartImportation(fileToImport);
-        startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-        finish();
 
     }
 
@@ -293,7 +348,7 @@ public class ImportActivity extends AppCompatActivity {
         db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, fileToImport.getPath());
         db.setPreference(PNames.CURRENT_FILE_TO_IMPORT_HEAD, CSVData.get(0).split(",", -1)[0]);
         db.setPreference(PNames.CURRENT_DATA_TO_IMPORT_HASH, CSVData.get(0).split(",", -1)[1]);
-        db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, Importation.CSV_FIRST_DATA_LINE_INDEX);
+        db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, CSV_FIRST_DATA_LINE_INDEX);
 
     }
 
@@ -313,6 +368,7 @@ public class ImportActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if (i < CSVFiles.size()) {
                     selectedFile = CSVFiles.get(i).getPath();
+                    new ShowPreviewAT().execute();
                 }
             }
 
@@ -334,7 +390,7 @@ public class ImportActivity extends AppCompatActivity {
     private int getCSVDataHashCode() {
 
         StringBuilder stringBuilder = new StringBuilder();
-        for (int startIndex = Importation.CSV_FIRST_DATA_LINE_INDEX;
+        for (int startIndex = CSV_FIRST_DATA_LINE_INDEX;
              startIndex < CSVData.size(); startIndex++) {
             stringBuilder.append(CSVData.get(startIndex));
         }
@@ -350,7 +406,7 @@ public class ImportActivity extends AppCompatActivity {
         return toReturn;
     }
 
-    private boolean readCSVDataFromFile(File fileToImport) {
+    private boolean readCSVDataFromFile(File fileToImport, final boolean corruptDB) {
         try {
             CSVData = Tools.readFile(fileToImport);
             return true;
@@ -359,7 +415,7 @@ public class ImportActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            cancelImportation();
+                            cancelImportation(corruptDB);
                         }
                     });
             return false;
@@ -404,7 +460,7 @@ public class ImportActivity extends AppCompatActivity {
 
 
             //everybody to LEFTOVER
-            if (index == Importation.CSV_FIRST_DATA_LINE_INDEX) {
+            if (index == CSV_FIRST_DATA_LINE_INDEX) {
                 db.updateStateColumn(IT.StateValues.LEFTOVER);
                 db.updateLastCheckingColumn(Tools.getDate());
                 //TODO deb
@@ -413,7 +469,7 @@ public class ImportActivity extends AppCompatActivity {
 
             //Importing
             String number, description, area, altaDate, officialUpdate;
-            int numberCount = CSVData.size() - Importation.CSV_FIRST_DATA_LINE_INDEX;
+            int numberCount = CSVData.size() - CSV_FIRST_DATA_LINE_INDEX;
             String[] line;
             String action;
             for (; index < CSVData.size(); index++) {
@@ -425,11 +481,11 @@ public class ImportActivity extends AppCompatActivity {
                 //getting Data
                 line = CSVData.get(index).split(",", -1);
 
-                number = line[Importation.NUMBER_INDEX];
-                description = line[Importation.DESCRIPTION_INDEX];
-                area = line[Importation.AREA_INDEX];
-                altaDate = line[Importation.ALTA_DATE_INDEX];
-                officialUpdate = line[Importation.OFFICIAL_UPDATE_INDEX];
+                number = line[NUMBER_INDEX];
+                description = line[DESCRIPTION_INDEX];
+                area = line[AREA_INDEX];
+                altaDate = line[ALTA_DATE_INDEX];
+                officialUpdate = line[OFFICIAL_UPDATE_INDEX];
 
 
                 if (db.updateOfficialDataAndState(
@@ -467,9 +523,7 @@ public class ImportActivity extends AppCompatActivity {
                         action + "\n" +
                         "Numero: " + number + "\n" +
                         "Descripción: " + description + "\n" +
-                        "Area: " + area + "\n" +
-                        "AltaDate: " + altaDate + "\n" +
-                        "Última Actualización oficial: " + officialUpdate);
+                        "Area: " + area);
 
             }
 
@@ -487,7 +541,6 @@ public class ImportActivity extends AppCompatActivity {
         protected void onPostExecute(Boolean b) {
 
             if (b) {
-
 
                 textView.setText(R.string.text11);
                 Tools.showInfoDialog(ImportActivity.this, getString(R.string.text10),
@@ -513,14 +566,16 @@ public class ImportActivity extends AppCompatActivity {
 
         private void terminateImportation() {
             db.setPreference(PNames.DB_STATE, PDefaultValues.DB_OK);
+            db.setPreference(PNames.LAST_IMPORTED_UH_DATA_HASH,
+                    db.getPreference(PNames.CURRENT_DATA_TO_IMPORT_HASH));
             db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
             db.setPreference(PNames.AREAS_TO_FOLLOW_CSV, PDefaultValues.EMPTY_PREFERENCE);
-            AreasToFollow.updateAreasToFollow(db);
+            AreasToFollow.updateAreasToFollow();
         }
 
     }
 
-    private class ImportSalvaAT extends AsyncTask<Void, String, Boolean> {
+    private class ImportBackUpAT extends AsyncTask<Void, String, Boolean> {
 
         //import asyncTask
         //GUI
@@ -528,25 +583,25 @@ public class ImportActivity extends AppCompatActivity {
         private int index;
         ArrayList<String> CSVData;
 
-        public ImportSalvaAT(int startIndex, ArrayList<String> CSVData, TextView textView) {
+        public ImportBackUpAT(int startIndex, ArrayList<String> CSVData, TextView textView) {
 
             this.textView = textView;
             this.CSVData = CSVData;
             index = startIndex;
 
             //TODO deb
-            Log.d(APP_TAG, "ImportSalvaAT created start index " + index);
+            Log.d(APP_TAG, "ImportBackUpAT created start index " + index);
         }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
 
             //TODO deb
-            Log.d(APP_TAG, "ImportSalvaAT doInBackground");
+            Log.d(APP_TAG, "ImportBackUpAT doInBackground");
 
             //Importing
             String number, location, observation;
-            int numberCount = CSVData.size() - Importation.CSV_FIRST_DATA_LINE_INDEX;
+            int numberCount = CSVData.size() - CSV_FIRST_DATA_LINE_INDEX;
             int type;
             String[] line;
             for (; index < CSVData.size(); index++) {
@@ -557,14 +612,14 @@ public class ImportActivity extends AppCompatActivity {
 
                 line = CSVData.get(index).split(",", -1);
 
-                number = line[Importation.NUMBER_INDEX];
-                location = line[Importation.LOCATION_INDEX];
-                type = Integer.parseInt(line[Importation.TYPE_INDEX]);
-                observation = line[Importation.OBSERVATION_INDEX];
+                number = line[NUMBER_INDEX];
+                location = line[AppStatics.BackupInventoryFile.LOCATION_INDEX];
+                type = Integer.parseInt(line[AppStatics.BackupInventoryFile.TYPE_INDEX]);
+                observation = line[AppStatics.BackupInventoryFile.OBSERVATION_INDEX];
 
                 if (db.updateNonOfficialData(number, location, type, observation) != 0) {
 
-                    publishProgress("Importando archivo salva..." + "\n" +
+                    publishProgress("Importando archivo de respaldo..." + "\n" +
                             index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
                             "(Actualizando número)" + "\n" +
                             "Numero: " + number + "\n" +
@@ -573,7 +628,7 @@ public class ImportActivity extends AppCompatActivity {
                             "Observación: " + observation);
                 } else {
 
-                    publishProgress("Importando archivo salva..." + "\n" +
+                    publishProgress("Importando archivo de respaldo..." + "\n" +
                             index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
                             "(número ausente)" + "\n" +
                             "Numero: " + number + "\n" +
@@ -628,14 +683,14 @@ public class ImportActivity extends AppCompatActivity {
 
         private void terminateImportation() {
 
+            db.setPreference(PNames.LAST_IMPORTED_BACKUP_DATA_HASH,
+                    db.getPreference(PNames.CURRENT_DATA_TO_IMPORT_HASH));
             db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
         }
     }
 
     private class ListCSVFilesInTheDeviseAT extends AsyncTask<Void, Void, Void> {
 
-
-        private ArrayList<String> files;
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -653,28 +708,116 @@ public class ImportActivity extends AppCompatActivity {
                 } catch (IOException e) {
                 }
             }
-            files = toStringArrayList(CSVFiles);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            spinner.setAdapter(new ArrayAdapter<>(ImportActivity.this,
-                    android.R.layout.simple_list_item_1,
-                    files));
-
+            settingUpSpinnerIfNotImporting();
             Tools.showToast(ImportActivity.this, "Búsqueda finalizada, encontrados " +
                     CSVFiles.size() + " posibles arhivos .csv con datos de inventario!", true);
 
         }
 
         private boolean checkHeadLine(String line) {
-            if (line.contains(AppStatics.UH_INVENTORY_FILE_HEAD_CODE)
-                    || line.contains(AppStatics.SALVA_INVENTORY_FILE_HEAD_CODE))
+            if (line.contains(UH_INVENTORY_FILE_HEAD_CODE)
+                    || line.contains(INVENTORY_BACKUP_FILE_HEAD_CODE))
                 return true;
             else return false;
         }
 
+    }
+
+    private class ShowPreviewAT extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... voids) {
+
+            File file = new File(selectedFile);
+            String ms = "Error leyendo el archivo!!!";
+            try {
+                ms = file.getName();
+                if (!readCSVDataFromFile(file)) throw new Exception();
+                if (!checkCSVDataHead()) {
+                    ms = "Este archivo no es compatible con la aplicación!!!";
+                    throw new Exception();
+                }
+                if (!checkCSVFileHashCode()) {
+                    ms = "Este archivo está corrupto!!!";
+                    throw new Exception();
+                }
+
+                String fileDataHash = String.valueOf(getCSVDataHashCode());
+                String lastImportedHash;
+
+                String fileHead = CSVData.get(0).split(",", -1)[0];
+                if (fileHead.equals(UH_INVENTORY_FILE_HEAD_CODE)) {
+
+                    ms = "Archivo UH de inventario";
+                    lastImportedHash = AppStatics.db.getPreference(PNames.LAST_IMPORTED_UH_DATA_HASH);
+
+                } else {
+
+                    ms = "Archivo de respaldo del inventario";
+                    lastImportedHash = AppStatics.db.getPreference(PNames.LAST_IMPORTED_BACKUP_DATA_HASH);
+                }
+
+                ms += "\n";
+                if (lastImportedHash.equals(fileDataHash)) {
+                    ms += "Nota: Este archivo contiene datos idénticos a los últimos importados!!! ";
+                } else {
+                    ms += "Nota: Contiene datos diferentes a los importados la última vez!!";
+                }
+                ms += "\n";
+                ms += "Números contenidos: " + (CSVData.size() - 1);
+
+                return ms;
+            } catch (Exception e) {
+                return ms;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String preview) {
+            detailTV.setText(preview);
+        }
+
+        private boolean checkCSVDataHead() {
+            try {
+                String head = CSVData.get(0).split(",", -1)[0];
+                if (head.equals(UH_INVENTORY_FILE_HEAD_CODE) ||
+                        head.equals(INVENTORY_BACKUP_FILE_HEAD_CODE))
+                    return true;
+                else throw new Exception();
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        private boolean checkCSVFileHashCode() {
+
+            try {
+                String fileHash = CSVData.get(0).split(",", -1)[1];
+                String appHash = db.getPreference(PNames.CURRENT_DATA_TO_IMPORT_HASH);
+                String dataHash = String.valueOf(getCSVDataHashCode());
+
+                if (!fileHash.equals(dataHash)) throw new Exception();
+                return true;
+
+            } catch (Exception e) {
+                return false;
+            }
+
+        }
+
+        private boolean readCSVDataFromFile(File fileToImport) {
+            try {
+                CSVData = Tools.readFile(fileToImport);
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
     }
 
 }

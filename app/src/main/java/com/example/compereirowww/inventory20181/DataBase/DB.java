@@ -654,9 +654,17 @@ public class DB extends SQLiteOpenHelper {
      */
     private void setUpPreferences() {
 
-        //Importation
+        //UHInventoryFile
         if (getPreference(PT.PNames.CURRENT_FILE_TO_IMPORT).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.CURRENT_FILE_TO_IMPORT, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
+        if (getPreference(PT.PNames.LAST_IMPORTED_UH_DATA_HASH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.LAST_IMPORTED_UH_DATA_HASH, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
+        if (getPreference(PT.PNames.LAST_IMPORTED_BACKUP_DATA_HASH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.LAST_IMPORTED_BACKUP_DATA_HASH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         if (getPreference(PT.PNames.CURRENT_FILE_TO_IMPORT_HEAD).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
@@ -672,7 +680,7 @@ public class DB extends SQLiteOpenHelper {
         }
 
         if (getPreference(PT.PNames.CURRENT_IMPORTATION_INDEX).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.CURRENT_IMPORTATION_INDEX, AppStatics.Importation.CSV_FIRST_DATA_LINE_INDEX);
+            setPreference(PT.PNames.CURRENT_IMPORTATION_INDEX, AppStatics.UHInventoryFile.CSV_FIRST_DATA_LINE_INDEX);
         }
 
 
@@ -690,8 +698,8 @@ public class DB extends SQLiteOpenHelper {
             setPreference(PT.PNames.QRS_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.SAVE_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.SAVE_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.BACKUPS_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.BACKUPS_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         if (getPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
@@ -772,6 +780,11 @@ public class DB extends SQLiteOpenHelper {
         //New number preferences
         if (getPreference(PT.PNames.TEMP_DESCRIPTION).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_DESCRIPTION, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
+        //pQr preferences
+        if (getPreference(PT.PNames.P_QR_CURRENT_INDEX).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.P_QR_CURRENT_INDEX, "0");
         }
 
     }
@@ -1019,6 +1032,8 @@ public class DB extends SQLiteOpenHelper {
             public static final int DB_STATE = 26;
             public static final int CURRENT_IMPORTATION_INDEX = 2;
             public static final int CURRENT_DATA_TO_IMPORT_HASH = 4;
+            public static final int LAST_IMPORTED_UH_DATA_HASH = 30;
+            public static final int LAST_IMPORTED_BACKUP_DATA_HASH = 31;
             public static final int IMPORTING_MESSAGE = 27;
 
 
@@ -1030,7 +1045,7 @@ public class DB extends SQLiteOpenHelper {
 
             //Files Preferences
             public static final int ROOT_DIRECTORY_PATH = 8;
-            public static final int SAVE_DIRECTORY_PATH = 9;
+            public static final int BACKUPS_DIRECTORY_PATH = 9;
             public static final int TO_IMPORT_DIRECTORY_PATH = 10;
             public static final int QRS_DIRECTORY_PATH = 25;
 
@@ -1055,6 +1070,10 @@ public class DB extends SQLiteOpenHelper {
 
             //New number preferences
             public static final int TEMP_DESCRIPTION = 24;
+
+            //pQR factory
+            public static final int P_QR_CURRENT_INDEX = 29;
+
 
         }
 

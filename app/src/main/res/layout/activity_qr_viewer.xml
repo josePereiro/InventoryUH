@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_black"
+    android:background="@drawable/blue_dark_rectangle_cpd_background"
     android:fitsSystemWindows="true"
     tools:context=".Activities.QRViewerActivity">
 

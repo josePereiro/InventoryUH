@@ -406,11 +406,6 @@ public class NewNumberActivity extends AppCompatActivity {
         return db.getPreference(DB.PT.PNames.TEMP_DESCRIPTION);
     }
 
-
-    private void setTempState(int state) {
-        db.setPreference(DB.PT.PNames.TEMP_STATE, state);
-    }
-
     private void setNumber(String number) {
         db.setPreference(DB.PT.PNames.NUMBER_TO_EDIT, number);
     }

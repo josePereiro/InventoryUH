@@ -17,14 +17,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.compereirowww.inventory20181.Activities.AppStatics;
 import com.example.compereirowww.inventory20181.R;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -453,26 +451,18 @@ public class Tools {
 
     }
 
-    public static void saveImage(Bitmap image, String directory, String imageNameWithExtension) {
+    public static void saveImage(Bitmap image, String directory, String imageNameWithExtension) throws IOException {
 
         File dir = new File(directory);
-        if (dir.exists()) {
-            File imageFile = new File(dir, imageNameWithExtension);
+        File imageFile = new File(dir, imageNameWithExtension);
 
-            try {
-                if (!imageFile.exists()) {
-                    FileOutputStream out = new FileOutputStream(imageFile);
-                    image.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                    out.flush();
-                    out.close();
-                    Log.d(AppStatics.APP_TAG, "OK");
-                }
-
-            } catch (IOException e) {
-                Log.d(AppStatics.APP_TAG, e.getMessage());
-
-            }
+        if (!imageFile.exists()) {
+            FileOutputStream out = new FileOutputStream(imageFile);
+            image.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
         }
+
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.example.compereirowww.inventory20181.Activities;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,9 +28,6 @@ public class QRViewerActivity extends AppCompatActivity {
     private EditText numberToCodeET;
     private ImageView qrIV;
     private CreateQRAT createQRAT;
-
-    //static
-    private static final String NO_SUGGESTIONS = "No existe!";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,34 +93,34 @@ public class QRViewerActivity extends AppCompatActivity {
         @Override
         protected Bitmap doInBackground(String... strings) {
 
-            // Create the ByteMatrix for the QR-Code that encodes the given String
-            Hashtable hintMap = new Hashtable();
-            hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix byteMatrix;
-            if (isCancelled()) return null;
             try {
+                // Create the ByteMatrix for the QR-Code that encodes the given String
+                Hashtable hintMap = new Hashtable();
+                hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+                QRCodeWriter qrCodeWriter = new QRCodeWriter();
+                BitMatrix byteMatrix;
+                if (isCancelled()) return null;
                 byteMatrix = qrCodeWriter.encode(strings[0],
                         BarcodeFormat.QR_CODE, QR_IMAGE_SIZE, QR_IMAGE_SIZE, hintMap);
+
+                if (isCancelled()) return null;
+                // Make the Image that are to hold the QRCode
+                int matrixWidth = byteMatrix.getWidth();
+                Bitmap image = Bitmap.createBitmap(matrixWidth, matrixWidth, Bitmap.Config.RGB_565);
+                new Canvas(image).drawColor(Color.WHITE);
+                //Filling the image with the byteMatrix backUpSB
+                for (int i = 0; i < matrixWidth; i++) {
+                    for (int j = 0; j < matrixWidth; j++) {
+                        if (isCancelled()) return null;
+                        if (byteMatrix.get(i, j)) {
+                            image.setPixel(i, j, Color.BLACK);
+                        }
+                    }
+                }
+                return image;
             } catch (WriterException e) {
                 return null;
             }
-            if (isCancelled()) return null;
-            // Make the Image that are to hold the QRCode
-            int matrixWidth = byteMatrix.getWidth();
-            Bitmap image = Bitmap.createBitmap(matrixWidth, matrixWidth, Bitmap.Config.RGB_565);
-            //Filling the image with the byteMatrix data
-            for (int i = 0; i < matrixWidth; i++) {
-                for (int j = 0; j < matrixWidth; j++) {
-                    if (isCancelled()) return null;
-                    if (byteMatrix.get(i, j)) {
-                        image.setPixel(i, j, Color.BLACK);
-                    } else {
-                        image.setPixel(i, j, Color.WHITE);
-                    }
-                }
-            }
-            return image;
         }
 
         @Override

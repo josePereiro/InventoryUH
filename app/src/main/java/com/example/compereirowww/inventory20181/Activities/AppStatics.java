@@ -10,9 +10,8 @@ import java.util.Arrays;
 
 public class AppStatics {
 
-    public static class Importation {
+    public static class UHInventoryFile {
 
-        //region To Import Files
         /**
          * This is the index of the first value in a file to import,
          * this depend of the format of the file
@@ -30,6 +29,16 @@ public class AppStatics {
         public static final int DESCRIPTION_INDEX = 1;
 
         /**
+         * the index of the head data in the first line of the file to import
+         */
+        public static final int HEAD_INDEX = 0;
+
+        /**
+         * the index of the hasc code data in the first line of the file to import
+         */
+        public static final int HASH_INDEX = 1;
+
+        /**
          * the index of the area CSVData in a line of the file to import
          */
         public static final int AREA_INDEX = 2;
@@ -43,6 +52,20 @@ public class AppStatics {
          * the index of the officialUpdate CSVData in a line of the file to import
          */
         public static final int OFFICIAL_UPDATE_INDEX = 4;
+
+        /**
+         * The head that any uh inventory file most have to be imported
+         */
+        public static final String UH_INVENTORY_FILE_HEAD_CODE = "Archivo UH para importar...";
+
+    }
+
+    public static class BackupInventoryFile {
+
+        /**
+         * The head that any salva file most have to be imported
+         */
+        public static final String INVENTORY_BACKUP_FILE_HEAD_CODE = "Archivo de respaldo...";
 
         /**
          * the index of the location CSVData in a line of the file to import
@@ -59,7 +82,33 @@ public class AppStatics {
          */
         public static final int OBSERVATION_INDEX = 3;
 
-        //endregion
+        /**
+         * the index of the head data in the first line of the file to import
+         */
+        public static final int HEAD_INDEX = 0;
+
+        /**
+         * the index of the hasc code data in the first line of the file to import
+         */
+        public static final int HASH_INDEX = 1;
+
+
+        /**
+         * the index of the filter1 data in the first line of the file to import
+         */
+        public static final int FILTER1_INDEX = 2;
+
+        /**
+         * the index of the filter2 data in the first line of the file to import
+         */
+        public static final int FILTER2_INDEX = 3;
+
+        /**
+         * the index of the creation date data in the first line of the file to import
+         */
+        public static final int CREATION_DATE_INDEX = 4;
+
+
     }
 
     public static class Location {
@@ -72,7 +121,7 @@ public class AppStatics {
         /**
          * update the locations from the db
          */
-        public static void updateLocations(DB db) {
+        public static void updateLocations() {
 
             //get areas
             Cursor areaC = db.getLocationColumnData();
@@ -98,7 +147,7 @@ public class AppStatics {
          */
         public static String[] areas = new String[]{""};
 
-        public static void updateAreas(DB db) {
+        public static void updateAreas() {
 
             //get areas
             Cursor areaC = db.getAreaColumnData();
@@ -123,7 +172,7 @@ public class AppStatics {
          */
         public static String[] observations = new String[]{""};
 
-        public static void updateObservations(DB db) {
+        public static void updateObservations() {
 
             //get areas
             Cursor observationC = db.getObservationColumnData();
@@ -172,7 +221,7 @@ public class AppStatics {
 
         public static String[] areasToFollow = new String[]{""};
 
-        public static void updateAreasToFollow(DB db) {
+        public static void updateAreasToFollow() {
 
             if (!db.getPreference(DB.PT.PNames.AREAS_TO_FOLLOW_CSV).equals(DB.PT.PDefaultValues.PREFERENCE_NOT_FOUND)
                     && !db.getPreference(DB.PT.PNames.AREAS_TO_FOLLOW_CSV).equals(DB.PT.PDefaultValues.EMPTY_PREFERENCE)) {
@@ -209,28 +258,11 @@ public class AppStatics {
     public static final String APP_TAG = "JOSE";
 
     /**
-     * The head that any uh inventory file most have to be imported
-     */
-    public static final String UH_INVENTORY_FILE_HEAD_CODE = "Archivo UH para importar...";
-
-    /**
-     * The head that any salva file most have to be imported
-     */
-    public static final String SALVA_INVENTORY_FILE_HEAD_CODE = "Archivo salva...";
-
-
-    /**
      * The extension of the file
      */
     public static final String IMPORT_FILE_EXTENTION = ".csv";
 
     public static final int QR_DECODER_REQUEST = 626;
-
-    /**
-     * The criteria to consider the current import file as
-     * valid
-     */
-    public static final int IMPORTING_FILE_OUT_OF_DATE_CRITERIA = 600000;
 
     /**
      * The name of the app folder
@@ -251,8 +283,6 @@ public class AppStatics {
      * The name of the qr folder where will be placed all the qr codes
      */
     public static final String APP_QRS_FILE_NAME = "Códigos QRs";
-
-    public static final int QRS_SIZE = 50;
 
     /**
      * This is a tool, that allow not to load the DB every time you start an Activity

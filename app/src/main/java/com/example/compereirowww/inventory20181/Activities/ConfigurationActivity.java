@@ -44,7 +44,7 @@ public class ConfigurationActivity extends AppCompatActivity {
             public void onClick(View view) {
                 db.setPreference(DB.PT.PNames.AREAS_TO_FOLLOW_CSV,
                         AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL));
-                AppStatics.AreasToFollow.updateAreasToFollow(db);
+                AppStatics.AreasToFollow.updateAreasToFollow();
                 db.updateFollowingColumn(DB.IT.FollowingValues.NO);
                 db.updateFollowingByAreas(AppStatics.AreasToFollow.areasToFollow, DB.IT.FollowingValues.YES);
                 db.setPreference(DB.PT.PNames.UPDATE_CRITERIA, (String) criteriaS.getSelectedItem());
