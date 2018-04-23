@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -59,7 +61,7 @@ public class InventoryActivity extends AppCompatActivity {
     ListView listView;
     Spinner filter1Spinner;
     Spinner filter2Spinner;
-    Button bBtn, bbBtn, fBtn, ffBtn, qrFactoryBtn, exportBtn;
+    Button bBtn, bbBtn, fBtn, ffBtn;
 
     //ListView
     Cursor data;
@@ -85,7 +87,9 @@ public class InventoryActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String selectedItem = (String) adapterView.getItemAtPosition(i);
                 if (!selectedItem.equals("")) {
-                    db.setPreference(PNames.NUMBER_TO_EDIT, selectedItem.split(",", -1)[0]);
+                    String number = selectedItem.split("\n", -1)[0];
+                    number = number.substring((number.indexOf(":") + 2), number.length());
+                    db.setPreference(PNames.NUMBER_TO_EDIT, number);
                     db.setPreference(PNames.TEMP_NUMBER, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
                     startActivity(new Intent(InventoryActivity.this, EditActivity.class));
                 }
@@ -122,46 +126,12 @@ public class InventoryActivity extends AppCompatActivity {
                 moveForward(WINDOW * WINDOW);
             }
         });
-        qrFactoryBtn = (Button) findViewById(R.id.qr_factory);
-        qrFactoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callQrFactory();
-            }
-        });
-        exportBtn = (Button) findViewById(R.id.export);
-        exportBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callExportInventoryActivity();
-            }
-        });
 
         //AppStatics
         Area.updateAreas();
         Location.updateLocations();
         Observation.updateObservations();
 
-    }
-
-    private void callExportInventoryActivity() {
-        if (data == null || data.getCount() == 0) {
-            Tools.showToast(InventoryActivity.this, "No hay números seleccionados!!!", false);
-        } else {
-            ExportInventoryActivity.setData(data);
-            startActivity(new Intent(InventoryActivity.this, ExportInventoryActivity.class));
-        }
-    }
-
-    private void callQrFactory() {
-        if (data == null || data.getCount() == 0) {
-            Tools.showToast(InventoryActivity.this, "No hay números seleccionados!!!", false);
-        } else {
-            PrintableQRsFactoryActivity.setData(data);
-            PrintableQRsFactoryActivity.setImporting(false);
-            db.setPreference(PNames.P_QR_CURRENT_INDEX, "0");
-            startActivity(new Intent(InventoryActivity.this, PrintableQRsFactoryActivity.class));
-        }
     }
 
     private void moveForward(int toMove) {
@@ -321,6 +291,45 @@ public class InventoryActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_inventory, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.report) {
+            callReportActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.export) {
+            callExportInventoryActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.qr_factory) {
+            callQrFactory();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.insert_new_number) {
+            callNewNumberActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.search) {
+            callSearchActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.help) {
+            Tools.showToast(InventoryActivity.this, "No hay ayuda!!! Por ahora...", false);
+            return super.onOptionsItemSelected(item);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateData() {
@@ -1082,8 +1091,34 @@ public class InventoryActivity extends AppCompatActivity {
         }
 
         //filling with CSVData
+        StringBuilder sb;
         for (int i = 0; i < WINDOW && data.moveToNext(); i++) {
-            dataToDisplay.set(i, data.getString(0) + ",\n" + data.getString(1));
+            sb = new StringBuilder();
+            sb.append("* Número: ").
+                    append(data.getString(IT.Indexes.NUMBER_COLUMN_INDEX)).
+                    append("\n").
+                    append("- Descripción: ").
+                    append(data.getString(IT.Indexes.DESCRIPTION_COLUMN_INDEX)).
+                    append("\n").
+                    append("- Área: ").
+                    append(data.getString(IT.Indexes.AREA_COLUMN_INDEX)).
+                    append("\n").
+                    append("- Estado: ").
+                    append(IT.StateValues.toString(data.getInt(IT.Indexes.STATE_COLUMN_INDEX))).
+                    append("\n").
+                    append("- Última act. del estado: ").
+                    append(Tools.formatDate(data.getString(IT.Indexes.LAST_CHECKING_COLUMN_INDEX))).
+                    append("\n").
+                    append("- Tipo: ").
+                    append(IT.TypeValues.toString(data.getInt(IT.Indexes.TYPE_COLUMN_INDEX))).
+                    append("\n").
+                    append("- Localización: ").
+                    append(data.getString(IT.Indexes.LOCATION_COLUMN_INDEX)).
+                    append("\n").
+                    append("- Observación: ").
+                    append(data.getString(IT.Indexes.OBSERVATION_COLUMN_INDEX));
+
+            dataToDisplay.set(i, sb.toString());
         }
 
     }
@@ -1096,7 +1131,7 @@ public class InventoryActivity extends AppCompatActivity {
 
         } else {
 
-            String s = getIndex() + "/" + (getIndex() + WINDOW) + " de " + data.getCount();
+            String s = (getIndex() + 1) + "/" + (getIndex() + WINDOW) + " de " + data.getCount();
             textView.setText(s);
         }
         listView.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
@@ -1142,5 +1177,50 @@ public class InventoryActivity extends AppCompatActivity {
         }
     }
 
+    private void callSearchActivity() {
+        db.setPreference(DB.PT.PNames.TEMP_SEARCH_CRITERIA, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
+        startActivity(new Intent(InventoryActivity.this, SearchActivity.class));
+    }
+
+    private void callNewNumberActivity() {
+        db.setPreference(DB.PT.PNames.NUMBER_TO_EDIT, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(DB.PT.PNames.TEMP_NUMBER, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(DB.PT.PNames.TEMP_DESCRIPTION, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(DB.PT.PNames.TEMP_LOCATION, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
+        db.setPreference(DB.PT.PNames.TEMP_FOLLOWING, IT.FollowingValues.NO);
+        db.setPreference(DB.PT.PNames.TEMP_STATE, IT.StateValues.LEFTOVER);
+        db.setPreference(DB.PT.PNames.TEMP_TYPE, IT.TypeValues.UNKNOWN);
+        db.setPreference(DB.PT.PNames.TEMP_OBSERVATION, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
+        startActivity(new Intent(InventoryActivity.this, NewNumberActivity.class));
+    }
+
+    private void callReportActivity() {
+        if (data == null || data.getCount() == 0) {
+            Tools.showToast(InventoryActivity.this, "No hay números seleccionados!!!", false);
+        } else {
+            ReportActivity.setData(data);
+            startActivity(new Intent(InventoryActivity.this, ReportActivity.class));
+        }
+    }
+
+    private void callExportInventoryActivity() {
+        if (data == null || data.getCount() == 0) {
+            Tools.showToast(InventoryActivity.this, "No hay números seleccionados!!!", false);
+        } else {
+            ExportInventoryActivity.setData(data);
+            startActivity(new Intent(InventoryActivity.this, ExportInventoryActivity.class));
+        }
+    }
+
+    private void callQrFactory() {
+        if (data == null || data.getCount() == 0) {
+            Tools.showToast(InventoryActivity.this, "No hay números seleccionados!!!", false);
+        } else {
+            PrintableQRsFactoryActivity.setData(data);
+            PrintableQRsFactoryActivity.setImporting(false);
+            db.setPreference(PNames.P_QR_CURRENT_INDEX, "0");
+            startActivity(new Intent(InventoryActivity.this, PrintableQRsFactoryActivity.class));
+        }
+    }
 
 }

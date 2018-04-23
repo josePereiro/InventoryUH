@@ -8,6 +8,8 @@ import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -107,9 +109,7 @@ public class ImportActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialogInterface, int i) {
                             Tools.showToast(ImportActivity.this, "El proceso de imporatción se ha cancelado!",
                                     false);
-                            db.setPreference(PNames.CURRENT_FILE_TO_IMPORT, PDefaultValues.EMPTY_PREFERENCE);
-                            startActivity(new Intent(ImportActivity.this, ImportActivity.class));
-                            finish();
+                            cancelImportation(true);
                         }
                     }, "No", new DialogInterface.OnClickListener() {
                         @Override
@@ -118,6 +118,25 @@ public class ImportActivity extends AppCompatActivity {
                         }
                     });
         else super.onBackPressed();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_help, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.help) {
+            Tools.showToast(ImportActivity.this, "No hay ayuda!!! Por ahora...", false);
+            return super.onOptionsItemSelected(item);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private boolean performAllChecking(File fileToImport, boolean corruptDB) {
@@ -382,7 +401,6 @@ public class ImportActivity extends AppCompatActivity {
 
     private void startLoadingCSVFilesThread() {
 
-        Tools.showToast(ImportActivity.this, "Buscando archivos para importar!!", false);
         CSVFiles = new ArrayList<>();
         new ListCSVFilesInTheDeviseAT().execute();
     }
@@ -689,11 +707,13 @@ public class ImportActivity extends AppCompatActivity {
         }
     }
 
-    private class ListCSVFilesInTheDeviseAT extends AsyncTask<Void, Void, Void> {
+    private class ListCSVFilesInTheDeviseAT extends AsyncTask<Void, String, Void> {
 
 
         @Override
         protected Void doInBackground(Void... voids) {
+
+            publishProgress("Buscando archivos a importar, espere!!");
 
             CSVFiles.clear();
             ArrayList<File> anyCSVFile = new ArrayList<>();
@@ -708,15 +728,19 @@ public class ImportActivity extends AppCompatActivity {
                 } catch (IOException e) {
                 }
             }
+
+            publishProgress("Terminando...");
             return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... s) {
+            detailTV.setText(s[0]);
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             settingUpSpinnerIfNotImporting();
-            Tools.showToast(ImportActivity.this, "Búsqueda finalizada, encontrados " +
-                    CSVFiles.size() + " posibles arhivos .csv con datos de inventario!", true);
-
         }
 
         private boolean checkHeadLine(String line) {

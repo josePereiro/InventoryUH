@@ -2,13 +2,13 @@ package com.example.compereirowww.inventory20181.Activities;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,15 +19,8 @@ import android.widget.ListView;
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -130,6 +123,25 @@ public class SearchActivity extends AppCompatActivity {
         super.onStop();
 
         updateSelectedCheckBoxesPreference();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_help, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.help) {
+            Tools.showToast(SearchActivity.this, "No hay ayuda!!! Por ahora...", false);
+            return super.onOptionsItemSelected(item);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private String getCriteriaPreference() {
@@ -269,7 +281,7 @@ public class SearchActivity extends AppCompatActivity {
         return text.toUpperCase().replaceAll(match.toUpperCase(), HIGHLIGHT + match.toUpperCase() + HIGHLIGHT);
     }
 
-    private void parseCriteriaIfNeeded()   {
+    private void parseCriteriaIfNeeded() {
 
         for (int i = 0; i < columnsToSearchIn.length && i < criteria.length; i++) {
             if (columnsToSearchIn[i].equals(DB.IT.ITNames.STATE_COLUMN_NAME)) {
@@ -391,8 +403,6 @@ public class SearchActivity extends AppCompatActivity {
         return displayedData.split("\n", -1)[0].replaceAll("Número: ", "").
                 replaceAll(HIGHLIGHT, "").replaceAll(HIGHLIGHT, "");
     }
-
-
 
 
 }

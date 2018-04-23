@@ -46,10 +46,9 @@
             <HorizontalScrollView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:layout_marginStart="5dp"
                 android:layout_marginEnd="5dp"
-                >
+                android:layout_marginStart="5dp"
+                android:scrollbars="none">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -89,24 +88,6 @@
                         android:layout_margin="2dp"
                         android:background="@drawable/ic_media_ff" />
 
-                    <Button
-                        android:id="@+id/qr_factory"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="45dp"
-                        android:layout_height="45dp"
-                        android:layout_margin="2dp"
-                        android:background="@drawable/ic_menu_camera" />
-
-                    <Button
-                        android:id="@+id/export"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="45dp"
-                        android:text="Ex"
-                        android:layout_height="45dp"
-                        android:layout_margin="2dp"
-                        />
-
-
                 </LinearLayout>
 
             </HorizontalScrollView>
@@ -137,8 +118,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="3dp"
                 android:background="@drawable/blue_light_rectangle_no_stroke"
-                android:popupBackground="@drawable/blue_light_rectangle"
-                />
+                android:popupBackground="@drawable/blue_light_rectangle" />
 
         </LinearLayout>
 

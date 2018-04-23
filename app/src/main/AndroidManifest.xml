@@ -57,6 +57,10 @@
         <activity
             android:name=".Activities.ExportInventoryActivity"
             android:label="@string/title_activity_export_inventory"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.ReportActivity"
+            android:label="@string/title_activity_report_acivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -48,7 +50,7 @@ public class ExportInventoryActivity extends AppCompatActivity {
                     int numbersCount = data.getCount();
                     int backUpNumber = spinner.getSelectedItemPosition() + 1;
                     String fileName = BACKUP_ + backUpNumber + " (" + numbersCount + "ns) " +
-                            Tools.getFormattedDateForFileNaming() + AppStatics.IMPORT_FILE_EXTENTION;
+                            Tools.getFormattedDateForFileNaming() + AppStatics.IMPORT_FILE_EXTENSION;
 
                     File backUpFile = new File(AppStatics.db.
                             getPreference(DB.PT.PNames.BACKUPS_DIRECTORY_PATH),
@@ -113,6 +115,25 @@ public class ExportInventoryActivity extends AppCompatActivity {
             buildBackupCSVAT = new BuildBackupCSVAT();
             buildBackupCSVAT.execute();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_help, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.help) {
+            Tools.showToast(ExportInventoryActivity.this, "No hay ayuda!!! Por ahora...", false);
+            return super.onOptionsItemSelected(item);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public static void setData(Cursor data) {
@@ -183,10 +204,6 @@ public class ExportInventoryActivity extends AppCompatActivity {
                     CSVPreviewTV.append("\n");
                     CSVPreviewTV.append(backUp.substring(0, 1900) + " ...");
                 }
-                Tools.showToast(ExportInventoryActivity.this, "OK", false);
-            } else {
-                Tools.showToast(ExportInventoryActivity.this, "FAIL", false);
-
             }
         }
 

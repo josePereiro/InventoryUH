@@ -1,21 +1,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".Activities.MainActivity"
+    tools:context=".Activities.InventoryActivity"
     >
 
 
-
     <item
-        android:id="@+id/see_inventory"
+        android:id="@+id/report"
         android:orderInCategory="100"
-        android:title="@string/inventory"
+        android:title="@string/make_report"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/import_inventory"
+        android:id="@+id/export"
         android:orderInCategory="100"
-        android:title="@string/import_inventory"
+        android:title="@string/make_backup"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/qr_factory"
+        android:orderInCategory="100"
+        android:title="@string/make_qr"
         app:showAsAction="never" />
 
     <item
@@ -28,24 +33,6 @@
         android:id="@+id/search"
         android:orderInCategory="100"
         android:title="@string/search"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/search_by_qr"
-        android:orderInCategory="100"
-        android:title="@string/search_by_qr"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/qr_viewer"
-        android:orderInCategory="100"
-        android:title="@string/qr_viewer"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/configuration"
-        android:orderInCategory="100"
-        android:title="@string/configuration"
         app:showAsAction="never" />
 
     <item

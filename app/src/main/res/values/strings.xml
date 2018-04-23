@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">Inventario UH</string>
-    <string name="inventory">Inventario</string>
-    <string name="import_inventory">Importar Inventario</string>
-    <string name="insert_new_number">Insertar nuevo número</string>
-    <string name="configuration">Configuración</string>
     <string name="title_activity_import">importActivity</string>
+
+    <string name="inventory">Inventario UH</string>
+    <string name="import_inventory">Importar Inventario</string>
+    <string name="insert_new_number">Insertar número nuevo</string>
+    <string name="configuration">Configuración</string>
+    <string name="search">Buscar</string>
+    <string name="search_by_qr">Leer qr</string>
 
     <string name="error1">"Error fatal: No se puede encontrar la ruta de almacenamiento externa del dispositivo "</string>
     <string name="error2">Error fatal: No se pudo crear la carpeta de datos de la aplicación</string>
@@ -42,12 +45,16 @@
     <string name="text21">Este tipo se le adjudicará a todos los números de la misma descripción</string>
     <string name="text22">"Áreas en seguimiento: "</string>
     <string name="title_activity_search">SearchActivity</string>
-    <string name="search">Buscar</string>
     <string name="title_activity_search_by_qr">SearchByQRActivity</string>
-    <string name="search_by_qr">Buscar por qr</string>
     <string name="title_activity_new_number">NewNumberActivity</string>
     <string name="title_activity_qrfactory">QRFActoryActivity</string>
     <string name="title_activity_printable_qrs_factory">PrintableQRsFactoryActivity</string>
     <string name="title_activity_export_inventory">ExportInventoryActivity</string>
+    <string name="title_activity_report_acivity">ReportAcivity</string>
+    <string name="qr_viewer">Visualizador de QRs</string>
+    <string name="help">Ayuda</string>
+    <string name="make_qr">Elavorar QRs de la selección</string>
+    <string name="make_backup">Hacer respaldo de la selección</string>
+    <string name="make_report">Hacer reporte de la selección</string>
 
 </resources>

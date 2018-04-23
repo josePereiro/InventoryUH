@@ -560,8 +560,11 @@ public class DB extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(SELECT_ + ITNames.TYPE_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_ +
                 ITNames.NUMBER_COLUMN_NAME + _EQUAL_ + QUOTE + number + QUOTE, null);
         if (cursor.moveToNext()) {
-            return cursor.getInt(0);
+            int i = cursor.getInt(0);
+            cursor.close();
+            return i;
         } else {
+            cursor.close();
             return -1;
         }
     }
@@ -702,8 +705,8 @@ public class DB extends SQLiteOpenHelper {
             setPreference(PT.PNames.BACKUPS_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
-        if (getPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.TO_IMPORT_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
+        if (getPreference(PT.PNames.REPORTS_DIRECTORY_PATH).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.REPORTS_DIRECTORY_PATH, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         //Inventory Activity Preferences
@@ -1046,7 +1049,7 @@ public class DB extends SQLiteOpenHelper {
             //Files Preferences
             public static final int ROOT_DIRECTORY_PATH = 8;
             public static final int BACKUPS_DIRECTORY_PATH = 9;
-            public static final int TO_IMPORT_DIRECTORY_PATH = 10;
+            public static final int REPORTS_DIRECTORY_PATH = 10;
             public static final int QRS_DIRECTORY_PATH = 25;
 
             //EditActivity

@@ -1,13 +1,19 @@
 package com.example.compereirowww.inventory20181.Activities;
 
+import android.os.AsyncTask;
+
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.DataBase.DB.IT.StateValues;
+import com.example.compereirowww.inventory20181.Tools.Tools;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Tips {
 
     public static final String tip1 = "Los archivos .csv a importar deben unbicarse en la " +
             "carpeta \"Para Importar\" de la aplicación: \n" +
-            AppStatics.db.getPreference(DB.PT.PNames.TO_IMPORT_DIRECTORY_PATH);
+            AppStatics.db.getPreference(DB.PT.PNames.REPORTS_DIRECTORY_PATH);
 
     public static final String tip2 = "Si el estado de un número es " +
             StateValues.toString(StateValues.LEFTOVER) +
@@ -22,5 +28,10 @@ public class Tips {
             " al leer el QR de dicho número";
 
     public static final String ti4 = "";
+
+
+
+
+
 
 }

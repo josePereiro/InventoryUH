@@ -252,6 +252,21 @@ public class AppStatics {
 
     }
 
+    public static class Report {
+
+        public static int NUMBER_INDEX = 0;
+        public static int DESCRIPTION_INDEX = 1;
+        public static int ÁREA_INDEX = 2;
+        public static int ALTA_DATE_INDEX = 3;
+        public static int UPDATE_DATE_INDEX = 4;
+        public static int STATE_INDEX = 5;
+        public static int LAST_CHECKING_INDEX = 6;
+        public static int TYPE_INDEX = 7;
+        public static int LOCATION_INDEX = 8;
+        public static int OBSERVATION_INDEX = 9;
+
+    }
+
     /**
      * The tag used for the application in the log
      */
@@ -260,7 +275,7 @@ public class AppStatics {
     /**
      * The extension of the file
      */
-    public static final String IMPORT_FILE_EXTENTION = ".csv";
+    public static final String IMPORT_FILE_EXTENSION = ".csv";
 
     public static final int QR_DECODER_REQUEST = 626;
 

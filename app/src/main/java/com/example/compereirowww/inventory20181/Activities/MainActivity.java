@@ -11,8 +11,8 @@ import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,16 +23,28 @@ import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.example.compereirowww.inventory20181.Activities.AppStatics.*;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_FILE_NAME;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_QRS_FILE_NAME;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_SAVE_FILE_NAME;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_TO_IMPORT_FILE_NAME;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.Area;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.AreasToFollow;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.Description;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.Location;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.Observation;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.PERMISSIONS_STORAGE;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.QR_DECODER_REQUEST;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.REQUEST_EXTERNAL_STORAGE;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.db;
 
 public class MainActivity extends AppCompatActivity {
 
 
     //GUI
     TextView textView;
-    Button inventoryBtn, importBtn, insertBtn, searchBtn, readQRBtn, confBtn, makeQRBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,58 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
         //GUI
         textView = (TextView) findViewById(R.id.text_tv);
-
-        inventoryBtn = (Button) findViewById(R.id.inventory_btn);
-        inventoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, InventoryActivity.class));
-            }
-        });
-        importBtn = (Button) findViewById(R.id.import_btn);
-        importBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callImportActivity();
-            }
-        });
-        insertBtn = (Button) findViewById(R.id.insert_btn);
-        insertBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callNewNumberActivity();
-            }
-        });
-        searchBtn = (Button) findViewById(R.id.search_btn);
-        searchBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callSearchActivity();
-            }
-        });
-        readQRBtn = (Button) findViewById(R.id.read_qr);
-        readQRBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callQRDecoder(QR_DECODER_REQUEST);
-            }
-        });
-        confBtn = (Button) findViewById(R.id.configuration_btn);
-        confBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callConfigurationActivity();
-            }
-        });
-        makeQRBtn = (Button) findViewById(R.id.make_qr);
-        makeQRBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callQRViewerActivity();
-
-            }
-        });
-
 
         //DB
         db = new DB(getApplicationContext());
@@ -109,6 +69,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void callInventoryActivity() {
+        startActivity(new Intent(MainActivity.this, InventoryActivity.class));
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -120,8 +84,9 @@ public class MainActivity extends AppCompatActivity {
         if (!checkingImportation()) return;
         if (!checkingAreaToFollow()) return;
 
-        //updating out of date
         db.updatePresentToMissingIfOutOfDate(Integer.parseInt(db.getPreference(PT.PNames.UPDATE_CRITERIA)));
+        new MakeReportAT().execute();
+
     }
 
     @Override
@@ -176,6 +141,53 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.see_inventory) {
+            callInventoryActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.import_inventory) {
+            callImportActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.insert_new_number) {
+            callNewNumberActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.search) {
+            callSearchActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.qr_viewer) {
+            callQRViewerActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.search_by_qr) {
+            callQRDecoder(QR_DECODER_REQUEST);
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.configuration) {
+            callConfigurationActivity();
+            return super.onOptionsItemSelected(item);
+        }
+        if (id == R.id.help) {
+            Tools.showToast(MainActivity.this, "No hay ayuda!!! Por ahora...", false);
+            return super.onOptionsItemSelected(item);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private boolean handleAppFiles() {
@@ -331,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Updating preference
         db.setPreference(DB.PT.PNames.ROOT_DIRECTORY_PATH, appFile.getPath());
-        db.setPreference(DB.PT.PNames.TO_IMPORT_DIRECTORY_PATH, toImportFile.getPath());
+        db.setPreference(DB.PT.PNames.REPORTS_DIRECTORY_PATH, toImportFile.getPath());
         db.setPreference(DB.PT.PNames.BACKUPS_DIRECTORY_PATH, toSaveFile.getPath());
         db.setPreference(PT.PNames.QRS_DIRECTORY_PATH, qrsFile.getPath());
         return true;
@@ -388,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Checks if the app has permission to write to device storage
-     * <p/>
+     * <p>
      * If the app does not has permission then the user will be prompted to grant permissions
      */
     public void verifyStoragePermissions() {
@@ -426,6 +438,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void callQRViewerActivity() {
+        QRViewerActivity.setText("");
         startActivity(new Intent(MainActivity.this, QRViewerActivity.class));
     }
 
@@ -450,15 +463,123 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(MainActivity.this, SearchActivity.class));
     }
 
-    private class showReportAT extends AsyncTask<Void, Void, String> {
+    private class MakeReportAT extends AsyncTask<Void, Void, String> {
+
+        ArrayList<String> areasWithFollowedNumbers;
+        ArrayList<Cursor> numbersInAreas;
 
         @Override
         protected String doInBackground(Void... voids) {
 
             Cursor data = db.getAllDataIfFollowing(IT.FollowingValues.YES);
+            StringBuilder report = new StringBuilder();
+            report.append("Reporte ").append(Tools.getFormattedDate()).
+                    append("\n").
+                    append("\n").
+                    append("DETALLES GENERALES").
+                    append("\n").
+                    append("Números (Total): ").append(db.getNumberCount()).
+                    append("\n").
+                    append("Números en seguimiento: ").append(data.getCount()).append("\n").
+                    append("    Faltantes: ").
+                    append(getFollowingIfState(IT.StateValues.MISSING)).
+                    append("\n").
+                    append("    Presentes: ").
+                    append(getFollowingIfState(IT.StateValues.PRESENT)).
+                    append("\n").
+                    append("    Sobrantes: ").
+                    append(getFollowingIfState(IT.StateValues.LEFTOVER)).
+                    append("\n").
+                    append("    Faltantes Ignorados: ").
+                    append(getFollowingIfState(IT.StateValues.IGNORED_MISSING)).
+                    append("\n").
+                    append("    Sobrantes Presentes: ").
+                    append(getFollowingIfState(IT.StateValues.LEFTOVER_PRESENT)).
+                    append("\n").
+                    append("\n").
+                    append("DETALLES POR ÁREA").
+                    append("\n");
 
-            return "";
+            fillAreasWithFollowedNumbers(data);
+            fillNumbersInAreas();
+
+            for (int i = 0; i < areasWithFollowedNumbers.size(); i++) {
+                report.append(i + 1).
+                        append(". ").
+                        append(areasWithFollowedNumbers.get(i)).
+                        append("\n").
+                        append("Números (total): ").
+                        append(getNumbersIfArea(areasWithFollowedNumbers.get(i))).
+                        append("\n").
+                        append("Números en seguimiento: ").
+                        append(numbersInAreas.get(i).getCount()).
+                        append("\n").
+                        append("    Faltantes: ").
+                        append(getNumbersWithState(IT.StateValues.MISSING, numbersInAreas.get(i))).
+                        append("\n").
+                        append("    Presentes: ").
+                        append(getNumbersWithState(IT.StateValues.PRESENT, numbersInAreas.get(i))).
+                        append("\n").
+                        append("    Sobrantes: ").
+                        append(getNumbersWithState(IT.StateValues.LEFTOVER, numbersInAreas.get(i))).
+                        append("\n").
+                        append("    Faltantes Ignorados: ").
+                        append(getNumbersWithState(IT.StateValues.IGNORED_MISSING, numbersInAreas.get(i))).
+                        append("\n").
+                        append("    Sobrantes Presentes: ").
+                        append(getNumbersWithState(IT.StateValues.LEFTOVER_PRESENT, numbersInAreas.get(i))).
+                        append("\n").
+                        append("");
+
+            }
+
+            data.close();
+            return report.toString();
         }
+
+        @Override
+        protected void onPostExecute(String s) {
+            textView.setText(s);
+        }
+
+        private int getFollowingIfState(int state) {
+            return db.getAllDataIfFollowingAndState(IT.FollowingValues.YES,
+                    IT.StateValues.toString(state)).getCount();
+        }
+
+        private int getNumbersIfArea(String area) {
+            return db.getAllDataIfArea(area).getCount();
+        }
+
+        private int getNumbersWithState(int state, Cursor data) {
+            data.moveToPosition(-1);
+            int c = 0;
+            while (data.moveToNext()) {
+                int s = data.getInt(IT.Indexes.STATE_COLUMN_INDEX);
+                if (state == s) {
+                    c++;
+                }
+            }
+            return c;
+        }
+
+        private void fillAreasWithFollowedNumbers(Cursor data) {
+            areasWithFollowedNumbers = new ArrayList<>();
+            while (data.moveToNext()) {
+                String area = data.getString(IT.Indexes.AREA_COLUMN_INDEX);
+                if (!areasWithFollowedNumbers.contains(area)) {
+                    areasWithFollowedNumbers.add(area);
+                }
+            }
+        }
+
+        private void fillNumbersInAreas() {
+            numbersInAreas = new ArrayList<>();
+            for (String area : areasWithFollowedNumbers) {
+                numbersInAreas.add(db.getAllDataIfFollowingAndArea(IT.FollowingValues.YES, area));
+            }
+        }
+
     }
 
 }
