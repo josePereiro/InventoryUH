@@ -1,5 +1,6 @@
 package com.example.compereirowww.inventory20181.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -7,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -20,16 +20,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class ConfigurationActivity extends AppCompatActivity {
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.db;
+
+public class MainConfigurationActivity extends AppCompatActivity {
 
     //GUI
     ListView areasLV;
     ListView selectedAreasLV;
-    Spinner criteriaS;
+    Spinner criteriaS, letterSizeS;
     TextView selectedAreasTV;
 
-    //DB
-    private DB db;
 
     //CSVData
     ArrayList<String> areasToFollowAL;
@@ -38,7 +38,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_configuration);
+        setContentView(R.layout.activity_main_configuration);
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -50,13 +50,14 @@ public class ConfigurationActivity extends AppCompatActivity {
                 db.updateFollowingColumn(DB.IT.FollowingValues.NO);
                 db.updateFollowingByAreas(AppStatics.AreasToFollow.areasToFollow, DB.IT.FollowingValues.YES);
                 db.setPreference(DB.PT.PNames.UPDATE_CRITERIA, (String) criteriaS.getSelectedItem());
-                Tools.showToast(ConfigurationActivity.this, getString(R.string.text20), false);
+                db.setPreference(DB.PT.PNames.TEXT_SIZE, (String) letterSizeS.getSelectedItem());
+                Tools.showToast(MainConfigurationActivity.this, getString(R.string.text20), false);
 
+                startActivity(new Intent(MainConfigurationActivity.this, MainConfigurationActivity.class));
+                finish();
             }
         });
 
-        //db
-        db = AppStatics.db;
 
         //CSVData
         areasToFollowAL = new ArrayList<>();
@@ -70,13 +71,17 @@ public class ConfigurationActivity extends AppCompatActivity {
         }
 
         //GUI
+        AppStatics.formatView((TextView) findViewById(R.id.textView2));
+        AppStatics.formatView((TextView) findViewById(R.id.textView3));
+        AppStatics.formatView((TextView) findViewById(R.id.textView8));
+        AppStatics.formatView((TextView) findViewById(R.id.textView9));
         selectedAreasTV = (TextView) findViewById(R.id.selected_areas_tv);
+        AppStatics.formatView(selectedAreasTV);
         areasLV = (ListView) findViewById(R.id.areas_lv);
         allAreasAL = new ArrayList<>();
         Collections.addAll(allAreasAL, AppStatics.Area.areas);
 
-        areasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
-                android.R.layout.simple_list_item_1, allAreasAL));
+        AppStatics.formatView(MainConfigurationActivity.this, allAreasAL, areasLV);
         areasLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -84,14 +89,13 @@ public class ConfigurationActivity extends AppCompatActivity {
 
                 if (areasToFollowAL.contains(clickedItem)) {
 
-                    Tools.showToast(ConfigurationActivity.this, "Esa área ya fue seleccionada!", false);
+                    Tools.showToast(MainConfigurationActivity.this, "Esa área ya fue seleccionada!", false);
 
                 } else {
 
                     //Add
                     areasToFollowAL.add(clickedItem);
-                    selectedAreasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
-                            android.R.layout.simple_list_item_1, areasToFollowAL));
+                    AppStatics.formatView(MainConfigurationActivity.this, areasToFollowAL, selectedAreasLV);
                     db.setPreference(DB.PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV,
                             AppStatics.AreasToFollow.getAreasAsCSV(areasToFollowAL));
                 }
@@ -103,8 +107,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         });
 
         selectedAreasLV = (ListView) findViewById(R.id.selected_areas_lv);
-        selectedAreasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
-                android.R.layout.simple_list_item_1, areasToFollowAL));
+        AppStatics.formatView(MainConfigurationActivity.this, areasToFollowAL, selectedAreasLV);
         selectedAreasLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -112,8 +115,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                 //Remove
                 areasToFollowAL.remove(i);
                 int firstVisibleView = adapterView.getFirstVisiblePosition();
-                selectedAreasLV.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
-                        android.R.layout.simple_list_item_1, areasToFollowAL));
+                AppStatics.formatView(MainConfigurationActivity.this, areasToFollowAL, selectedAreasLV);
                 selectedAreasLV.setSelection(firstVisibleView);
                 selectedAreasTV.setText(getString(R.string.text22) + areasToFollowAL.size());
 
@@ -123,9 +125,7 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         criteriaS = (Spinner) findViewById(R.id.criteria_s);
         String[] criteriaValues = new String[]{"0", "1", "7", "30", "45", "60", "120", "365", "730", "1095"};
-        criteriaS.setAdapter(new ArrayAdapter<>(ConfigurationActivity.this,
-                android.R.layout.simple_list_item_1,
-                criteriaValues));
+        AppStatics.formatView(MainConfigurationActivity.this, criteriaValues, criteriaS);
         if (db.getPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA).equals(DB.PT.PDefaultValues.EMPTY_PREFERENCE)) {
             criteriaS.setSelection(Tools.getIndexOf(criteriaValues, db.getPreference(DB.PT.PNames.UPDATE_CRITERIA)));
         } else {
@@ -135,6 +135,30 @@ public class ConfigurationActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 db.setPreference(DB.PT.PNames.TEMP_UPDATE_CRITERIA, (String) adapterView.getSelectedItem());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        letterSizeS = (Spinner) findViewById(R.id.letter_size_s);
+        String[] letterSizes = new String[]{DB.PT.PDefaultValues.SMALL_LETTER
+                , DB.PT.PDefaultValues.MEDIUM_LETTER, DB.PT.PDefaultValues.BIG_LETTER};
+        AppStatics.formatView(MainConfigurationActivity.this, letterSizes, letterSizeS);
+        if (db.getPreference(DB.PT.PNames.TEMP_TEXT_SIZE).equals(DB.PT.PDefaultValues.EMPTY_PREFERENCE)) {
+            letterSizeS.setSelection(Tools.getIndexOf(letterSizes, db.getPreference(DB.PT.PNames.TEXT_SIZE)));
+        } else {
+            letterSizeS.setSelection(Tools.getIndexOf(letterSizes, db.getPreference(DB.PT.PNames.TEMP_TEXT_SIZE)));
+        }
+        letterSizeS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedItem = (String) adapterView.getItemAtPosition(i);
+                if (!selectedItem.equals(db.getPreference(DB.PT.PNames.TEMP_TEXT_SIZE))) {
+                    db.setPreference(DB.PT.PNames.TEMP_TEXT_SIZE, selectedItem);
+                }
             }
 
             @Override
@@ -158,12 +182,16 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         int id = item.getItemId();
         if (id == R.id.help) {
-            Tools.showToast(ConfigurationActivity.this, "No hay ayuda!!! Por ahora...", false);
+            Tools.showToast(MainConfigurationActivity.this, "No hay ayuda!!! Por ahora...", false);
             return super.onOptionsItemSelected(item);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(MainConfigurationActivity.this, MainActivity.class));
+        finish();
+    }
 }

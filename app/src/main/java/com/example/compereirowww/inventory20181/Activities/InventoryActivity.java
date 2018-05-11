@@ -5,12 +5,12 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -72,6 +72,9 @@ public class InventoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         //GUI
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -81,13 +84,14 @@ public class InventoryActivity extends AppCompatActivity {
             }
         });
         textView = (TextView) findViewById(R.id.textView2);
+        AppStatics.formatView(textView);
         listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String selectedItem = (String) adapterView.getItemAtPosition(i);
                 if (!selectedItem.equals("")) {
-                    String number = selectedItem.split("\n", -1)[0];
+                    String number = selectedItem.split("\n", -1)[1];
                     number = number.substring((number.indexOf(":") + 2), number.length());
                     db.setPreference(PNames.NUMBER_TO_EDIT, number);
                     db.setPreference(PNames.TEMP_NUMBER, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
@@ -202,8 +206,7 @@ public class InventoryActivity extends AppCompatActivity {
                             Observation.observations[i]);
             }
         }
-        filter1Spinner.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
-                android.R.layout.simple_list_item_1, filterAL));
+        AppStatics.formatView(InventoryActivity.this, filterAL, filter1Spinner);
         filter1Spinner.setSelection(Tools.getIndexOf(filterAL, getFilter1()));
         filter1Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -225,8 +228,7 @@ public class InventoryActivity extends AppCompatActivity {
         });
 
 
-        filter2Spinner.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
-                android.R.layout.simple_list_item_1, filterAL));
+        AppStatics.formatView(InventoryActivity.this, filterAL, filter2Spinner);
         filter2Spinner.setSelection(Tools.getIndexOf(filterAL, getFilter2()));
         filter2Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -328,8 +330,16 @@ public class InventoryActivity extends AppCompatActivity {
             Tools.showToast(InventoryActivity.this, "No hay ayuda!!! Por ahora...", false);
             return super.onOptionsItemSelected(item);
         }
+        if (id == R.id.configuration) {
+            callConfigurations();
+            return super.onOptionsItemSelected(item);
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void callConfigurations() {
+        startActivity(new Intent(InventoryActivity.this, InventoryConfigurationActivity.class));
     }
 
     private void updateData() {
@@ -1092,31 +1102,54 @@ public class InventoryActivity extends AppCompatActivity {
 
         //filling with CSVData
         StringBuilder sb;
+        Boolean[] itemsToDisplay = getPreferenceItemsToDisplay();
         for (int i = 0; i < WINDOW && data.moveToNext(); i++) {
             sb = new StringBuilder();
-            sb.append("* Número: ").
-                    append(data.getString(IT.Indexes.NUMBER_COLUMN_INDEX)).
-                    append("\n").
-                    append("- Descripción: ").
-                    append(data.getString(IT.Indexes.DESCRIPTION_COLUMN_INDEX)).
-                    append("\n").
-                    append("- Área: ").
-                    append(data.getString(IT.Indexes.AREA_COLUMN_INDEX)).
-                    append("\n").
-                    append("- Estado: ").
-                    append(IT.StateValues.toString(data.getInt(IT.Indexes.STATE_COLUMN_INDEX))).
-                    append("\n").
-                    append("- Última act. del estado: ").
-                    append(Tools.formatDate(data.getString(IT.Indexes.LAST_CHECKING_COLUMN_INDEX))).
-                    append("\n").
-                    append("- Tipo: ").
-                    append(IT.TypeValues.toString(data.getInt(IT.Indexes.TYPE_COLUMN_INDEX))).
-                    append("\n").
-                    append("- Localización: ").
-                    append(data.getString(IT.Indexes.LOCATION_COLUMN_INDEX)).
-                    append("\n").
-                    append("- Observación: ").
-                    append(data.getString(IT.Indexes.OBSERVATION_COLUMN_INDEX));
+            sb.append("\n");
+            sb.append("* Número: ").append(data.getString(IT.Indexes.NUMBER_COLUMN_INDEX));
+            sb.append("\n");
+            sb.append("\n");
+            if (itemsToDisplay[0]) {
+                sb.append("- Descripción: ");
+                sb.append(data.getString(IT.Indexes.DESCRIPTION_COLUMN_INDEX));
+                sb.append("\n");
+                sb.append("\n");
+            }
+            if (itemsToDisplay[1]) {
+                sb.append("- Área: ");
+                sb.append(data.getString(IT.Indexes.AREA_COLUMN_INDEX));
+                sb.append("\n");
+                sb.append("\n");
+            }
+            if (itemsToDisplay[2]) {
+                sb.append("- Estado: ");
+                sb.append(IT.StateValues.toString(data.getInt(IT.Indexes.STATE_COLUMN_INDEX)));
+                sb.append("\n");
+                sb.append("\n");
+            }
+            if (itemsToDisplay[3]) {
+                sb.append("- Última act. del estado: ");
+                sb.append(Tools.formatDate(data.getString(IT.Indexes.LAST_CHECKING_COLUMN_INDEX)));
+                sb.append("\n");
+                sb.append("\n");
+            }
+            if (itemsToDisplay[4]) {
+                sb.append("- Tipo: ");
+                sb.append(IT.TypeValues.toString(data.getInt(IT.Indexes.TYPE_COLUMN_INDEX)));
+                sb.append("\n");
+                sb.append("\n");
+            }
+            if (itemsToDisplay[5]) {
+                sb.append("- Localización: ");
+                sb.append(data.getString(IT.Indexes.LOCATION_COLUMN_INDEX));
+                sb.append("\n");
+                sb.append("\n");
+            }
+            if (itemsToDisplay[6]) {
+                sb.append("- Observación: ");
+                sb.append(data.getString(IT.Indexes.OBSERVATION_COLUMN_INDEX));
+                sb.append("\n");
+            }
 
             dataToDisplay.set(i, sb.toString());
         }
@@ -1128,14 +1161,11 @@ public class InventoryActivity extends AppCompatActivity {
         if (data == null) {
             String s = "0/0 de 0";
             textView.setText(s);
-
         } else {
-
             String s = (getIndex() + 1) + "/" + (getIndex() + WINDOW) + " de " + data.getCount();
             textView.setText(s);
         }
-        listView.setAdapter(new ArrayAdapter<>(InventoryActivity.this,
-                android.R.layout.simple_list_item_1, dataToDisplay));
+        AppStatics.formatView(InventoryActivity.this, dataToDisplay, listView);
 
     }
 
@@ -1223,4 +1253,14 @@ public class InventoryActivity extends AppCompatActivity {
         }
     }
 
+    private Boolean[] getPreferenceItemsToDisplay() {
+        Boolean[] toReturn = new Boolean[7];
+        Arrays.fill(toReturn, false);
+        String[] items = AppStatics.db.getPreference(DB.PT.PNames.FIELDS_TO_DISPLAY_CSV).split(",", -1);
+        for (int i = 0; i < items.length; i++) {
+            toReturn[i] = items[i].equals(DB.PT.PDefaultValues.YES);
+        }
+
+        return toReturn;
+    }
 }

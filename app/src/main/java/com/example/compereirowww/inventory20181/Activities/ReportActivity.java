@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -19,7 +18,6 @@ import com.example.compereirowww.inventory20181.Tools.Tools;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_TAG;
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.db;
@@ -29,16 +27,16 @@ public class ReportActivity extends AppCompatActivity {
 
     //GUI
     TextView textView;
-    StringBuilder report;
+    Spinner formatS;
 
     //data
-    Spinner formatS;
     private static Cursor data;
+    StringBuilder report;
     static int selectedFormat = 0;
     String creationDate;
     boolean building;
 
-    private static String F_TEX = "Texto";
+    private static String F_S_TEX = "Texto";
     private static String F_CSV = "CSV";
 
     private static AsyncTask<Void, String, Boolean> asyncTask;
@@ -54,7 +52,12 @@ public class ReportActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (!building) {
-                    String rName = "Reporte " + " (" + data.getCount() + "ns) " + creationDate + ".csv";
+                    String rName;
+                    if (selectedFormat == 2) {
+                        rName = "Reporte " + " (" + data.getCount() + "ns) " + creationDate + ".csv";
+                    } else {
+                        rName = "Reporte " + " (" + data.getCount() + "ns) " + creationDate + ".txt";
+                    }
                     File reportFile = new File(db.getPreference(DB.PT.PNames.REPORTS_DIRECTORY_PATH), rName);
                     try {
                         Tools.writeFile(reportFile, report.toString());
@@ -68,11 +71,11 @@ public class ReportActivity extends AppCompatActivity {
 
             }
         });
+        AppStatics.formatView((TextView) findViewById(R.id.textView2));
         textView = (TextView) findViewById(R.id.textView);
+        AppStatics.formatView(textView);
         formatS = (Spinner) findViewById(R.id.format_s);
-        formatS.setAdapter(new ArrayAdapter<>(ReportActivity.this,
-                android.R.layout.simple_list_item_1,
-                new String[]{F_TEX, F_CSV}));
+        AppStatics.formatView(ReportActivity.this, new String[]{F_S_TEX, F_CSV}, formatS);
         formatS.setSelection(selectedFormat);
         formatS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -82,9 +85,9 @@ public class ReportActivity extends AppCompatActivity {
                     asyncTask.cancel(true);
                 }
                 if (i == 0) {
-                    asyncTask = new MakeLongReportTXTAT();
+                    asyncTask = new MakeReportTXTAT();
                     asyncTask.execute();
-                } else {
+                } else if (i == 1) {
                     asyncTask = new MakeReportCSVAT();
                     asyncTask.execute();
                 }
@@ -236,25 +239,10 @@ public class ReportActivity extends AppCompatActivity {
         }
     }
 
-    private class MakeLongReportTXTAT extends AsyncTask<Void, String, Boolean> {
+    private class MakeReportTXTAT extends AsyncTask<Void, String, Boolean> {
 
         private String TAB = "   ";
-        //STATE
-        private int MISSING_INDEX = 0;
-        private int PRESENT_INDEX = 1;
-        private int LEFTOVER_INDEX = 2;
-        private int IGNORED_MISSING_INDEX = 3;
-        private int LEFTOVER_PRESENT_INDEX = 4;
-        private int STATES_COUNT = 5;
-
-        //TYPE
-        private int EQUIPMENT_INDEX = 0;
-        private int FURNISHING_INDEX = 1;
-        private int UNKNOWN_INDEX = 2;
-        private int TYPE_COUNT = 3;
-
-        private long progress = 0;
-        private int total;
+        ReportActivity.DataThree three;
 
         @Override
         protected void onPreExecute() {
@@ -265,278 +253,17 @@ public class ReportActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... voids) {
 
-            report = new StringBuilder();
-            creationDate = Tools.getFormattedDateForFileNaming();
-
-            total = (int) (data.getCount() * 2.3);
-            DataThree three = new DataThree();
+            initialising();
 
             if (isCancelled()) {
                 report = new StringBuilder();
                 return false;
             }
 
-
-            report.append("REPORTE DE INVENTARIO ").append(creationDate).append("\n").append("\n");
-            if (three.getAreasCount() == 1) {
-                report.append("--- ").append(three.getArea(0).toUpperCase()).append(" ---").append("\n").append("\n");
-            } else {
-                report.append("--- DETALLES GENERALES ---").append("\n").append("\n");
-            }
-            report.append("TOTAL DE NÚMEROS: ").append(data.getCount()).append("\n");
-
-            int tempSize;
-            ArrayList<String> tempNumbers;
-            tempSize = three.getTypeTotalNumberCount(EQUIPMENT_INDEX);
-            if (tempSize > 0) {
-                report.append(TAB).append("EQUIPOS: ").append(tempSize).append("\n");
-                tempSize = three.getStateTotalNumberCountOfAType(MISSING_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(MISSING_INDEX, EQUIPMENT_INDEX);
-                    report.append(TAB).append(TAB).append("Faltantes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(PRESENT_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(PRESENT_INDEX, EQUIPMENT_INDEX);
-                    report.append(TAB).append(TAB).append("Presentes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(LEFTOVER_INDEX, EQUIPMENT_INDEX);
-                    report.append(TAB).append(TAB).append("Sobrantes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(IGNORED_MISSING_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(IGNORED_MISSING_INDEX, EQUIPMENT_INDEX);
-                    report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_PRESENT_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(LEFTOVER_PRESENT_INDEX, EQUIPMENT_INDEX);
-                    report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-            }
-
-            tempSize = three.getTypeTotalNumberCount(FURNISHING_INDEX);
-            if (tempSize > 0) {
-                report.append(TAB).append("MUEBLES: ").append(tempSize).append("\n");
-                tempSize = three.getStateTotalNumberCountOfAType(MISSING_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(MISSING_INDEX, FURNISHING_INDEX);
-                    report.append(TAB).append(TAB).append("Faltantes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(PRESENT_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(PRESENT_INDEX, FURNISHING_INDEX);
-                    report.append(TAB).append(TAB).append("Presentes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(LEFTOVER_INDEX, FURNISHING_INDEX);
-                    report.append(TAB).append(TAB).append("Sobrantes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(IGNORED_MISSING_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(IGNORED_MISSING_INDEX, FURNISHING_INDEX);
-                    report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_PRESENT_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    tempNumbers = three.getStateNumbersOfAType(LEFTOVER_PRESENT_INDEX, FURNISHING_INDEX);
-                    report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                            append(tempSize).
-                            append("\n").append("\n");
-                    report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                }
-            }
-
-            if (three.getAreasCount() > 1) {
-
-                String currentArea;
-
-                report.append("\n");
-                report.append("--- DETALLES POR ÁREAS ---").append("\n").append("\n");
-                for (int a = 0; a < three.getAreasCount(); a++) {
-
-                    currentArea = three.getArea(a).toUpperCase();
-
-                    report.append("- ").append(currentArea).append(" -").append("\n");
-                    report.append("Total de números: ").append(three.getAreaTotalNumberCount(a)).append("\n").append("\n");
-
-                    tempSize = three.getNumberCount(a, EQUIPMENT_INDEX);
-                    if (tempSize > 0) {
-                        report.append(TAB).append("EQUIPOS: ").append(tempSize).append("\n");
-
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, MISSING_INDEX);
-
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, EQUIPMENT_INDEX, MISSING_INDEX);
-                            report.append(TAB).append(TAB).append("Faltantes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, EQUIPMENT_INDEX, PRESENT_INDEX);
-                            report.append(TAB).append(TAB).append("Presentes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, LEFTOVER_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, EQUIPMENT_INDEX, LEFTOVER_INDEX);
-                            report.append(TAB).append(TAB).append("Sobrantes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, IGNORED_MISSING_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, EQUIPMENT_INDEX, IGNORED_MISSING_INDEX);
-                            report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, LEFTOVER_PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, EQUIPMENT_INDEX, LEFTOVER_PRESENT_INDEX);
-                            report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                    }
-
-                    tempSize = three.getNumberCount(a, FURNISHING_INDEX);
-                    if (tempSize > 0) {
-                        report.append("- ").append(currentArea).append(" -").append("\n");
-                        report.append(TAB).append("MUEBLES: ").append(tempSize).append("\n");
-
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, MISSING_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, FURNISHING_INDEX, MISSING_INDEX);
-                            report.append(TAB).append(TAB).append("Faltantes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, FURNISHING_INDEX, PRESENT_INDEX);
-                            report.append(TAB).append(TAB).append("Presentes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, LEFTOVER_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, FURNISHING_INDEX, LEFTOVER_INDEX);
-                            report.append(TAB).append(TAB).append("Sobrantes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, IGNORED_MISSING_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, FURNISHING_INDEX, IGNORED_MISSING_INDEX);
-                            report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, LEFTOVER_PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, FURNISHING_INDEX, LEFTOVER_PRESENT_INDEX);
-                            report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                    }
-
-                    tempSize = three.getNumberCount(a, UNKNOWN_INDEX);
-                    if (tempSize > 0) {
-                        report.append("- ").append(currentArea).append(" -").append("\n");
-                        report.append(TAB).append("CON TIPO DESCONOZIDO: ").append(tempSize).append("\n");
-
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, MISSING_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, UNKNOWN_INDEX, MISSING_INDEX);
-                            report.append(TAB).append(TAB).append("Faltantes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, UNKNOWN_INDEX, PRESENT_INDEX);
-                            report.append(TAB).append(TAB).append("Presentes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, LEFTOVER_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, UNKNOWN_INDEX, LEFTOVER_INDEX);
-                            report.append(TAB).append(TAB).append("Sobrantes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, IGNORED_MISSING_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, UNKNOWN_INDEX, IGNORED_MISSING_INDEX);
-                            report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, LEFTOVER_PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            tempNumbers = three.getNumbers(a, UNKNOWN_INDEX, LEFTOVER_PRESENT_INDEX);
-                            report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                                    append(tempSize).
-                                    append("\n").append("\n");
-                            report.append(Arrays.toString(tempNumbers.toArray())).append("\n").append("\n");
-                        }
-                    }
-
-                    report.append("\n");
-                }
-            }
-
-            report.append(progress);
-            publishProgress("Creando inventario: 100%");
+            //report
+            addHead();
+            addGeneralDetailsSection();
+            addAreasDetailsSection();
 
             return true;
         }
@@ -546,10 +273,6 @@ public class ReportActivity extends AppCompatActivity {
             textView.setText(values[0]);
         }
 
-        private String getPerCent(long part, int total) {
-            return String.valueOf((part * 100) / total) + " %";
-        }
-
         @Override
         protected void onPostExecute(Boolean r) {
 
@@ -557,218 +280,314 @@ public class ReportActivity extends AppCompatActivity {
                 if (report.length() < 5000) {
                     textView.setText(report);
                 } else {
-                    textView.setText(report.substring(0, 4900) + " ...");
+                    textView.setText(report);
+                    //textView.setText(report.substring(0, 4900) + " ...");
                 }
             building = false;
             formatS.setEnabled(true);
         }
 
-        private class DataThree {
+        private void initialising() {
+            report = new StringBuilder();
+            creationDate = Tools.getFormattedDateForFileNaming();
+            three = new DataThree(data) {
+                @Override
+                public boolean onThreeProgressUpdate(long progress) {
 
-            private ArrayList<String> areas;
-            private ArrayList<ArrayList<ArrayList<ArrayList<String>>>> three;
+                    int total = (int) (data.getCount() * 2.1);
 
-            public DataThree() {
-                initializeAreas();
-                initializeThree();
-                putDataIntoThree();
-            }
+                    publishProgress("Creando Reporte... " + getPerCent(progress,total));
+                    //publishProgress(progress + "");
 
-            private void initializeThree() {
-
-                three = new ArrayList<>();
-
-                //Adding Areas
-                for (int a = 0; a < areas.size(); a++) {
-                    ArrayList<ArrayList<ArrayList<String>>> areaLevelHolderAL = new ArrayList<>();
-
-                    //Adding types (there are 3 types)
-                    for (int t = 0; t < TYPE_COUNT; t++) {
-                        ArrayList<ArrayList<String>> typeLevelHolderAL = new ArrayList<>();
-
-                        //Adding states (there are 5 states)
-                        for (int s = 0; s < STATES_COUNT; s++) {
-                            ArrayList<String> stateLevelHolderAL = new ArrayList<>();
-                            typeLevelHolderAL.add(stateLevelHolderAL);
-                        }
-
-                        areaLevelHolderAL.add(typeLevelHolderAL);
+                    if (isCancelled()) {
+                        report = new StringBuilder();
+                        return false;
                     }
-                    three.add(areaLevelHolderAL);
+
+                    return true;
                 }
+            };
+        }
 
+        private void addHead() {
+            //REPORTE DEL INVENTARIO ##/##/## ##:##
+            //
+
+            report.append("REPORTE DEL INVENTARIO ");
+            report.append(creationDate);
+            report.append("\n");
+            report.append("\n");
+        }
+
+        private void addGeneralDetailsSection() {
+            //---- DETALLES GENERALES ----
+            //TOTAL DE NÚMEROS: ####
+            //  TYPE: ###
+            //      STATES: ###
+            //
+            //
+
+            report.append("---- DETALLES GENERALES ----");
+            report.append("\n");
+            report.append("TOTAL DE NÚMEROS: ");
+            report.append(three.getNumberCount());
+            report.append("\n");
+            addTypeSection(three.EQUIPMENT_INDEX);
+            addTypeSection(three.FURNISHING_INDEX);
+            addTypeSection(three.UNKNOWN_INDEX);
+            report.append("\n");
+            report.append("\n");
+        }
+
+        /**
+         * Add the whole Area Details secction, that is, all the Areas one next to others
+         * and a Detailed look of it!!!
+         */
+        private void addAreasDetailsSection() {
+            //---- DETALLES POR ÁREAS ----
+            //AREAS ANALIZADAS: ##
+            //  AREAS
+            //
+            //
+
+            report.append("---- DETALLES POR ÁREAS ----");
+            report.append("\n");
+            report.append("AREAS ANALIZADAS: ");
+            report.append(three.getAreasCount());
+            report.append("\n");
+            for (int a = 0; a < three.getAreasCount(); a++) {
+                report.append(TAB);
+                report.append(three.getArea(a));
+                report.append("\n");
             }
+            report.append("\n");
 
-            private void putDataIntoThree() {
+            //NOMBRE DEL ÁREA
+            //TOTAL DE NÚMEROS: ###
+            //  TYPES: ###
+            //      STATES: ###
+            //
+            //NOMBRE DEL AREA
+            //LOCATIONS:
+            //TOTAL DE NÚMEROS
+            //  TYPES: ###
+            //      STATE: ###
+            //
+            //
 
-                String number, numberArea;
-                int numberType, numberState;
-                data.moveToPosition(-1);
-                while (data.moveToNext()) {
-
-                    number = data.getString(DB.IT.Indexes.NUMBER_COLUMN_INDEX);
-                    numberArea = data.getString(DB.IT.Indexes.AREA_COLUMN_INDEX);
-                    numberType = data.getInt(DB.IT.Indexes.TYPE_COLUMN_INDEX);
-                    numberState = data.getInt(DB.IT.Indexes.STATE_COLUMN_INDEX);
-
-
-                    String area;
-                    for (int a = 0; a < areas.size(); a++) {
-                        area = areas.get(a);
-                        //Separating by area
-                        if (numberArea.equals(area)) {
-                            for (int t = 0; t < TYPE_COUNT; t++) {
-                                //Separating by type
-                                if (numberType == getTypeValueByIndex(t)) {
-                                    for (int s = 0; s < STATES_COUNT; s++) {
-                                        //Separating by state
-                                        if (numberState == getStateValueByIndex(s)) {
-                                            addNumber(a, t, s, number);
-                                            progress++;
-                                            publishProgress("Creando inventario: " + getPerCent(progress, total));
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
+            for (int a = 0; a < three.getAreasCount(); a++) {
+                addAreaSection(a);
             }
+            report.append("\n");
+        }
 
-            private void initializeAreas() {
-                areas = new ArrayList<>();
+        /**
+         * Add the details of a single Area
+         *
+         * @param area
+         */
+        private void addAreaSection(int area) {
 
-                data.moveToPosition(-1);
-                while (data.moveToNext()) {
-                    String area = data.getString(DB.IT.Indexes.AREA_COLUMN_INDEX);
-                    if (!areas.contains(area)) {
-                        areas.add(area);
-                    }
-                }
+            //NOMBRE DEL ÁREA
+            //TOTAL DE NÚMEROS: ###
+            //  TYPES: ###
+            //      STATES: ###
+            //
+
+
+            report.append(three.getArea(area));
+            report.append("\n");
+            report.append("TOTAL DE NÚMEROS: ");
+            report.append(three.getAreaNumbersCount(area));
+            report.append("\n");
+            addTypeSection(area, three.EQUIPMENT_INDEX);
+            addTypeSection(area, three.FURNISHING_INDEX);
+            addTypeSection(area, three.UNKNOWN_INDEX);
+            report.append("\n");
+
+            //NOMBRE DEL AREA
+            //LOCATIONS:
+            //TOTAL DE NÚMEROS
+            //  TYPES: ###
+            //      STATE: ###
+            //
+            //
+
+            for (int l = 0; l < three.getLocationsCount(area); l++) {
+                addLocationSection(area, l);
             }
+        }
 
-            private int getTypeValueByIndex(int index) {
-                if (index == EQUIPMENT_INDEX) return DB.IT.TypeValues.EQUIPMENT;
-                if (index == FURNISHING_INDEX) return DB.IT.TypeValues.FURNISHING;
-                else return DB.IT.TypeValues.UNKNOWN;
-            }
+        /**
+         * Add the details of an Location.
+         *
+         * @param areaIndex
+         * @param locationIndex
+         */
+        private void addLocationSection(int areaIndex, int locationIndex) {
 
-            private int getStateValueByIndex(int index) {
-                if (index == MISSING_INDEX) return DB.IT.StateValues.MISSING;
-                if (index == PRESENT_INDEX) return DB.IT.StateValues.PRESENT;
-                if (index == LEFTOVER_INDEX) return DB.IT.StateValues.LEFTOVER;
-                if (index == IGNORED_MISSING_INDEX) return DB.IT.StateValues.IGNORED_MISSING;
-                else return DB.IT.StateValues.LEFTOVER_PRESENT;
-            }
+            //NOMBRE DEL AREA
+            //LOCATIONS:
+            //TOTAL DE NÚMEROS
+            //  TYPES: ###
+            //      STATE: ###
+            //
+            //
 
-            private void addNumber(int areaIndex, int typeIndex, int stateIndex, String number) {
-                three.get(areaIndex).get(typeIndex).get(stateIndex).add(number);
-            }
+            report.append(three.getArea(areaIndex));
+            report.append("\n");
+            report.append("Localización: ");
+            String location = three.getLocations(areaIndex).get(locationIndex);
+            if (location.equals("")) report.append("Vacía");
+            else report.append(location);
+            report.append("\n");
+            report.append("TOTAL DE NÚMEROS: ");
+            report.append(three.getLocationNumbersCount(areaIndex, locationIndex));
+            report.append("\n");
+            addTypeSection(areaIndex, locationIndex, three.EQUIPMENT_INDEX);
+            addTypeSection(areaIndex, locationIndex, three.FURNISHING_INDEX);
+            addTypeSection(areaIndex, locationIndex, three.UNKNOWN_INDEX);
+            report.append("\n");
+        }
 
-            public int getNumberCount(int areaIndex, int typeIndex, int stateIndex) {
-                progress++;
-                publishProgress("Creando inventario: " + getPerCent(progress, total));
-                return three.get(areaIndex).get(typeIndex).get(stateIndex).size();
-            }
+        /**
+         * Add the details af a Type inside a Location
+         *
+         * @param areaIndex
+         * @param locationIndex
+         * @param typeIndex
+         */
+        private void addTypeSection(int areaIndex, int locationIndex, int typeIndex) {
+            //  TYPES: ###
+            //      STATE: ###
+            //
+            //
 
-            public ArrayList<String> getNumbers(int areaIndex, int typeIndex, int stateIndex) {
-                ArrayList<String> numbers = three.get(areaIndex).get(typeIndex).get(stateIndex);
-                progress++;
-                publishProgress("Creando inventario: " + getPerCent(progress, total));
-                return numbers;
-            }
+            report.append(TAB);
+            report.append(three.getTypeLabel(typeIndex));
+            report.append(": ");
+            report.append(three.getTypeNumberCount(areaIndex, locationIndex, typeIndex));
+            report.append("\n");
+            addStateSection(areaIndex, locationIndex, typeIndex, three.PRESENT_INDEX);
+            report.append(TAB);
+            addStateSection(areaIndex, locationIndex, typeIndex, three.MISSING_INDEX);
+            report.append(TAB);
+            addStateSection(areaIndex, locationIndex, typeIndex, three.LEFTOVER_INDEX);
+            report.append("\n");
+            addStateSection(areaIndex, locationIndex, typeIndex, three.IGNORED_MISSING_INDEX);
+            report.append(TAB);
+            addStateSection(areaIndex, locationIndex, typeIndex, three.LEFTOVER_PRESENT_INDEX);
+            report.append("\n");
+        }
 
-            public int getNumberCount(int areaIndex, int typeIndex) {
-                int count = 0;
-                for (int s = 0; s < STATES_COUNT; s++) {
-                    count += getNumberCount(areaIndex, typeIndex, s);
-                }
-                return count;
-            }
+        /**
+         * Add the details of a Type inside an Area, It will ignore the
+         * locations clarification.
+         *
+         * @param areaIndex
+         * @param typeIndex
+         */
+        private void addTypeSection(int areaIndex, int typeIndex) {
+            //  TYPE: ###
+            //      STATE: ###
+            //
 
-            public ArrayList<String> getNumbers(int areaIndex, int typeIndex) {
-                ArrayList<String> toReturn = new ArrayList<>();
-                for (int s = 0; s < STATES_COUNT; s++) {
-                    ArrayList<String> tempNumbers = getNumbers(areaIndex, typeIndex, s);
-                    for (String tn : tempNumbers) {
-                        toReturn.add(tn);
-                    }
-                }
-                return toReturn;
-            }
+            report.append(TAB);
+            report.append(three.getTypeLabel(typeIndex));
+            report.append(": ");
+            report.append(three.getTypeNumberCount(areaIndex, typeIndex));
+            report.append("\n");
+            addStateSection(areaIndex, typeIndex, three.PRESENT_INDEX);
+            report.append(TAB);
+            addStateSection(areaIndex, typeIndex, three.MISSING_INDEX);
+            report.append(TAB);
+            addStateSection(areaIndex, typeIndex, three.LEFTOVER_INDEX);
+            report.append("\n");
+            addStateSection(areaIndex, typeIndex, three.IGNORED_MISSING_INDEX);
+            report.append(TAB);
+            addStateSection(areaIndex, typeIndex, three.LEFTOVER_PRESENT_INDEX);
+            report.append("\n");
+        }
 
-            public int getAreaTotalNumberCount(int areaIndex) {
-                int count = 0;
-                for (int t = 0; t < TYPE_COUNT; t++) {
-                    count += getNumberCount(areaIndex, t);
-                }
-                return count;
-            }
 
-            public ArrayList<String> getAreaTotalNumbers(int areaIndex) {
-                ArrayList<String> toReturn = new ArrayList<>();
-                for (int t = 0; t < TYPE_COUNT; t++) {
-                    ArrayList<String> tempNumbers = getNumbers(areaIndex, t);
-                    for (String tn : tempNumbers) {
-                        toReturn.add(tn);
-                    }
-                }
-                return toReturn;
-            }
+        private void addTypeSection(int typeIndex) {
+            //  TYPE: ###
+            //      STATES: ###
 
-            public int getStateTotalNumberCountOfAType(int stateIndex, int typeIndex) {
-                int count = 0;
-                for (int a = 0; a < areas.size(); a++) {
-                    count += getNumberCount(a, typeIndex, stateIndex);
-                }
-                return count;
-            }
+            report.append(TAB);
+            report.append(three.getTypeLabel(typeIndex));
+            report.append(": ");
+            report.append(three.getTypeNumberCount(typeIndex));
+            report.append("\n");
+            addStateSection(typeIndex, three.PRESENT_INDEX);
+            addStateSection(typeIndex, three.MISSING_INDEX);
+            addStateSection(typeIndex, three.IGNORED_MISSING_INDEX);
+            addStateSection(typeIndex, three.LEFTOVER_INDEX);
+            addStateSection(typeIndex, three.LEFTOVER_PRESENT_INDEX);
+        }
 
-            public ArrayList<String> getStateNumbersOfAType(int stateIndex, int typeIndex) {
-                ArrayList<String> toReturn = new ArrayList<>();
-                for (int a = 0; a < areas.size(); a++) {
-                    ArrayList<String> tempNumbers = getNumbers(a, typeIndex, stateIndex);
-                    for (String tn : tempNumbers) {
-                        toReturn.add(tn);
-                    }
-                }
-                return toReturn;
-            }
+        private void addStateSection(int areaIndex, int locationIndex, int typeIndex, int stateIndex) {
+            //      STATE: ###
 
-            public int getTypeTotalNumberCount(int typeIndex) {
-                int count = 0;
-                for (int a = 0; a < areas.size(); a++) {
-                    count += getNumberCount(a, typeIndex);
-                }
-                return count;
-            }
+            report.append(TAB);
+            report.append(TAB);
+            report.append(three.getStateLabel(stateIndex));
+            report.append(": ");
+            report.append(three.getStateNumbersCount(areaIndex, locationIndex, typeIndex, stateIndex));
+        }
 
-            public ArrayList<String> getTypeNumbers(int typeIndex) {
-                ArrayList<String> toReturn = new ArrayList<>();
-                for (int a = 0; a < areas.size(); a++) {
-                    ArrayList<String> tempNumbers = getNumbers(a, typeIndex);
-                    for (String tn : tempNumbers) {
-                        toReturn.add(tn);
-                    }
-                }
-                return toReturn;
-            }
-
-            public String getArea(int areaIndex) {
-                return areas.get(areaIndex);
-            }
-
-            public int getAreasCount() {
-                return areas.size();
-            }
+        /**
+         * Add the details of a State, It will ignore the
+         * locations clarification.
+         *
+         * @param areaIndex
+         * @param typeIndex
+         * @param stateIndex
+         */
+        private void addStateSection(int areaIndex, int typeIndex, int stateIndex) {
+            //      STATE: ###
+            report.append(TAB);
+            report.append(TAB);
+            report.append(three.getStateLabel(stateIndex));
+            report.append(": ");
+            report.append(three.getStateNumbersCount(areaIndex, typeIndex, stateIndex));
 
         }
+
+        private void addStateSection(int typeIndex, int stateIndex) {
+            //      STATE: ###
+
+            report.append(TAB);
+            report.append(TAB);
+            report.append(three.getStateLabel(stateIndex));
+            report.append(": ");
+            report.append(three.getStateNumbersCountOfAType(typeIndex, stateIndex));
+            report.append("\n");
+        }
+
+        private String getPerCent(long part, int total) {
+            return String.valueOf((part * 100) / total) + " %";
+        }
+
     }
 
-    private class MakeShortReportTXTAT extends AsyncTask<Void, String, Boolean> {
+    public abstract class DataThree {
 
-        private String TAB = "   ";
+        //Areas -> Locations -> Types -> States
+        private ArrayList<ArrayList<ArrayList<ArrayList<ArrayList<String>>>>> three;
+
+        //AREA
+        private ArrayList<String> areas;
+
+        //LOCATION
+        private ArrayList<ArrayList<String>> locations;
+
+        //TYPE
+        private int EQUIPMENT_INDEX = 0;
+        private int FURNISHING_INDEX = 1;
+        private int UNKNOWN_INDEX = 2;
+        private int TYPE_COUNT = 3;
+
         //STATE
         private int MISSING_INDEX = 0;
         private int PRESENT_INDEX = 1;
@@ -777,452 +596,450 @@ public class ReportActivity extends AppCompatActivity {
         private int LEFTOVER_PRESENT_INDEX = 4;
         private int STATES_COUNT = 5;
 
-        //TYPE
-        private int EQUIPMENT_INDEX = 0;
-        private int FURNISHING_INDEX = 1;
-        private int UNKNOWN_INDEX = 2;
-        private int TYPE_COUNT = 3;
+        //Progress
+        private long progress;
+        private int numberCount;
 
-        private long progress = 0;
-        private int total;
-
-        @Override
-        protected void onPreExecute() {
-            building = true;
-            formatS.setEnabled(false);
+        //Constructor
+        public DataThree(Cursor data) {
+            progress = 0;
+            initializeAreasAndLocations(data);
+            initializeThree();
+            fillThreeWithData(data);
+            numberCount = data.getCount();
         }
 
-        @Override
-        protected Boolean doInBackground(Void... voids) {
+        //region privateMethods...
 
-            report = new StringBuilder();
-            creationDate = Tools.getFormattedDateForFileNaming();
+        private void fillThreeWithData(Cursor data) {
 
-            total = (int) (data.getCount() * 1.3);
-            DataThree three = new DataThree();
+            String number, numberArea, numberLocation;
+            int numberType, numberState;
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
 
-            if (isCancelled()) {
-                report = new StringBuilder();
-                return false;
-            }
+                number = data.getString(DB.IT.Indexes.NUMBER_COLUMN_INDEX);
+                numberArea = data.getString(DB.IT.Indexes.AREA_COLUMN_INDEX);
+                numberLocation = data.getString(DB.IT.Indexes.LOCATION_COLUMN_INDEX);
+                numberType = data.getInt(DB.IT.Indexes.TYPE_COLUMN_INDEX);
+                numberState = data.getInt(DB.IT.Indexes.STATE_COLUMN_INDEX);
 
-
-            report.append("REPORTE DE INVENTARIO ").append(creationDate).append("\n").append("\n");
-            if (three.getAreasCount() == 1) {
-                report.append("--- ").append(three.getArea(0).toUpperCase()).append(" ---").append("\n").append("\n");
-            } else {
-                report.append("--- DETALLES GENERALES ---").append("\n").append("\n");
-            }
-            report.append("TOTAL DE NÚMEROS: ").append(data.getCount()).append("\n");
-
-            int tempSize;
-            tempSize = three.getTypeTotalNumberCount(EQUIPMENT_INDEX);
-            if (tempSize > 0) {
-                report.append(TAB).append("EQUIPOS: ").append(tempSize).append("\n");
-                tempSize = three.getStateTotalNumberCountOfAType(MISSING_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Faltantes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(PRESENT_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Presentes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Sobrantes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(IGNORED_MISSING_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_PRESENT_INDEX, EQUIPMENT_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-            }
-
-            tempSize = three.getTypeTotalNumberCount(FURNISHING_INDEX);
-            if (tempSize > 0) {
-                report.append(TAB).append("MUEBLES: ").append(tempSize).append("\n");
-                tempSize = three.getStateTotalNumberCountOfAType(MISSING_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Faltantes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(PRESENT_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Presentes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Sobrantes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(IGNORED_MISSING_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_PRESENT_INDEX, FURNISHING_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-            }
-
-            tempSize = three.getTypeTotalNumberCount(UNKNOWN_INDEX);
-            if (tempSize > 0) {
-                report.append(TAB).append("CON TIPO DESCONOZIDO: ").append(tempSize).append("\n");
-                tempSize = three.getStateTotalNumberCountOfAType(MISSING_INDEX, UNKNOWN_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Faltantes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(PRESENT_INDEX, UNKNOWN_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Presentes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_INDEX, UNKNOWN_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Sobrantes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(IGNORED_MISSING_INDEX, UNKNOWN_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                            append(tempSize).
-                            append("\n");
-                }
-                tempSize = three.getStateTotalNumberCountOfAType(LEFTOVER_PRESENT_INDEX, UNKNOWN_INDEX);
-                if (tempSize > 0) {
-                    report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                            append(tempSize).
-                            append("\n");
-                }
-            }
-
-            if (three.getAreasCount() > 1) {
-
-                String currentArea;
-
-                report.append("\n");
-                report.append("--- DETALLES POR ÁREAS ---").append("\n").append("\n");
-                for (int a = 0; a < three.getAreasCount(); a++) {
-
-                    currentArea = three.getArea(a).toUpperCase();
-
-                    report.append("- ").append(currentArea).append(" -").append("\n");
-                    report.append("Total de números: ").append(three.getAreaTotalNumberCount(a)).append("\n");
-
-                    tempSize = three.getNumberCount(a, EQUIPMENT_INDEX);
-                    if (tempSize > 0) {
-                        report.append(TAB).append("EQUIPOS: ").append(tempSize).append("\n");
-
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, MISSING_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Faltantes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Presentes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, LEFTOVER_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Sobrantes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, IGNORED_MISSING_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, EQUIPMENT_INDEX, LEFTOVER_PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                    }
-
-                    tempSize = three.getNumberCount(a, FURNISHING_INDEX);
-                    if (tempSize > 0) {
-                        report.append(TAB).append("MUEBLES: ").append(tempSize).append("\n");
-
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, MISSING_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Faltantes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Presentes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, LEFTOVER_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Sobrantes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, IGNORED_MISSING_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, FURNISHING_INDEX, LEFTOVER_PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                    }
-
-                    tempSize = three.getNumberCount(a, UNKNOWN_INDEX);
-                    if (tempSize > 0) {
-                        report.append(TAB).append("CON TIPO DESCONOZIDO: ").append(tempSize).append("\n");
-
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, MISSING_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Faltantes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Presentes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, LEFTOVER_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Sobrantes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, IGNORED_MISSING_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Faltantes Ignorados: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                        tempSize = three.getNumberCount(a, UNKNOWN_INDEX, LEFTOVER_PRESENT_INDEX);
-                        if (tempSize > 0) {
-                            report.append(TAB).append(TAB).append("Sobrantes Presentes: ").
-                                    append(tempSize).
-                                    append("\n");
-                        }
-                    }
-
-                    report.append("\n");
-                }
-            }
-
-            publishProgress("Creando inventario: 100%");
-
-            return true;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            textView.setText(values[0]);
-        }
-
-        private String getPerCent(long part, int total) {
-            return String.valueOf((part * 100) / total) + " %";
-        }
-
-        @Override
-        protected void onPostExecute(Boolean r) {
-
-            if (r)
-                if (report.length() < 5000) {
-                    textView.setText(report);
-                } else {
-                    textView.setText(report.substring(0, 4900) + " ...");
-                }
-            building = false;
-            formatS.setEnabled(true);
-        }
-
-        private class DataThree {
-
-            private ArrayList<String> areas;
-            private ArrayList<ArrayList<ArrayList<ArrayList<String>>>> three;
-
-            public DataThree() {
-                initializeAreas();
-                initializeThree();
-                putDataIntoThree();
-            }
-
-            private void initializeThree() {
-
-                three = new ArrayList<>();
-
-                //Adding Areas
+                //Area
                 for (int a = 0; a < areas.size(); a++) {
-                    ArrayList<ArrayList<ArrayList<String>>> areaLevelHolderAL = new ArrayList<>();
+                    if (numberArea.equals(areas.get(a))) {
 
-                    //Adding types (there are 3 types)
-                    for (int t = 0; t < TYPE_COUNT; t++) {
-                        ArrayList<ArrayList<String>> typeLevelHolderAL = new ArrayList<>();
+                        //Location
+                        for (int l = 0; l < locations.get(a).size(); l++) {
+                            if (numberLocation.equals(locations.get(a).get(l))) {
 
-                        //Adding states (there are 5 states)
-                        for (int s = 0; s < STATES_COUNT; s++) {
-                            ArrayList<String> stateLevelHolderAL = new ArrayList<>();
-                            typeLevelHolderAL.add(stateLevelHolderAL);
-                        }
+                                //Types
+                                for (int t = 0; t < TYPE_COUNT; t++) {
+                                    if (numberType == getTypeValueByIndex(t)) {
 
-                        areaLevelHolderAL.add(typeLevelHolderAL);
-                    }
-                    three.add(areaLevelHolderAL);
-                }
+                                        //State
+                                        for (int s = 0; s < STATES_COUNT; s++) {
+                                            if (numberState == getStateValueByIndex(s)) {
 
-            }
+                                                //Adding number
+                                                three.get(a).get(l).get(t).get(s).add(number);
+                                                if (!updateProgress()) return;
 
-            private void putDataIntoThree() {
-
-                String number, numberArea;
-                int numberType, numberState;
-                data.moveToPosition(-1);
-                while (data.moveToNext()) {
-
-                    number = data.getString(DB.IT.Indexes.NUMBER_COLUMN_INDEX);
-                    numberArea = data.getString(DB.IT.Indexes.AREA_COLUMN_INDEX);
-                    numberType = data.getInt(DB.IT.Indexes.TYPE_COLUMN_INDEX);
-                    numberState = data.getInt(DB.IT.Indexes.STATE_COLUMN_INDEX);
-
-
-                    String area;
-                    for (int a = 0; a < areas.size(); a++) {
-                        area = areas.get(a);
-                        //Separating by area
-                        if (numberArea.equals(area)) {
-                            for (int t = 0; t < TYPE_COUNT; t++) {
-                                //Separating by type
-                                if (numberType == getTypeValueByIndex(t)) {
-                                    for (int s = 0; s < STATES_COUNT; s++) {
-                                        //Separating by state
-                                        if (numberState == getStateValueByIndex(s)) {
-                                            addNumber(a, t, s, number);
-                                            progress++;
-                                            publishProgress("Creando inventario: " + getPerCent(progress, total));
+                                            }
                                         }
+
                                     }
                                 }
                             }
-                            break;
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+        private int getTypeValueByIndex(int index) {
+            if (index == EQUIPMENT_INDEX) return DB.IT.TypeValues.EQUIPMENT;
+            if (index == FURNISHING_INDEX) return DB.IT.TypeValues.FURNISHING;
+            else return DB.IT.TypeValues.UNKNOWN;
+        }
+
+        private int getStateValueByIndex(int index) {
+            if (index == MISSING_INDEX) return DB.IT.StateValues.MISSING;
+            if (index == PRESENT_INDEX) return DB.IT.StateValues.PRESENT;
+            if (index == LEFTOVER_INDEX) return DB.IT.StateValues.LEFTOVER;
+            if (index == IGNORED_MISSING_INDEX) return DB.IT.StateValues.IGNORED_MISSING;
+            else return DB.IT.StateValues.LEFTOVER_PRESENT;
+        }
+
+        private void initializeThree() {
+
+            three = new ArrayList<>();
+
+            //Areas
+            for (int a = 0; a < areas.size(); a++) {
+
+                ArrayList<ArrayList<ArrayList<ArrayList<String>>>> area = new ArrayList<>();
+
+                //Location
+                for (int l = 0; l < locations.get(a).size(); l++) {
+
+                    ArrayList<ArrayList<ArrayList<String>>> location = new ArrayList<>();
+
+                    for (int t = 0; t < TYPE_COUNT; t++) {
+
+                        ArrayList<ArrayList<String>> type = new ArrayList<>();
+
+                        for (int s = 0; s < STATES_COUNT; s++) {
+
+                            ArrayList<String> state = new ArrayList<>();
+                            type.add(state);
+
+                            if (!updateProgress()) return;
+
+                        }
+
+                        location.add(type);
+
+                    }
+
+                    area.add(location);
+                }
+
+                three.add(area);
+
+            }
+
+
+        }
+
+        private void initializeAreasAndLocations(Cursor data) {
+
+            areas = new ArrayList<>();
+            this.locations = new ArrayList<>();
+
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                String area = data.getString(DB.IT.Indexes.AREA_COLUMN_INDEX);
+                if (!areas.contains(area)) {
+                    areas.add(area);
+                    if (!updateProgress(100)) return;
+                }
+            }
+
+            for (int a = 0; a < areas.size(); a++) {
+
+                ArrayList<String> currentAreaLocations = new ArrayList<>();
+                data.moveToPosition(-1);
+                while (data.moveToNext()) {
+                    String area = data.getString(DB.IT.Indexes.AREA_COLUMN_INDEX);
+                    if (area.equals(areas.get(a))) {
+                        String location = data.getString(DB.IT.Indexes.LOCATION_COLUMN_INDEX);
+                        if (!currentAreaLocations.contains(location)) {
+                            currentAreaLocations.add(location);
+                            if (!updateProgress(100)) return;
+                        }
+                    }
+
+                }
+
+                this.locations.add(currentAreaLocations);
+            }
+
+
+        }
+
+        private boolean updateProgress() {
+
+            progress++;
+            return onThreeProgressUpdate(progress);
+        }
+
+        private boolean updateProgress(int progressToAdd) {
+
+            progress += progressToAdd;
+            return onThreeProgressUpdate(progress);
+        }
+
+        private ArrayList<String> getBranch(int area, int location, int type, int state) {
+            return three.get(area).get(location).get(type).get(state);
+        }
+
+        private ArrayList<ArrayList<String>> getBranch(int area, int location, int type) {
+            return three.get(area).get(location).get(type);
+        }
+
+        private ArrayList<ArrayList<ArrayList<String>>> getBranch(int area, int location) {
+            return three.get(area).get(location);
+        }
+
+        private ArrayList<ArrayList<ArrayList<ArrayList<String>>>> getBranch(int area) {
+            return three.get(area);
+        }
+
+        //endregion privateMethods...
+
+        //region publicMethods...
+
+        public abstract boolean onThreeProgressUpdate(long progress);
+
+        /**
+         * @param area
+         * @return The total numbers contains in the given Area
+         */
+        public int getAreaNumbersCount(int area) {
+
+            int numberCount = 0;
+            for (int l = 0; l < locations.get(area).size(); l++) {
+                numberCount += getLocationNumbersCount(area, l);
+            }
+
+            return numberCount;
+        }
+
+        public ArrayList<String> getAreaNumers(int area) {
+            ArrayList<String> numbers = new ArrayList<>();
+            for (int l = 0; l < locations.get(area).size(); l++) {
+                for (String number : getLocationNumbers(area, l)) {
+                    numbers.add(number);
+                }
+            }
+            return numbers;
+        }
+
+        public int getLocationNumbersCount(int area, int location) {
+
+            int numberCount = 0;
+            for (int t = 0; t < TYPE_COUNT; t++) {
+                numberCount += getTypeNumberCount(area, location, t);
+            }
+
+            return numberCount;
+        }
+
+        public ArrayList<String> getLocationNumbers(int area, int location) {
+            ArrayList<String> numbers = new ArrayList<>();
+            for (int t = 0; t < TYPE_COUNT; t++) {
+                for (String number : getTypeNumbers(area, location, t)) {
+                    numbers.add(number);
+                }
+            }
+            return numbers;
+        }
+
+        /**
+         * @param type
+         * @return the count of numbers with this type
+         */
+        public int getTypeNumberCount(int type) {
+
+            int numberCount = 0;
+            for (int a = 0; a < areas.size(); a++) {
+                for (int l = 0; l < locations.get(a).size(); l++) {
+                    numberCount += getTypeNumberCount(a, l, type);
+                }
+            }
+
+            return numberCount;
+        }
+
+        /**
+         * @param typeIndex
+         * @param areaIndex
+         * @return the count of numbers with this type in a given area
+         */
+        public int getTypeNumberCount(int areaIndex, int typeIndex) {
+
+            int numberCount = 0;
+            for (int l = 0; l < locations.get(areaIndex).size(); l++) {
+                numberCount += getTypeNumberCount(areaIndex, l, typeIndex);
+            }
+
+            return numberCount;
+        }
+
+        public ArrayList<String> getTypeNumbers(int type) {
+            ArrayList<String> numbers = new ArrayList<>();
+            for (int a = 0; a < areas.size(); a++) {
+                for (int l = 0; l < locations.get(a).size(); l++) {
+                    for (String number : getTypeNumbers(a, l, type)) {
+                        numbers.add(number);
+                    }
+                }
+            }
+            return numbers;
+        }
+
+        /**
+         * @param area
+         * @param location
+         * @param type
+         * @return the count of numbers with this type in this location
+         */
+        public int getTypeNumberCount(int area, int location, int type) {
+
+            int numberCount = 0;
+            for (int s = 0; s < STATES_COUNT; s++) {
+                numberCount += getBranch(area, location, type, s).size();
+            }
+
+            return numberCount;
+
+        }
+
+        public ArrayList<String> getTypeNumbers(int area, int location, int type) {
+            ArrayList<String> numbers = new ArrayList<>();
+            for (int s = 0; s < STATES_COUNT; s++) {
+                for (String number : getStateNumbers(area, location, type, s)) {
+                    numbers.add(number);
+                }
+            }
+            return numbers;
+        }
+
+        public int getStateNumbersCount(int state) {
+            int numberCount = 0;
+            for (int a = 0; a < areas.size(); a++) {
+                for (int l = 0; l < locations.get(a).size(); l++) {
+                    for (int t = 0; t < TYPE_COUNT; t++) {
+                        numberCount += getStateNumbersCount(a, l, t, state);
+                    }
+                }
+            }
+            return numberCount;
+        }
+
+//        /**
+//         * @param area
+//         * @param state
+//         * @return the count of numbers with this state in an Area
+//         */
+//        public int getStateNumbersCount(int area, int state) {
+//            int numberCount = 0;
+//            for (int l = 0; l < locations.get(area).size(); l++) {
+//                for (int t = 0; t < TYPE_COUNT; t++)
+//                    numberCount += getStateNumbersCount(area, l, t, state);
+//            }
+//            return numberCount;
+//        }
+
+        /**
+         * @param type
+         * @param state
+         * @return get the count Number of a given stape of a type in all the three.
+         */
+        public int getStateNumbersCountOfAType(int type, int state) {
+            int numberCount = 0;
+            for (int a = 0; a < areas.size(); a++) {
+                for (int l = 0; l < locations.get(a).size(); l++)
+                    numberCount += getStateNumbersCount(a, l, type, state);
+            }
+
+            return numberCount;
+        }
+
+        public int getStateNumbersCount(int area, int location, int type, int state) {
+            return getBranch(area, location, type, state).size();
+        }
+
+        /**
+         * @param area
+         * @param type
+         * @param state
+         * @return the Count of numbers with this type and this state in an Area.
+         */
+        public int getStateNumbersCount(int area, int type, int state) {
+            int numbersCount = 0;
+            for (int l = 0; l < locations.get(area).size(); l++) {
+                numbersCount += getBranch(area, l, type, state).size();
+            }
+            return numbersCount;
+        }
+
+        public ArrayList<String> getStateNumbers(int area, int location, int type, int state) {
+            return getBranch(area, location, type, state);
+        }
+
+        public ArrayList<String> getStateNumbers(int state) {
+            ArrayList<String> numbers = new ArrayList<>();
+            for (int a = 0; a < areas.size(); a++) {
+                for (int l = 0; l < locations.get(a).size(); l++) {
+                    for (int t = 0; t < TYPE_COUNT; t++) {
+                        for (String number : getStateNumbers(a, l, t, state)) {
+                            numbers.add(number);
                         }
                     }
                 }
             }
+            return numbers;
+        }
 
-            private void initializeAreas() {
-                areas = new ArrayList<>();
-
-                data.moveToPosition(-1);
-                while (data.moveToNext()) {
-                    String area = data.getString(DB.IT.Indexes.AREA_COLUMN_INDEX);
-                    if (!areas.contains(area)) {
-                        areas.add(area);
+        public ArrayList<String> getStateNumbers(int type, int state) {
+            ArrayList<String> numbers = new ArrayList<>();
+            for (int a = 0; a < areas.size(); a++) {
+                for (int l = 0; l < locations.get(a).size(); l++) {
+                    for (String number : getStateNumbers(a, l, type, state)) {
+                        numbers.add(number);
                     }
                 }
             }
-
-            private int getTypeValueByIndex(int index) {
-                if (index == EQUIPMENT_INDEX) return DB.IT.TypeValues.EQUIPMENT;
-                if (index == FURNISHING_INDEX) return DB.IT.TypeValues.FURNISHING;
-                else return DB.IT.TypeValues.UNKNOWN;
-            }
-
-            private int getStateValueByIndex(int index) {
-                if (index == MISSING_INDEX) return DB.IT.StateValues.MISSING;
-                if (index == PRESENT_INDEX) return DB.IT.StateValues.PRESENT;
-                if (index == LEFTOVER_INDEX) return DB.IT.StateValues.LEFTOVER;
-                if (index == IGNORED_MISSING_INDEX) return DB.IT.StateValues.IGNORED_MISSING;
-                else return DB.IT.StateValues.LEFTOVER_PRESENT;
-            }
-
-            private void addNumber(int areaIndex, int typeIndex, int stateIndex, String number) {
-                three.get(areaIndex).get(typeIndex).get(stateIndex).add(number);
-            }
-
-            public int getNumberCount(int areaIndex, int typeIndex, int stateIndex) {
-                progress++;
-                publishProgress("Creando inventario: " + getPerCent(progress, total));
-                return three.get(areaIndex).get(typeIndex).get(stateIndex).size();
-            }
-
-            public int getNumberCount(int areaIndex, int typeIndex) {
-                int count = 0;
-                for (int s = 0; s < STATES_COUNT; s++) {
-                    count += getNumberCount(areaIndex, typeIndex, s);
-                }
-                return count;
-            }
-
-            public int getAreaTotalNumberCount(int areaIndex) {
-                int count = 0;
-                for (int t = 0; t < TYPE_COUNT; t++) {
-                    count += getNumberCount(areaIndex, t);
-                }
-                return count;
-            }
-
-            public int getStateTotalNumberCountOfAType(int stateIndex, int typeIndex) {
-                int count = 0;
-                for (int a = 0; a < areas.size(); a++) {
-                    count += getNumberCount(a, typeIndex, stateIndex);
-                }
-                return count;
-            }
-
-            public int getTypeTotalNumberCount(int typeIndex) {
-                int count = 0;
-                for (int a = 0; a < areas.size(); a++) {
-                    count += getNumberCount(a, typeIndex);
-                }
-                return count;
-            }
-
-            public String getArea(int areaIndex) {
-                return areas.get(areaIndex);
-            }
-
-            public int getAreasCount() {
-                return areas.size();
-            }
-
+            return numbers;
         }
+
+        /**
+         * @return the numbers of Areas in the three
+         */
+        public int getAreasCount() {
+            return areas.size();
+        }
+
+        public int getLocationsCount(int area) {
+            return locations.get(area).size();
+        }
+
+        public String getArea(int area) {
+            return areas.get(area);
+        }
+
+        public ArrayList<String> getLocations(int area) {
+            return locations.get(area);
+        }
+
+        public int getNumberCount() {
+            return numberCount;
+        }
+
+        /**
+         * @param type
+         * @return the type as a String
+         */
+        public String getTypeLabel(int type) {
+            if (type == EQUIPMENT_INDEX) {
+                return "EQUIPOS";
+            } else if (type == FURNISHING_INDEX) {
+                return "MUEBLES";
+            } else return "CON TIPO DESCONOCIDO";
+        }
+
+        /**
+         * @param state
+         * @return the state as a String
+         */
+        public String getStateLabel(int state) {
+            if (state == MISSING_INDEX) {
+                return "Faltantes";
+            } else if (state == IGNORED_MISSING_INDEX) {
+                return "Faltantes Ignorados";
+            } else if (state == LEFTOVER_INDEX) {
+                return "Sobrantes";
+            } else if (state == LEFTOVER_PRESENT_INDEX) {
+                return "Sobrantes Presentes";
+            } else return "Presentes";
+        }
+
+        //endregion publicMethods...
+
     }
 
 }

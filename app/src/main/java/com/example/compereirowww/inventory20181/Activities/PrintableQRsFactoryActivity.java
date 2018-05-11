@@ -1,15 +1,20 @@
 package com.example.compereirowww.inventory20181.Activities;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,7 +46,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
     ImageView imageView;
     TextView textView;
     Spinner formatS;
-    String selectedFormat;
+    static String selectedFormat;
 
     private static Cursor data;
     private static String[] numbers;
@@ -50,7 +55,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
     private static String F8X9 = "8 x 9";
     private static String F8X10 = "8 x 10";
-    private static String F5X7 = "5 x 7";
+    private static String F6X7 = "6 x 7";
     private static String F1X1 = "1 X 1";
 
     @Override
@@ -64,6 +69,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (!importing) {
+                    deleteOldFiles();
                     setStartIndex(0);
                     importing = true;
                     formatS.setEnabled(false);
@@ -78,9 +84,11 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         });
         imageView = (ImageView) findViewById(R.id.imageView);
         textView = (TextView) findViewById(R.id.textView);
+        AppStatics.formatView(textView);
         formatS = (Spinner) findViewById(R.id.format_s);
         formatS.setAdapter(new ArrayAdapter<>(PrintableQRsFactoryActivity.this,
-                android.R.layout.simple_list_item_1, new String[]{F1X1, F5X7, F8X9, F8X10}));
+                android.R.layout.simple_list_item_1, new String[]{F1X1, F6X7, F8X9, F8X10}));
+
         formatS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -152,6 +160,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
     }
 
     private void startAsyncTask(String format) {
+
         if (format.equals(F1X1)) {
             currentAT = new CreateSingleCodesAT(getStartIndex());
             currentAT.execute(numbers);
@@ -162,8 +171,8 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             currentAT.execute(numbers);
             return;
         }
-        if (format.equals(F5X7)) {
-            currentAT = new CreateQR5x7PagesAT(getStartIndex());
+        if (format.equals(F6X7)) {
+            currentAT = new CreateQR6x7PagesAT(getStartIndex());
             currentAT.execute(numbers);
             return;
         }
@@ -201,7 +210,6 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         protected Boolean doInBackground(String... toCode) {
 
             if (toCode == null) return false;
-            if (!deleteOldFiles()) return false;
 
             //region qrPositions
 
@@ -322,15 +330,6 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
         }
 
-        private boolean deleteOldFiles() {
-
-            File[] files = new File(AppStatics.db.getPreference(DB.PT.PNames.QRS_DIRECTORY_PATH)).listFiles();
-            for (File f : files) {
-                if (!f.delete()) return false;
-            }
-            return true;
-        }
-
         private void updateStartIndex(int newIndex) {
             AppStatics.db.setPreference(DB.PT.PNames.P_QR_CURRENT_INDEX,
                     String.valueOf(newIndex));
@@ -352,7 +351,6 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         protected Boolean doInBackground(String... toCode) {
 
             if (toCode == null) return false;
-            if (!deleteOldFiles()) return false;
 
             //region qrPositions
 
@@ -474,15 +472,6 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
         }
 
-        private boolean deleteOldFiles() {
-
-            File[] files = new File(AppStatics.db.getPreference(DB.PT.PNames.QRS_DIRECTORY_PATH)).listFiles();
-            for (File f : files) {
-                if (!f.delete()) return false;
-            }
-            return true;
-        }
-
         private void updateStartIndex(int newIndex) {
             AppStatics.db.setPreference(DB.PT.PNames.P_QR_CURRENT_INDEX,
                     String.valueOf(newIndex));
@@ -490,13 +479,13 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
     }
 
-    private class CreateQR5x7PagesAT extends AsyncTask<String, String, Boolean> {
+    private class CreateQR6x7PagesAT extends AsyncTask<String, String, Boolean> {
 
         Bitmap pageImage;
         int page = 0;
         private int startIndex;
 
-        public CreateQR5x7PagesAT(int startIndex) {
+        public CreateQR6x7PagesAT(int startIndex) {
             this.startIndex = startIndex;
         }
 
@@ -504,17 +493,16 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         protected Boolean doInBackground(String... toCode) {
 
             if (toCode == null) return false;
-            if (!deleteOldFiles()) return false;
 
             //region qrPositions
 
             ArrayList<Point> qrPositions = new ArrayList<>();
             int r = 0;
             int c = 0;
-            for (int i = 0; i < 35; i++) {
+            for (int i = 0; i < 42; i++) {
                 qrPositions.add(new Point(r * 88 + 2,
                         c * 100 + 2));
-                if (r < 4) {
+                if (r < 5) {
                     r++;
                 } else {
                     r = 0;
@@ -524,7 +512,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
             //endregion
 
-            int bw = 442;//86
+            int bw = 442 + 88;//86
             int bh = 702;//98
 
             if (isCancelled()) return false;
@@ -532,7 +520,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             for (int totalIndex = 0; totalIndex < toCode.length; page++) {
 
                 if (totalIndex < startIndex) {
-                    totalIndex += 35;
+                    totalIndex += 42;
                     continue;
                 }
 
@@ -545,7 +533,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
                 //qrs
                 try {
-                    for (int qrCounter = 0; totalIndex < toCode.length && qrCounter < 35; totalIndex++, qrCounter++) {
+                    for (int qrCounter = 0; totalIndex < toCode.length && qrCounter < 42; totalIndex++, qrCounter++) {
                         if (isCancelled()) return false;
 
                         drawQRInPosition(pageImage, toCode[totalIndex], qrPositions.get(qrCounter));
@@ -561,6 +549,8 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
                     return false;
                 }
             }
+
+            scanFiles();
 
             return true;
         }
@@ -624,13 +614,24 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
         }
 
-        private boolean deleteOldFiles() {
+        private void scanFiles() {
 
-            File[] files = new File(AppStatics.db.getPreference(DB.PT.PNames.QRS_DIRECTORY_PATH)).listFiles();
-            for (File f : files) {
-                if (!f.delete()) return false;
+            Log.d(AppStatics.APP_TAG, "scanning bla bla");
+
+            File QrDir = new File(AppStatics.db.getPreference(DB.PT.PNames.QRS_DIRECTORY_PATH));
+            File[] qRsFiles = QrDir.listFiles();
+
+            for (int i = 0; i < qRsFiles.length; i++) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    final Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                    final Uri contentUri = Uri.fromFile(qRsFiles[i]);
+                    scanIntent.setData(contentUri);
+                    sendBroadcast(scanIntent);
+                } else {
+                    final Intent intent = new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory()));
+                    sendBroadcast(intent);
+                }
             }
-            return true;
         }
 
         private void updateStartIndex(int newIndex) {
@@ -654,7 +655,6 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         protected Boolean doInBackground(String... toCode) {
 
             if (toCode == null) return false;
-            if (!deleteOldFiles()) return false;
 
             if (isCancelled()) return false;
 
@@ -739,15 +739,6 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
         }
 
-        private boolean deleteOldFiles() {
-
-            File[] files = new File(AppStatics.db.getPreference(DB.PT.PNames.QRS_DIRECTORY_PATH)).listFiles();
-            for (File f : files) {
-                if (!f.delete()) return false;
-            }
-            return true;
-        }
-
         private void updateStartIndex(int newIndex) {
             AppStatics.db.setPreference(DB.PT.PNames.P_QR_CURRENT_INDEX,
                     String.valueOf(newIndex));
@@ -767,8 +758,8 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
                     return null;
                 }
             }
-            if (format[0].equals(F5X7)) {
-                return get5x7Example();
+            if (format[0].equals(F6X7)) {
+                return get6x7Example();
             }
             if (format[0].equals(F8X9)) {
                 return get8x9Example();
@@ -795,12 +786,12 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             if (selectedFormat.equals(F1X1)) {
                 return m + numberCount + " imágenes independientes.";
             }
-            if (selectedFormat.equals(F5X7)) {
+            if (selectedFormat.equals(F6X7)) {
                 int ps;
-                if (numberCount % (5 * 7) == 0) {
-                    ps = numberCount / (5 * 7);
+                if (numberCount % (6 * 7) == 0) {
+                    ps = numberCount / (6 * 7);
                 } else {
-                    ps = numberCount / (5 * 7) + 1;
+                    ps = numberCount / (6 * 7) + 1;
                 }
 
                 return m + ps + " páginas";
@@ -829,9 +820,9 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             return m;
         }
 
-        private Bitmap get5x7Example() {
+        private Bitmap get6x7Example() {
 
-            int w = 5;
+            int w = 6;
             int h = 7;
 
             String[] toCode = new String[w * h];
@@ -858,7 +849,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
             //endregion
 
-            int bw = 442;//86
+            int bw = 442 + 88;//86
             int bh = 702;//98
 
             Bitmap image = Bitmap.createBitmap(bw, bh, Bitmap.Config.RGB_565);
@@ -1004,6 +995,15 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
                     new Paint());
 
         }
+    }
+
+    private boolean deleteOldFiles() {
+
+        File[] files = new File(AppStatics.db.getPreference(DB.PT.PNames.QRS_DIRECTORY_PATH)).listFiles();
+        for (File f : files) {
+            if (!f.delete()) return false;
+        }
+        return true;
     }
 
 }

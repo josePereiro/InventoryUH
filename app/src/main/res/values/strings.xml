@@ -56,5 +56,9 @@
     <string name="make_qr">Elavorar QRs de la selección</string>
     <string name="make_backup">Hacer respaldo de la selección</string>
     <string name="make_report">Hacer reporte de la selección</string>
+    <string name="title_activity_counter">CounterActivity</string>
+    <string name="title_activity_type_filler">TypeFiller</string>
+    <string name="type_filler">Llenar tipos</string>
+    <string name="title_activity_inventory_configuration">InventoryConfigurationActivity</string>
 
 </resources>

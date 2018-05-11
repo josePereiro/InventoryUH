@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.compereirowww.inventory20181.Activities.ConfigurationActivity">
+    tools:context=".Activities.MainConfigurationActivity">
 
-    <include layout="@layout/content_configuration" />
+    <include layout="@layout/content_main_configuration" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

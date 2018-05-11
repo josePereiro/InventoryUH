@@ -50,13 +50,33 @@ public class EditActivity extends AppCompatActivity {
         db = AppStatics.db;
 
         //GUI
+        AppStatics.formatView((TextView)findViewById(R.id.textView));
+        AppStatics.formatView((TextView)findViewById(R.id.textView1));
+        AppStatics.formatView((TextView)findViewById(R.id.textView2));
+        AppStatics.formatView((TextView)findViewById(R.id.textView3));
+        AppStatics.formatView((TextView)findViewById(R.id.textView4));
+        AppStatics.formatView((TextView)findViewById(R.id.textView5));
+        AppStatics.formatView((TextView)findViewById(R.id.textView6));
+        AppStatics.formatView((TextView)findViewById(R.id.textView7));
+        AppStatics.formatView((TextView)findViewById(R.id.textView10));
+        AppStatics.formatView((TextView)findViewById(R.id.textView11));
+        AppStatics.formatView((TextView)findViewById(R.id.textView12));
+        AppStatics.formatView((TextView)findViewById(R.id.textView13));
+        AppStatics.formatView((TextView)findViewById(R.id.textView15));
         numberTV = (TextView) findViewById(R.id.number_tv);
+        AppStatics.formatView(numberTV);
         descriptionTV = (TextView) findViewById(R.id.description_tv);
+        AppStatics.formatView(descriptionTV);
         areaTV = (TextView) findViewById(R.id.area_tv);
+        AppStatics.formatView(areaTV);
         altaDateTV = (TextView) findViewById(R.id.alta_date_tv);
+        AppStatics.formatView(altaDateTV);
         officialUpdateTV = (TextView) findViewById(R.id.official_update_tv);
+        AppStatics.formatView(officialUpdateTV);
         lastCheckingTV = (TextView) findViewById(R.id.last_check_tv);
+        AppStatics.formatView(lastCheckingTV);
         locationET = (EditText) findViewById(R.id.location_et);
+        AppStatics.formatView(locationET);
         locationET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -73,8 +93,10 @@ public class EditActivity extends AppCompatActivity {
                 setTempLocation(editable.toString());
             }
         });
+        locationET = (EditText) findViewById(R.id.location_et);
         locationsS = (Spinner) findViewById(R.id.location_s);
         observationET = (EditText) findViewById(R.id.observation_et);
+        AppStatics.formatView(observationET);
         observationET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -144,8 +166,7 @@ public class EditActivity extends AppCompatActivity {
 
         //region following spinner
         if (Tools.contain(AppStatics.AreasToFollow.areasToFollow, db.getNumberArea(getNumber()))) {
-            followingS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1, new String[]{YES}));
+            AppStatics.formatView(EditActivity.this, new String[]{YES}, followingS);
             followingS.setEnabled(false);
             followingS.setClickable(false);
             followingLL.setOnClickListener(new View.OnClickListener() {
@@ -160,8 +181,7 @@ public class EditActivity extends AppCompatActivity {
                 }
             });
         } else {
-            followingS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1, new String[]{NO, YES}));
+            AppStatics.formatView(EditActivity.this, new String[]{NO, YES}, followingS);
             followingS.setSelection(getTempFollowing());
             followingS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
@@ -185,9 +205,8 @@ public class EditActivity extends AppCompatActivity {
 
         //region state spinner
         if (db.getNumberState(getNumber()) == DB.IT.StateValues.LEFTOVER) {
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1,
-                    new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}));
+            AppStatics.formatView(EditActivity.this,
+                    new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}, stateS);
             stateS.setEnabled(false);
             stateS.setClickable(false);
             stateLL.setOnClickListener(new View.OnClickListener() {
@@ -207,9 +226,7 @@ public class EditActivity extends AppCompatActivity {
             ArrayList<String> stateAL = new ArrayList<>();
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER_PRESENT));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER));
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1,
-                    stateAL));
+            AppStatics.formatView(EditActivity.this, stateAL, stateS);
             stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
             stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
@@ -228,8 +245,7 @@ public class EditActivity extends AppCompatActivity {
             ArrayList<String> stateAL = new ArrayList<>();
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.MISSING));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.IGNORED_MISSING));
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1, stateAL));
+            AppStatics.formatView(EditActivity.this, stateAL, stateS);
             stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
             stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
@@ -248,8 +264,7 @@ public class EditActivity extends AppCompatActivity {
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.PRESENT));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.MISSING));
             stateAL.add(DB.IT.StateValues.toString(DB.IT.StateValues.IGNORED_MISSING));
-            stateS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                    android.R.layout.simple_list_item_1, stateAL));
+            AppStatics.formatView(EditActivity.this, stateAL, stateS);
             stateS.setSelection(Tools.getIndexOf(stateAL, DB.IT.StateValues.toString(getTempState())));
             stateS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
@@ -272,9 +287,8 @@ public class EditActivity extends AppCompatActivity {
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.UNKNOWN));
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.FURNISHING));
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.EQUIPMENT));
-        typeS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                android.R.layout.simple_list_item_1, typeAL));
         typeS.setSelection(Tools.getIndexOf(typeAL, DB.IT.TypeValues.toString(getTempType())));
+        AppStatics.formatView(EditActivity.this, typeAL, typeS);
         typeS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -300,8 +314,7 @@ public class EditActivity extends AppCompatActivity {
                 break;
             }
         }
-        locationsS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                android.R.layout.simple_list_item_1, locationAL));
+        AppStatics.formatView(EditActivity.this, locationAL, locationsS);
         locationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -340,8 +353,7 @@ public class EditActivity extends AppCompatActivity {
                 observationAL.set(i, EMPTY);
             }
         }
-        observationsS.setAdapter(new ArrayAdapter<>(EditActivity.this,
-                android.R.layout.simple_list_item_1, observationAL));
+        AppStatics.formatView(EditActivity.this, observationAL, observationsS);
         observationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override

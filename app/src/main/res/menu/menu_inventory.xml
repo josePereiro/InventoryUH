@@ -4,7 +4,6 @@
     tools:context=".Activities.InventoryActivity"
     >
 
-
     <item
         android:id="@+id/report"
         android:orderInCategory="100"
@@ -36,10 +35,18 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/configuration"
+        android:orderInCategory="100"
+        android:title="@string/configuration"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/help"
         android:orderInCategory="100"
         android:title="@string/help"
         app:showAsAction="never" />
+
+
 
 
 

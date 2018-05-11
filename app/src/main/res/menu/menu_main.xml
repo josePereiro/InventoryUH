@@ -42,6 +42,7 @@
         android:title="@string/qr_viewer"
         app:showAsAction="never" />
 
+    
     <item
         android:id="@+id/configuration"
         android:orderInCategory="100"

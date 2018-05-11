@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.R;
@@ -58,6 +59,8 @@ public class SearchActivity extends AppCompatActivity {
         db = AppStatics.db;
 
         //GUI
+        AppStatics.formatView((TextView)findViewById(R.id.textView));
+        AppStatics.formatView((TextView)findViewById(R.id.textView2));
         resultLV = (ListView) findViewById(R.id.listView);
         resultLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -81,6 +84,7 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
         criteriaET = (EditText) findViewById(R.id.criteria_et);
+        AppStatics.formatView(criteriaET);
         criteriaET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -106,6 +110,8 @@ public class SearchActivity extends AppCompatActivity {
         checkBoxes.add((CheckBox) findViewById(R.id.location_cb));
         checkBoxes.add((CheckBox) findViewById(R.id.state_cb));
         checkBoxes.add((CheckBox) findViewById(R.id.type_cb));
+        for (CheckBox cb : checkBoxes)
+            AppStatics.formatView(cb);
 
     }
 
@@ -395,8 +401,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void displayListViewData(ArrayList<String> data) {
-        resultLV.setAdapter(new ArrayAdapter<>(SearchActivity.this, android.R.layout.simple_list_item_1,
-                data));
+        AppStatics.formatView(SearchActivity.this, data, resultLV);
     }
 
     private String extractNumberFromDisplayedData(String displayedData) {

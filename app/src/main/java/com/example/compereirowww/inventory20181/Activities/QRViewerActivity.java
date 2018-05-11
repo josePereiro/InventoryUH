@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.R;
 import com.example.compereirowww.inventory20181.Tools.Tools;
@@ -41,7 +42,9 @@ public class QRViewerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_qr_viewer);
 
         //GUI
+        AppStatics.formatView((TextView)findViewById(R.id.textView));
         numberToCodeET = (EditText) findViewById(R.id.number_et);
+        AppStatics.formatView(numberToCodeET);
         qrIV = (ImageView) findViewById(R.id.qr_iv);
         numberToCodeET.addTextChangedListener(new TextWatcher() {
             @Override

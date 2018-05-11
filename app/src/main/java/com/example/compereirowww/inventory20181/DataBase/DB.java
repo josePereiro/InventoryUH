@@ -759,12 +759,20 @@ public class DB extends SQLiteOpenHelper {
             setPreference(PT.PNames.AREAS_TO_FOLLOW_CSV, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
+        if (getPreference(PT.PNames.TEXT_SIZE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.TEXT_SIZE, "0");
+        }
+
+        if (getPreference(PT.PNames.TEMP_TEXT_SIZE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.TEMP_TEXT_SIZE, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
         if (getPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
             setPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV, PT.PDefaultValues.EMPTY_PREFERENCE);
         }
 
         if (getPreference(PT.PNames.UPDATE_CRITERIA).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.UPDATE_CRITERIA, "30");
+            setPreference(PT.PNames.UPDATE_CRITERIA, PT.PDefaultValues.MEDIUM_LETTER);
         }
 
         if (getPreference(PT.PNames.TEMP_UPDATE_CRITERIA).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
@@ -790,12 +798,16 @@ public class DB extends SQLiteOpenHelper {
             setPreference(PT.PNames.P_QR_CURRENT_INDEX, "0");
         }
 
+        //InventoryConfiguration preferences
+        if (getPreference(PT.PNames.FIELDS_TO_DISPLAY_CSV).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
+            setPreference(PT.PNames.FIELDS_TO_DISPLAY_CSV, PT.PDefaultValues.EMPTY_PREFERENCE);
+        }
+
     }
 
     //endregion
 
     public static class IT {
-
 
         public static class ITNames {
 
@@ -1029,6 +1041,9 @@ public class DB extends SQLiteOpenHelper {
 
         public static class PNames {
 
+            //InventoryConfiguration Preferences
+            public static final int FIELDS_TO_DISPLAY_CSV = 123;
+
             //ImportActivity Preference
             public static final int CURRENT_FILE_TO_IMPORT = 1;
             public static final int CURRENT_FILE_TO_IMPORT_HEAD = 28;
@@ -1066,6 +1081,9 @@ public class DB extends SQLiteOpenHelper {
             public static final int TEMP_AREAS_TO_FOLLOW_CSV = 19;
             public static final int UPDATE_CRITERIA = 20;
             public static final int TEMP_UPDATE_CRITERIA = 21;
+            public static final int TEXT_SIZE = 212;
+            public static final int TEMP_TEXT_SIZE = 215;
+
 
             //Search preferences
             public static final int TEMP_SEARCH_CRITERIA = 22;
@@ -1108,6 +1126,11 @@ public class DB extends SQLiteOpenHelper {
             public static String PREFERENCE_NOT_FOUND = "$$$NOT_FOUND$$$";
             public static final String DB_CORRUPTED = "dbCor";
             public static final String DB_OK = "dbOk";
+            public static final String SMALL_LETTER = "Pequeña";
+            public static final String MEDIUM_LETTER = "Media";
+            public static final String BIG_LETTER = "Grande";
+            public static final String YES = "Y";
+            public static final String NO = "N";
 
 
             //endregion

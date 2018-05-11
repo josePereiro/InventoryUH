@@ -56,6 +56,7 @@ public class NewNumberActivity extends AppCompatActivity {
 
         //GUI
         numberET = (EditText) findViewById(R.id.number_et);
+        AppStatics.formatView(numberET);
         numberET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -76,6 +77,7 @@ public class NewNumberActivity extends AppCompatActivity {
             }
         });
         descriptionET = (EditText) findViewById(R.id.description_et);
+        AppStatics.formatView(descriptionET);
         descriptionET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -94,10 +96,28 @@ public class NewNumberActivity extends AppCompatActivity {
         });
         descriptionS = (Spinner) findViewById(R.id.description_s);
         areaTV = (TextView) findViewById(R.id.area_tv);
+        AppStatics.formatView(areaTV);
+        AppStatics.formatView((TextView)findViewById(R.id.textView));
+        AppStatics.formatView((TextView)findViewById(R.id.textView2));
+        AppStatics.formatView((TextView)findViewById(R.id.textView3));
+        AppStatics.formatView((TextView)findViewById(R.id.textView4));
+        AppStatics.formatView((TextView)findViewById(R.id.textView5));
+        AppStatics.formatView((TextView)findViewById(R.id.textView6));
+        AppStatics.formatView((TextView)findViewById(R.id.textView7));
+        AppStatics.formatView((TextView)findViewById(R.id.textView8));
+        AppStatics.formatView((TextView)findViewById(R.id.textView9));
+        AppStatics.formatView((TextView)findViewById(R.id.textView10));
+        AppStatics.formatView((TextView)findViewById(R.id.textView11));
+        AppStatics.formatView((TextView)findViewById(R.id.textView12));
+        AppStatics.formatView((TextView)findViewById(R.id.textView15));
         altaDateTV = (TextView) findViewById(R.id.alta_date_tv);
+        AppStatics.formatView(altaDateTV);
         officialUpdateTV = (TextView) findViewById(R.id.official_update_tv);
+        AppStatics.formatView(officialUpdateTV);
         lastCheckingTV = (TextView) findViewById(R.id.last_check_tv);
+        AppStatics.formatView(lastCheckingTV);
         locationET = (EditText) findViewById(R.id.location_et);
+        AppStatics.formatView(locationET);
         locationET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -116,6 +136,7 @@ public class NewNumberActivity extends AppCompatActivity {
         });
         locationsS = (Spinner) findViewById(R.id.location_s);
         observationET = (EditText) findViewById(R.id.observation_et);
+        AppStatics.formatView(observationET);
         observationET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -201,8 +222,7 @@ public class NewNumberActivity extends AppCompatActivity {
         observationET.setText(getTempObservation());
 
         //region following spinner
-        followingS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                android.R.layout.simple_list_item_1, new String[]{NO, YES}));
+        AppStatics.formatView(NewNumberActivity.this, new String[]{NO, YES}, followingS);
         followingS.setSelection(getTempFollowing());
         followingS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -224,10 +244,8 @@ public class NewNumberActivity extends AppCompatActivity {
         //endregion following spinner
 
         //region state spinner
-
-        stateS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                android.R.layout.simple_list_item_1,
-                new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}));
+        AppStatics.formatView(NewNumberActivity.this,
+                new String[]{DB.IT.StateValues.toString(DB.IT.StateValues.LEFTOVER)}, stateS);
         stateS.setEnabled(false);
         stateS.setClickable(false);
         findViewById(R.id.state_ll).setOnClickListener(new View.OnClickListener() {
@@ -252,8 +270,7 @@ public class NewNumberActivity extends AppCompatActivity {
         typeAL.add(TypeValues.toString(TypeValues.UNKNOWN));
         typeAL.add(TypeValues.toString(TypeValues.FURNISHING));
         typeAL.add(TypeValues.toString(TypeValues.EQUIPMENT));
-        typeS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                android.R.layout.simple_list_item_1, typeAL));
+        AppStatics.formatView(NewNumberActivity.this, typeAL, typeS);
         typeS.setSelection(Tools.getIndexOf(typeAL, TypeValues.toString(getTempType())));
         typeS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -277,8 +294,7 @@ public class NewNumberActivity extends AppCompatActivity {
         locationAL.add(EMPTY);
         Collections.addAll(locationAL, AppStatics.Location.locations);
         locationAL.remove("");
-        locationsS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                android.R.layout.simple_list_item_1, locationAL));
+        AppStatics.formatView(NewNumberActivity.this, locationAL, locationsS);
         locationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -314,8 +330,7 @@ public class NewNumberActivity extends AppCompatActivity {
         observationAL.add(EMPTY);
         Collections.addAll(observationAL, AppStatics.Observation.observations);
         observationAL.remove("");
-        observationsS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                android.R.layout.simple_list_item_1, observationAL));
+        AppStatics.formatView(NewNumberActivity.this, observationAL, observationsS);
         observationsS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -349,8 +364,7 @@ public class NewNumberActivity extends AppCompatActivity {
         descriptionAL.add(EMPTY);
         Collections.addAll(descriptionAL, AppStatics.Description.descriptions);
         descriptionAL.remove("");
-        descriptionS.setAdapter(new ArrayAdapter<>(NewNumberActivity.this,
-                android.R.layout.simple_list_item_1, descriptionAL));
+        AppStatics.formatView(NewNumberActivity.this, descriptionAL, descriptionS);
         descriptionS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override

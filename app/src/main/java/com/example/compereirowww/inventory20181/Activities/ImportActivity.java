@@ -12,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.APP_TAG;
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.AreasToFollow;
-import static com.example.compereirowww.inventory20181.Activities.AppStatics.BackupInventoryFile.INVENTORY_BACKUP_FILE_HEAD_CODE;
+import static com.example.compereirowww.inventory20181.Activities.AppStatics.InventoryBackUpFile.INVENTORY_BACKUP_FILE_HEAD_CODE;
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.ALTA_DATE_INDEX;
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.AREA_INDEX;
 import static com.example.compereirowww.inventory20181.Activities.AppStatics.UHInventoryFile.CSV_FIRST_DATA_LINE_INDEX;
@@ -51,8 +50,6 @@ public class ImportActivity extends AppCompatActivity {
     protected static ArrayList<File> CSVFiles;
     private ArrayList<String> CSVData;
 
-    //File hash code 1337277359
-
     //Activity Life cycle methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +60,9 @@ public class ImportActivity extends AppCompatActivity {
         Log.d(APP_TAG, "ImportActivity.onCreate");
 
         //GUI
+        AppStatics.formatView((TextView) findViewById(R.id.textView));
         detailTV = (TextView) findViewById(R.id.detail_tv);
+        AppStatics.formatView(detailTV);
         spinner = (Spinner) findViewById(R.id.spinner);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
@@ -260,9 +259,7 @@ public class ImportActivity extends AppCompatActivity {
     private void settingUpSpinnerIfImporting() {
 
         File file = new File(getCurrentFileToImport());
-        spinner.setAdapter(new ArrayAdapter<>(ImportActivity.this,
-                android.R.layout.simple_list_item_1,
-                new String[]{file.getName()}));
+        AppStatics.formatView(ImportActivity.this, new String[]{file.getName()}, spinner);
         spinner.setClickable(false);
         spinner.setEnabled(false);
 
@@ -375,9 +372,12 @@ public class ImportActivity extends AppCompatActivity {
 
         //Files to import
         if (CSVFiles != null) {
-            spinner.setAdapter(new ArrayAdapter<>(ImportActivity.this,
-                    android.R.layout.simple_list_item_1,
-                    toStringArrayList(CSVFiles)));
+            if (CSVFiles.size() != 0) {
+                AppStatics.formatView(ImportActivity.this, toStringArrayList(CSVFiles), spinner);
+            } else {
+                AppStatics.formatView(ImportActivity.this, new String[]{""}, spinner);
+                detailTV.setText("No se encontraron archivos de inventario para importar!!! Vea la ayuda!");
+            }
         } else {
             startLoadingCSVFilesThread();
         }
@@ -477,74 +477,79 @@ public class ImportActivity extends AppCompatActivity {
             Log.d(APP_TAG, "ImportUHInventoryAT doInBackground");
 
 
-            //everybody to LEFTOVER
-            if (index == CSV_FIRST_DATA_LINE_INDEX) {
-                db.updateStateColumn(IT.StateValues.LEFTOVER);
-                db.updateLastCheckingColumn(Tools.getDate());
-                //TODO deb
-                Log.d(APP_TAG, "state column to LEFTOVER");
-            }
+            try {
 
-            //Importing
-            String number, description, area, altaDate, officialUpdate;
-            int numberCount = CSVData.size() - CSV_FIRST_DATA_LINE_INDEX;
-            String[] line;
-            String action;
-            for (; index < CSVData.size(); index++) {
-
-                if (isCancelled()) {
-                    return false;
+                //everybody to LEFTOVER
+                if (index == CSV_FIRST_DATA_LINE_INDEX) {
+                    db.updateStateColumn(IT.StateValues.LEFTOVER);
+                    db.updateLastCheckingColumn(Tools.getDate());
+                    //TODO deb
+                    Log.d(APP_TAG, "state column to LEFTOVER");
                 }
 
-                //getting Data
-                line = CSVData.get(index).split(",", -1);
+                //Importing
+                String number, description, area, altaDate, officialUpdate;
+                int numberCount = CSVData.size() - CSV_FIRST_DATA_LINE_INDEX;
+                String[] line;
+                String action;
+                for (; index < CSVData.size(); index++) {
 
-                number = line[NUMBER_INDEX];
-                description = line[DESCRIPTION_INDEX];
-                area = line[AREA_INDEX];
-                altaDate = line[ALTA_DATE_INDEX];
-                officialUpdate = line[OFFICIAL_UPDATE_INDEX];
+                    if (isCancelled()) {
+                        return false;
+                    }
+
+                    //getting Data
+                    line = CSVData.get(index).split(",", -1);
+
+                    number = line[NUMBER_INDEX];
+                    description = line[DESCRIPTION_INDEX];
+                    area = line[AREA_INDEX];
+                    altaDate = line[ALTA_DATE_INDEX];
+                    officialUpdate = line[OFFICIAL_UPDATE_INDEX];
 
 
-                if (db.updateOfficialDataAndState(
-                        number,
-                        description,
-                        area,
-                        altaDate,
-                        officialUpdate,
-                        IT.StateValues.MISSING) != 0) {
-
-                    action = "(Actualizando Número)";
-
-                } else {
-
-                    db.insertNewNumber(number,
+                    if (db.updateOfficialDataAndState(
+                            number,
                             description,
                             area,
                             altaDate,
                             officialUpdate,
-                            IT.FollowingValues.NO,
-                            IT.StateValues.MISSING,
-                            Tools.getDate(),
-                            IT.TypeValues.UNKNOWN, "", "");
+                            IT.StateValues.MISSING) != 0) {
 
-                    action = "(Nuevo número)";
+                        action = "(Actualizando Número)";
+
+                    } else {
+
+                        db.insertNewNumber(number,
+                                description,
+                                area,
+                                altaDate,
+                                officialUpdate,
+                                IT.FollowingValues.NO,
+                                IT.StateValues.MISSING,
+                                Tools.getDate(),
+                                IT.TypeValues.UNKNOWN, "", "");
+
+                        action = "(Nuevo número)";
+
+                    }
+
+                    //Updating Preferences
+                    db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, index);
+
+                    //Publishing
+                    publishProgress("Importando archivo inventario UH..." + "\n" +
+                            index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
+                            action + "\n" +
+                            "Numero: " + number + "\n" +
+                            "Descripción: " + description + "\n" +
+                            "Area: " + area);
 
                 }
 
-                //Updating Preferences
-                db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, index);
-
-                //Publishing
-                publishProgress("Importando archivo inventario UH..." + "\n" +
-                        index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
-                        action + "\n" +
-                        "Numero: " + number + "\n" +
-                        "Descripción: " + description + "\n" +
-                        "Area: " + area);
+            } catch (Exception e) {
 
             }
-
 
             return true;
         }
@@ -617,47 +622,53 @@ public class ImportActivity extends AppCompatActivity {
             //TODO deb
             Log.d(APP_TAG, "ImportBackUpAT doInBackground");
 
-            //Importing
-            String number, location, observation;
-            int numberCount = CSVData.size() - CSV_FIRST_DATA_LINE_INDEX;
-            int type;
-            String[] line;
-            for (; index < CSVData.size(); index++) {
+            try {
 
-                if (isCancelled()) {
-                    return false;
+                //Importing
+                String number, location, observation;
+                int numberCount = CSVData.size() - CSV_FIRST_DATA_LINE_INDEX;
+                int type;
+                String[] line;
+                for (; index < CSVData.size(); index++) {
+
+                    if (isCancelled()) {
+                        return false;
+                    }
+
+                    line = CSVData.get(index).split(",", -1);
+
+                    number = line[AppStatics.InventoryBackUpFile.NUMBER_INDEX];
+                    location = line[AppStatics.InventoryBackUpFile.LOCATION_INDEX];
+                    type = Integer.parseInt(line[AppStatics.InventoryBackUpFile.TYPE_INDEX]);
+                    observation = line[AppStatics.InventoryBackUpFile.OBSERVATION_INDEX];
+
+                    if (db.updateNonOfficialData(number, location, type, observation) != 0) {
+
+                        publishProgress("Importando archivo de respaldo..." + "\n" +
+                                index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
+                                "(Actualizando número)" + "\n" +
+                                "Numero: " + number + "\n" +
+                                "Localización: " + location + "\n" +
+                                "Type: " + IT.TypeValues.toString(type) + "\n" +
+                                "Observación: " + observation);
+                    } else {
+
+                        publishProgress("Importando archivo de respaldo..." + "\n" +
+                                index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
+                                "(número ausente)" + "\n" +
+                                "Numero: " + number + "\n" +
+                                "Localización: " + location + "\n" +
+                                "Type: " + IT.TypeValues.toString(type) + "\n" +
+                                "Observación: " + observation);
+                    }
+
+                    //Updating Preferences
+                    db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, index);
+
                 }
-
-                line = CSVData.get(index).split(",", -1);
-
-                number = line[NUMBER_INDEX];
-                location = line[AppStatics.BackupInventoryFile.LOCATION_INDEX];
-                type = Integer.parseInt(line[AppStatics.BackupInventoryFile.TYPE_INDEX]);
-                observation = line[AppStatics.BackupInventoryFile.OBSERVATION_INDEX];
-
-                if (db.updateNonOfficialData(number, location, type, observation) != 0) {
-
-                    publishProgress("Importando archivo de respaldo..." + "\n" +
-                            index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
-                            "(Actualizando número)" + "\n" +
-                            "Numero: " + number + "\n" +
-                            "Localización: " + location + "\n" +
-                            "Type: " + IT.TypeValues.toString(type) + "\n" +
-                            "Observación: " + observation);
-                } else {
-
-                    publishProgress("Importando archivo de respaldo..." + "\n" +
-                            index + "/" + numberCount + " --> " + getPerCent(index, numberCount) + "\n" +
-                            "(número ausente)" + "\n" +
-                            "Numero: " + number + "\n" +
-                            "Localización: " + location + "\n" +
-                            "Type: " + IT.TypeValues.toString(type) + "\n" +
-                            "Observación: " + observation);
-                }
-
-                //Updating Preferences
-                db.setPreference(PNames.CURRENT_IMPORTATION_INDEX, index);
-
+            } catch (Exception e) {
+                publishProgress("Error, el proceso no termino por alguna razón!!!");
+                return false;
             }
 
             return true;
@@ -719,6 +730,7 @@ public class ImportActivity extends AppCompatActivity {
             ArrayList<File> anyCSVFile = new ArrayList<>();
             Tools.listAllFilesAndSubFiles(Environment.getExternalStorageDirectory(), ".csv", anyCSVFile);
             for (File f : anyCSVFile) {
+                Log.d(APP_TAG, "Files founded: " + f.getName());
                 try {
                     String line = Tools.readFileFirstLine(f);
                     if (checkHeadLine(line)) {

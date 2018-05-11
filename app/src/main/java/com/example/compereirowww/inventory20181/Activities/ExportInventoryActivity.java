@@ -25,6 +25,7 @@ public class ExportInventoryActivity extends AppCompatActivity {
     //GUI
     Spinner spinner;
     TextView CSVPreviewTV, portDetailTV;
+
     File selectedFile;
     String backUp;
     String backUpCreationDate;
@@ -71,11 +72,13 @@ public class ExportInventoryActivity extends AppCompatActivity {
             }
         });
 
+        AppStatics.formatView((TextView)findViewById(R.id.textView));
         CSVPreviewTV = (TextView) findViewById(R.id.csv_preview_tv);
+        AppStatics.formatView(CSVPreviewTV);
         portDetailTV = (TextView) findViewById(R.id.port_info_tv);
+        AppStatics.formatView(portDetailTV);
         spinner = (Spinner) findViewById(R.id.backups_s);
-        spinner.setAdapter(new ArrayAdapter<>(ExportInventoryActivity.this,
-                android.R.layout.simple_list_item_1, ports));
+        AppStatics.formatView(ExportInventoryActivity.this, ports, spinner);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -179,7 +182,7 @@ public class ExportInventoryActivity extends AppCompatActivity {
             }
 
             backUpCreationDate = Tools.getFormattedDateForFileNaming();
-            String head = AppStatics.BackupInventoryFile.INVENTORY_BACKUP_FILE_HEAD_CODE + "," +
+            String head = AppStatics.InventoryBackUpFile.INVENTORY_BACKUP_FILE_HEAD_CODE + "," +
                     Tools.myStringHashCode(backUpSB.toString().replaceAll("\n", "")) + "," +
                     getFilter1Value() + "," +
                     getFilter2Value() + "," +
@@ -233,9 +236,9 @@ public class ExportInventoryActivity extends AppCompatActivity {
                 ms = "El respaldo " + backUpNumber[0] + " actualmente contiene ";
                 String firstLine = Tools.readFileFirstLine(selectedFile);
                 String[] firstLineData = firstLine.split(",", -1);
-                ms += "un archivo CREADO el " + firstLineData[AppStatics.BackupInventoryFile.CREATION_DATE_INDEX];
-                ms += " con los FILTROS " + firstLineData[AppStatics.BackupInventoryFile.FILTER1_INDEX] +
-                        " y " + firstLineData[AppStatics.BackupInventoryFile.FILTER2_INDEX] + ".";
+                ms += "un archivo CREADO el " + firstLineData[AppStatics.InventoryBackUpFile.CREATION_DATE_INDEX];
+                ms += " con los FILTROS " + firstLineData[AppStatics.InventoryBackUpFile.FILTER1_INDEX] +
+                        " y " + firstLineData[AppStatics.InventoryBackUpFile.FILTER2_INDEX] + ".";
 
             } catch (IOException e) {
                 ms = "Error cargando la vista previa";
