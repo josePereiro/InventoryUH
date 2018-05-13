@@ -73,11 +73,9 @@ public class ImportActivity extends AppCompatActivity {
         super.onResume();
 
         if (isAppImporting()) {
-
             checkAndImport();
             settingUpFabIfImporting();
             settingUpSpinnerIfImporting();
-
         } else {
 
             settingUpSpinnerIfNotImporting();
@@ -266,6 +264,7 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     private void settingUpFabIfImporting() {
+        fab.setImageResource(R.drawable.stop);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -306,6 +305,7 @@ public class ImportActivity extends AppCompatActivity {
 
     private void settingUpFabIfNotImporting() {
 
+        fab.setImageResource(R.drawable.next);
         fab.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -737,7 +737,7 @@ public class ImportActivity extends AppCompatActivity {
                         CSVFiles.add(f);
                     }
 
-                } catch (IOException e) {
+                } catch (Exception e) {
                 }
             }
 
@@ -752,6 +752,8 @@ public class ImportActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
+
+            Log.d(APP_TAG, "On post execute");
             settingUpSpinnerIfNotImporting();
         }
 

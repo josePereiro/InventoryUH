@@ -53,7 +53,7 @@ public class ReportActivity extends AppCompatActivity {
 
                 if (!building) {
                     String rName;
-                    if (selectedFormat == 2) {
+                    if (selectedFormat == 1) {
                         rName = "Reporte " + " (" + data.getCount() + "ns) " + creationDate + ".csv";
                     } else {
                         rName = "Reporte " + " (" + data.getCount() + "ns) " + creationDate + ".txt";

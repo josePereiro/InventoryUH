@@ -46,6 +46,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
     ImageView imageView;
     TextView textView;
     Spinner formatS;
+    FloatingActionButton fab;
     static String selectedFormat;
 
     private static Cursor data;
@@ -63,18 +64,20 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_printable_qrs_factory);
 
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 if (!importing) {
+                    fab.setImageResource(R.drawable.stop);
                     deleteOldFiles();
                     setStartIndex(0);
                     importing = true;
                     formatS.setEnabled(false);
                     startAsyncTask(selectedFormat);
                 } else {
+                    fab.setImageResource(R.drawable.next);
                     currentAT.cancel(true);
                     currentAT = null;
                     importing = false;
@@ -85,10 +88,10 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         imageView = (ImageView) findViewById(R.id.imageView);
         textView = (TextView) findViewById(R.id.textView);
         AppStatics.formatView(textView);
+        AppStatics.formatView((TextView)findViewById(R.id.textView2));
         formatS = (Spinner) findViewById(R.id.format_s);
-        formatS.setAdapter(new ArrayAdapter<>(PrintableQRsFactoryActivity.this,
-                android.R.layout.simple_list_item_1, new String[]{F1X1, F6X7, F8X9, F8X10}));
-
+        AppStatics.formatView(PrintableQRsFactoryActivity.this,
+                new String[]{F1X1, F6X7, F8X9, F8X10}, formatS );
         formatS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -161,6 +164,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
 
     private void startAsyncTask(String format) {
 
+        fab.setImageResource(R.drawable.stop);
         if (format.equals(F1X1)) {
             currentAT = new CreateSingleCodesAT(getStartIndex());
             currentAT.execute(numbers);
@@ -292,6 +296,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
+            fab.setImageResource(R.drawable.next);
 
         }
 
@@ -433,6 +438,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
+            fab.setImageResource(R.drawable.next);
 
 
         }
@@ -577,6 +583,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
+            fab.setImageResource(R.drawable.next);
         }
 
         private void savePage(Bitmap pageBitmap, int page) throws IOException {
@@ -687,7 +694,6 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             if (qrImage != null) {
                 imageView.setImageBitmap(qrImage);
             }
-
         }
 
         @Override
@@ -702,41 +708,13 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
+            fab.setImageResource(R.drawable.next);
         }
 
         private void savePage(Bitmap pageBitmap, int index, String toCode) throws IOException {
             Tools.saveImage(pageBitmap,
                     AppStatics.db.getPreference(DB.PT.PNames.QRS_DIRECTORY_PATH),
                     index + ".) " + toCode + ".jpg");
-        }
-
-        private void drawQRInPosition(Bitmap bigImage, String toCode, Point position) throws WriterException {
-
-            int size = 120;
-            int toCut = 17;
-            int labelH = 12;
-
-            //Code Qr
-            Hashtable hintMap = new Hashtable();
-            hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix byteMatrix = qrCodeWriter.encode(toCode,
-                    BarcodeFormat.QR_CODE, size, size, hintMap);
-
-            for (int mX = toCut; mX < byteMatrix.getWidth() - toCut; mX++) {
-                for (int mY = toCut; mY < byteMatrix.getWidth() - toCut; mY++) {
-                    if (byteMatrix.get(mX, mY)) {
-                        bigImage.setPixel(position.x + mX - toCut, position.y + mY - toCut, Color.BLACK);
-                    }
-                    //else {
-                    //  bigImage.setPixel(position.x + mX - toCut, position.y + mY - toCut, Color.WHITE);
-                    //}
-                }
-            }
-            new Canvas(bigImage).drawText(toCode, position.x,
-                    position.y + size - 2 * toCut + labelH - 2,
-                    new Paint());
-
         }
 
         private void updateStartIndex(int newIndex) {

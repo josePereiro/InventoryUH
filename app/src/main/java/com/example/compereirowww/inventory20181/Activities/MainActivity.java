@@ -74,10 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void callInventoryActivity() {
-        startActivity(new Intent(MainActivity.this, InventoryActivity.class));
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -142,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     Tools.showToast(MainActivity.this, "Ningún número válido leído!", false);
-                    finish();
                 }
 
 
@@ -436,7 +431,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent("com.google.zxing.client.android.SCAN");
             intent.putExtra("SCAN_MODE", "QR_CODE_MODE"); // "PRODUCT_MODE for bar codes
             startActivityForResult(intent, requestCode);
-            finish();
 
         } catch (Exception e) {
 
@@ -449,13 +443,11 @@ public class MainActivity extends AppCompatActivity {
     private void callImportActivity() {
         ImportActivity.CSVFiles = null;
         startActivity(new Intent(MainActivity.this, ImportActivity.class));
-        finish();
     }
 
     private void callQRViewerActivity() {
         QRViewerActivity.setText("");
         startActivity(new Intent(MainActivity.this, QRViewerActivity.class));
-        finish();
     }
 
     private void callNewNumberActivity() {
@@ -468,7 +460,6 @@ public class MainActivity extends AppCompatActivity {
         db.setPreference(PT.PNames.TEMP_TYPE, IT.TypeValues.UNKNOWN);
         db.setPreference(PT.PNames.TEMP_OBSERVATION, PT.PDefaultValues.EMPTY_PREFERENCE);
         startActivity(new Intent(MainActivity.this, NewNumberActivity.class));
-        finish();
     }
 
     private void callConfigurationActivity() {
@@ -476,12 +467,15 @@ public class MainActivity extends AppCompatActivity {
         db.setPreference(PT.PNames.TEMP_TEXT_SIZE, PT.PDefaultValues.EMPTY_PREFERENCE);
         db.setPreference(PT.PNames.TEMP_AREAS_TO_FOLLOW_CSV, PT.PDefaultValues.EMPTY_PREFERENCE);
         startActivity(new Intent(MainActivity.this, MainConfigurationActivity.class));
-        finish();
     }
 
     private void callSearchActivity() {
         db.setPreference(PT.PNames.TEMP_SEARCH_CRITERIA, PT.PDefaultValues.EMPTY_PREFERENCE);
         startActivity(new Intent(MainActivity.this, SearchActivity.class));
+    }
+
+    private void callInventoryActivity() {
+        startActivity(new Intent(MainActivity.this, InventoryActivity.class));
     }
 
 

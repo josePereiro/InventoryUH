@@ -9,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -20,7 +19,7 @@ import com.example.compereirowww.inventory20181.Tools.Tools;
 import java.io.File;
 import java.io.IOException;
 
-public class ExportInventoryActivity extends AppCompatActivity {
+public class BackUpActivity extends AppCompatActivity {
 
     //GUI
     Spinner spinner;
@@ -39,7 +38,7 @@ public class ExportInventoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_export_inventory);
+        setContentView(R.layout.activity_backup);
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -47,27 +46,35 @@ public class ExportInventoryActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (!backUp.equals("")) {
-
-                    int numbersCount = data.getCount();
-                    int backUpNumber = spinner.getSelectedItemPosition() + 1;
-                    String fileName = BACKUP_ + backUpNumber + " (" + numbersCount + "ns) " +
-                            Tools.getFormattedDateForFileNaming() + AppStatics.IMPORT_FILE_EXTENSION;
-
-                    File backUpFile = new File(AppStatics.db.
-                            getPreference(DB.PT.PNames.BACKUPS_DIRECTORY_PATH),
-                            fileName);
-
                     try {
-                        Tools.writeFile(backUpFile, backUp);
-                        Tools.showToast(ExportInventoryActivity.this, "Respaldo guardado!", false);
-                        if (selectedFile != null) {
-                            selectedFile.delete();
-                        }
-                        selectedFile = backUpFile;
-                        new GetPortInfoAT().execute(backUpNumber + "");
+
+                        File newBackUpFile = getNewBackUpFile();
+                        deleteOldBackUpFile();
+                        Tools.writeFile(newBackUpFile, backUp);
+                        selectedFile = newBackUpFile;
+                        new GetPortInfoAT().execute((spinner.getSelectedItemPosition() + 1) + "");
+                        Tools.showToast(BackUpActivity.this, "Respaldo guardado!", false);
                     } catch (IOException e) {
-                        Tools.showToast(ExportInventoryActivity.this, "Error al guardar el respaldo!", false);
+                        Tools.showToast(BackUpActivity.this, "Error al guardar el respaldo!", false);
                     }
+                }
+
+            }
+
+            private File getNewBackUpFile(){
+                int numbersCount = data.getCount();
+                int backUpNumber = spinner.getSelectedItemPosition() + 1;
+                String fileName = BACKUP_ + backUpNumber + " (" + numbersCount + "ns) " +
+                        Tools.getFormattedDateForFileNaming() + AppStatics.IMPORT_FILE_EXTENSION;
+
+                return new File(AppStatics.db.
+                        getPreference(DB.PT.PNames.BACKUPS_DIRECTORY_PATH),
+                        fileName);
+            }
+
+            private void deleteOldBackUpFile(){
+                if (selectedFile != null && selectedFile.exists()) {
+                    selectedFile.delete();
                 }
             }
         });
@@ -78,7 +85,7 @@ public class ExportInventoryActivity extends AppCompatActivity {
         portDetailTV = (TextView) findViewById(R.id.port_info_tv);
         AppStatics.formatView(portDetailTV);
         spinner = (Spinner) findViewById(R.id.backups_s);
-        AppStatics.formatView(ExportInventoryActivity.this, ports, spinner);
+        AppStatics.formatView(BackUpActivity.this, ports, spinner);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -132,7 +139,7 @@ public class ExportInventoryActivity extends AppCompatActivity {
 
         int id = item.getItemId();
         if (id == R.id.help) {
-            Tools.showToast(ExportInventoryActivity.this, "No hay ayuda!!! Por ahora...", false);
+            Tools.showToast(BackUpActivity.this, "No hay ayuda!!! Por ahora...", false);
             return super.onOptionsItemSelected(item);
         }
 
@@ -140,7 +147,7 @@ public class ExportInventoryActivity extends AppCompatActivity {
     }
 
     public static void setData(Cursor data) {
-        ExportInventoryActivity.data = data;
+        BackUpActivity.data = data;
     }
 
     private class BuildBackupCSVAT extends AsyncTask<Void, Void, Boolean> {

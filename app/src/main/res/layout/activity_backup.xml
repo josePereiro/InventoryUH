@@ -3,10 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fitsSystemWindows="true"
-    tools:context="com.example.compereirowww.inventory20181.Activities.ExportInventoryActivity">
+    tools:context=".Activities.BackUpActivity">
 
-    <include layout="@layout/content_export_inventory" />
+    <include layout="@layout/content_backup" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -14,6 +15,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_menu_save" />
+        app:backgroundTint="@color/colorPrimary"
+        android:src="@drawable/save"
+        />
 
 </android.support.design.widget.CoordinatorLayout>

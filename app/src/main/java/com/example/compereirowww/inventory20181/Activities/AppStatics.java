@@ -3,6 +3,7 @@ package com.example.compereirowww.inventory20181.Activities;
 import android.Manifest;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -312,6 +313,10 @@ public class AppStatics {
      */
     public static final String APP_QRS_FILE_NAME = "Códigos QRs";
 
+    private static final int SMALL_LETTER_VALUE = 15;
+    private static final int MEDIUM_LETTER_VALUE = 20;
+    private static final int BIG_LETTER_VALUE = 30;
+
     /**
      * This is a tool, that allow not to load the DB every time you start an Activity
      * call!!!
@@ -326,44 +331,49 @@ public class AppStatics {
     };
 
     public static void formatView(TextView textView) {
-        if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)){
-            textView.setTextSize(10);
-        } else if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)){
-            textView.setTextSize(20);
-        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)){
-            textView.setTextSize(30);
+
+        //SIZE
+        if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)) {
+            textView.setTextSize(SMALL_LETTER_VALUE);
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)) {
+            textView.setTextSize(MEDIUM_LETTER_VALUE);
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)) {
+            textView.setTextSize(BIG_LETTER_VALUE);
         }
+
+        //COLOR
+        textView.setTextColor(Color.BLACK);
     }
 
     public static void formatView(EditText editText) {
-        if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)){
-            editText.setTextSize(10);
-        } else if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)){
-            editText.setTextSize(20);
-        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)){
-            editText.setTextSize(30);
+        if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)) {
+            editText.setTextSize(SMALL_LETTER_VALUE);
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)) {
+            editText.setTextSize(MEDIUM_LETTER_VALUE);
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)) {
+            editText.setTextSize(BIG_LETTER_VALUE);
         }
     }
 
     public static void formatView(CheckBox checkBox) {
-        if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)){
-            checkBox.setTextSize(10);
-        } else if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)){
-            checkBox.setTextSize(20);
-        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)){
-            checkBox.setTextSize(30);
+        if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)) {
+            checkBox.setTextSize(SMALL_LETTER_VALUE);
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)) {
+            checkBox.setTextSize(MEDIUM_LETTER_VALUE);
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)) {
+            checkBox.setTextSize(BIG_LETTER_VALUE);
         }
     }
 
-    public static void formatView(Context context, ArrayList<String> items, ListView listView){
+    public static void formatView(Context context, ArrayList<String> items, ListView listView) {
 
-        if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)){
+        if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)) {
             listView.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_small,
                     items));
-        } else if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)) {
             listView.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_medium,
                     items));
-        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)) {
             listView.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_big,
                     items));
         }
@@ -371,15 +381,15 @@ public class AppStatics {
 
     }
 
-    public static void formatView(Context context, String[] items, ListView listView){
+    public static void formatView(Context context, String[] items, ListView listView) {
 
-        if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)){
+        if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)) {
             listView.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_small,
                     items));
-        } else if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)) {
             listView.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_medium,
                     items));
-        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)) {
             listView.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_big,
                     items));
         }
@@ -387,15 +397,15 @@ public class AppStatics {
 
     }
 
-    public static void formatView(Context context, ArrayList<String> items, Spinner spinner){
+    public static void formatView(Context context, ArrayList<String> items, Spinner spinner) {
 
-        if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)){
+        if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)) {
             spinner.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_small,
                     items));
-        } else if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)) {
             spinner.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_medium,
                     items));
-        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)) {
             spinner.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_big,
                     items));
         }
@@ -403,15 +413,15 @@ public class AppStatics {
 
     }
 
-    public static void formatView(Context context, String[] items, Spinner spinner){
+    public static void formatView(Context context, String[] items, Spinner spinner) {
 
-        if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)){
+        if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.SMALL_LETTER)) {
             spinner.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_small,
                     items));
-        } else if(db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.MEDIUM_LETTER)) {
             spinner.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_medium,
                     items));
-        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)){
+        } else if (db.getPreference(DB.PT.PNames.TEXT_SIZE).equals(DB.PT.PDefaultValues.BIG_LETTER)) {
             spinner.setAdapter(new ArrayAdapter<>(context, R.layout.my_simple_item_list_text_size_big,
                     items));
         }

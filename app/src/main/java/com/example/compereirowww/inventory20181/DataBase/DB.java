@@ -760,7 +760,7 @@ public class DB extends SQLiteOpenHelper {
         }
 
         if (getPreference(PT.PNames.TEXT_SIZE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.TEXT_SIZE, "0");
+            setPreference(PT.PNames.TEXT_SIZE, PT.PDefaultValues.MEDIUM_LETTER);
         }
 
         if (getPreference(PT.PNames.TEMP_TEXT_SIZE).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {

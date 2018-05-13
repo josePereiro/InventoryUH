@@ -1237,8 +1237,8 @@ public class InventoryActivity extends AppCompatActivity {
         if (data == null || data.getCount() == 0) {
             Tools.showToast(InventoryActivity.this, "No hay números seleccionados!!!", false);
         } else {
-            ExportInventoryActivity.setData(data);
-            startActivity(new Intent(InventoryActivity.this, ExportInventoryActivity.class));
+            BackUpActivity.setData(data);
+            startActivity(new Intent(InventoryActivity.this, BackUpActivity.class));
         }
     }
 

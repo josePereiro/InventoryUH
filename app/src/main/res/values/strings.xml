@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Inventario UH</string>
-    <string name="title_activity_import">importActivity</string>
+    <string name="title_activity_inventory">Inventario</string>
+    <string name="title_activity_main">Inicio</string>
 
     <string name="inventory">Inventario UH</string>
     <string name="import_inventory">Importar Inventario</string>
@@ -30,7 +31,6 @@
     <string name="text9">La última importación fue cancelada y la base de datos está corrupta, debe importar antes de continuar!</string>
     <string name="text10">El proceso de imporación a terminado satisfactoriamente!</string>
     <string name="text11">Proceso Terminado</string>
-    <string name="title_activity_inventory">InventoryActivity</string>
     <string name="text12">Vuelvala a iniciar y si persiste el problema reintálela! Si aún así aparece este error busque ayuda!</string>
     <string name="text13">El proceso de imporatción se ha cancelado!</string>
     <string name="title_activity_detail_acivity">DetailAcivity</string>
@@ -39,26 +39,15 @@
     <string name="text16">Localización actualizada!</string>
     <string name="text17">Observación actualizada!</string>
     <string name="text18">Estado actualizado!</string>
-    <string name="title_activity_configuration">ConfigurationActivity</string>
     <string name="text19">No ha seleccionado nigún área</string>
     <string name="text20">Cambios Guardados!</string>
     <string name="text21">Este tipo se le adjudicará a todos los números de la misma descripción</string>
     <string name="text22">"Áreas en seguimiento: "</string>
-    <string name="title_activity_search">SearchActivity</string>
-    <string name="title_activity_search_by_qr">SearchByQRActivity</string>
-    <string name="title_activity_new_number">NewNumberActivity</string>
-    <string name="title_activity_qrfactory">QRFActoryActivity</string>
-    <string name="title_activity_printable_qrs_factory">PrintableQRsFactoryActivity</string>
-    <string name="title_activity_export_inventory">ExportInventoryActivity</string>
-    <string name="title_activity_report_acivity">ReportAcivity</string>
+
     <string name="qr_viewer">Visualizador de QRs</string>
     <string name="help">Ayuda</string>
     <string name="make_qr">Elavorar QRs de la selección</string>
     <string name="make_backup">Hacer respaldo de la selección</string>
     <string name="make_report">Hacer reporte de la selección</string>
-    <string name="title_activity_counter">CounterActivity</string>
-    <string name="title_activity_type_filler">TypeFiller</string>
-    <string name="type_filler">Llenar tipos</string>
-    <string name="title_activity_inventory_configuration">InventoryConfigurationActivity</string>
 
 </resources>

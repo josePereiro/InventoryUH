@@ -40,6 +40,7 @@ public class InventoryConfigurationActivity extends AppCompatActivity {
         previewTV = (TextView) findViewById(R.id.preview_tv);
         AppStatics.formatView(previewTV);
         AppStatics.formatView((TextView) findViewById(R.id.textView));
+        AppStatics.formatView((TextView) findViewById(R.id.textView3));
         checkBoxes = new CheckBox[7];
         checkBoxes[0] = (CheckBox) findViewById(R.id.description_cb);
         checkBoxes[1] = (CheckBox) findViewById(R.id.area_cb);
@@ -59,6 +60,7 @@ public class InventoryConfigurationActivity extends AppCompatActivity {
         }
 
         setUpCheckBoxes();
+        updatePreview();
     }
 
     private Boolean[] getPreferenceItemsToDisplay() {
@@ -105,9 +107,6 @@ public class InventoryConfigurationActivity extends AppCompatActivity {
     private void updatePreview() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("\n");
-        sb.append("  Vista Previa...");
-        sb.append("\n");
         sb.append("\n");
         sb.append("* Número: 123456789");
         sb.append("\n");

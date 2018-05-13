@@ -425,33 +425,6 @@ public class Tools {
         return false;
     }
 
-    //Statics
-    public static void test(AppCompatActivity context, String message) {
-
-        //GUI
-        TextView text;
-        Button positiveBtn;
-        Button negativeBtn;
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        View view = LayoutInflater.from(context).inflate(R.layout.activity_dialog, null);
-        builder.setView(view);
-        final AlertDialog alertDialog = builder.create();
-        text = (TextView) view.findViewById(R.id.text_tv);
-        text.setText(message);
-        positiveBtn = (Button) view.findViewById(R.id.positive_btn);
-        positiveBtn.setVisibility(View.INVISIBLE);
-        negativeBtn = (Button) view.findViewById(R.id.negative_btn);
-        negativeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                alertDialog.cancel();
-            }
-        });
-        alertDialog.show();
-
-
-    }
-
     public static void saveImage(Bitmap image, String directory, String imageNameWithExtension) throws IOException {
 
         File dir = new File(directory);
