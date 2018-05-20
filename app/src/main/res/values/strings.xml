@@ -42,7 +42,7 @@
     <string name="text19">No ha seleccionado nigún área</string>
     <string name="text20">Cambios Guardados!</string>
     <string name="text21">Este tipo se le adjudicará a todos los números de la misma descripción</string>
-    <string name="text22">"Áreas en seguimiento: "</string>
+    <string name="text22">"En seguimiento: "</string>
 
     <string name="qr_viewer">Visualizador de QRs</string>
     <string name="help">Ayuda</string>

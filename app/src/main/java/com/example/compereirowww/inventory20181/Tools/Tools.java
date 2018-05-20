@@ -1,6 +1,7 @@
 package com.example.compereirowww.inventory20181.Tools;
 
 
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;

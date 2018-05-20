@@ -165,7 +165,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="En seguimiento: 1"
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 
@@ -179,7 +178,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/blue_light_rectangle_no_stroke"
+        android:background="@drawable/blue_light_rectangle"
         android:layout_marginLeft="2dp"
         android:layout_marginRight="2dp"
         android:layout_marginTop="5dp"
@@ -192,15 +191,14 @@
             android:id="@+id/areas_lv"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginTop="2dp"
-            android:background="@drawable/blue_light_rectangle"
+            android:layout_margin="5dp"
             android:scrollbars="none" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/blue_light_rectangle_no_stroke"
+        android:background="@drawable/blue_light_rectangle"
         android:layout_marginLeft="2dp"
         android:layout_marginRight="2dp"
         android:id="@+id/linearLayout3"
@@ -211,8 +209,7 @@
             android:id="@+id/selected_areas_lv"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginTop="2dp"
-            android:background="@drawable/blue_light_rectangle"
+            android:layout_margin="5dp"
             android:scrollbars="none" />
     </LinearLayout>
 
