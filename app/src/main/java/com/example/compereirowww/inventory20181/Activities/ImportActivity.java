@@ -305,7 +305,7 @@ public class ImportActivity extends AppCompatActivity {
 
     private void settingUpFabIfNotImporting() {
 
-        fab.setImageResource(R.drawable.next);
+        fab.setImageResource(R.drawable.play);
         fab.setOnClickListener(new View.OnClickListener() {
 
             @Override

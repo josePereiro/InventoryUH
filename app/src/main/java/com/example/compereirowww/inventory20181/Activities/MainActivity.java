@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setTitle(R.string.title_activity_main);
 
         //Debug
         Log.d("JOSE2", "MainActivity.onCreate +++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -63,14 +64,6 @@ public class MainActivity extends AppCompatActivity {
         //GUI
         textView = (TextView) findViewById(R.id.text_tv);
         AppStatics.formatView(textView);
-
-
-        //AppStatics
-        Area.updateAreas();
-        Location.updateLocations();
-        Observation.updateObservations();
-        AreasToFollow.updateAreasToFollow();
-        Description.descriptions = new String[]{""};
 
     }
 
@@ -90,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
         db.updatePresentToMissingIfOutOfDate(Integer.parseInt(db.getPreference(PT.PNames.UPDATE_CRITERIA)));
         new MakeReportTXTAT().execute(db.getAllDataIfFollowing(IT.FollowingValues.YES));
-
+        new UpdateBigStatics().execute();
     }
 
     @Override
@@ -132,9 +125,7 @@ public class MainActivity extends AppCompatActivity {
                                         IT.StateValues.toString(IT.StateValues.LEFTOVER_PRESENT), false);
                     }
 
-                    db.setPreference(PT.PNames.NUMBER_TO_EDIT, result);
-                    db.setPreference(DB.PT.PNames.TEMP_NUMBER, PT.PDefaultValues.EMPTY_PREFERENCE);
-                    startActivity(new Intent(MainActivity.this, EditActivity.class));
+                    showNumberDetailDialog(result);
 
                 } else {
                     Tools.showToast(MainActivity.this, "Ningún número válido leído!", false);
@@ -144,6 +135,36 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    private void showNumberDetailDialog(final String number) {
+        String ms = "Número: " + number + "\n";
+        Cursor numberData = db.getAllNumberData(number);
+        numberData.moveToNext();
+        ms += "Description: " + numberData.getString(IT.Indexes.DESCRIPTION_COLUMN_INDEX) + "\n";
+        ms += "Área: " + numberData.getString(IT.Indexes.AREA_COLUMN_INDEX) + "\n";
+        ms += "Estado: " +
+                IT.StateValues.toString(Integer.
+                        parseInt(numberData.getString(IT.Indexes.STATE_COLUMN_INDEX))) + "\n";
+        ms += "Tipo: " +
+                IT.TypeValues.toString(Integer.
+                        parseInt(numberData.getString(IT.Indexes.TYPE_COLUMN_INDEX))) + "\n";
+        ms += "Localización: " + numberData.getString(IT.Indexes.LOCATION_COLUMN_INDEX) + "\n";
+        ms += "Observación: " + numberData.getString(IT.Indexes.OBSERVATION_COLUMN_INDEX) + "\n";
+        numberData.close();
+
+        Tools.showDialogMessage(MainActivity.this, ms, "Editar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                callEditActivity(number);
+            }
+        }, "Continuar", null);
+    }
+
+    private void callEditActivity(String number) {
+        db.setPreference(PT.PNames.NUMBER_TO_EDIT, number);
+        db.setPreference(DB.PT.PNames.TEMP_NUMBER, PT.PDefaultValues.EMPTY_PREFERENCE);
+        startActivity(new Intent(MainActivity.this, EditActivity.class));
     }
 
     @Override
@@ -385,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkingAreaToFollow() {
-        //area
+        AreasToFollow.updateAreasToFollow();
         if (Arrays.equals(AreasToFollow.areasToFollow, new String[]{""})) {
             Tools.showInfoDialog(MainActivity.this, "Debe seleccionar un área a seguir!", "Seleccionar",
                     new DialogInterface.OnClickListener() {
@@ -402,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Checks if the app has permission to write to device storage
-     * <p>
+     * <p/>
      * If the app does not has permission then the user will be prompted to grant permissions
      */
     public boolean verifyStoragePermissions() {
@@ -478,8 +499,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(MainActivity.this, InventoryActivity.class));
     }
 
-
-
     private class MakeReportTXTAT extends AsyncTask<Cursor, String, Boolean> {
 
         StringBuilder report;
@@ -487,6 +506,12 @@ public class MainActivity extends AppCompatActivity {
 
         private String TAB = "   ";
         DataThree three;
+
+        @Override
+        protected void onPreExecute() {
+            //AppStatics
+            textView.setText("Creando Reporte...");
+        }
 
         @Override
         protected Boolean doInBackground(Cursor... data) {
@@ -804,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
             report.append("\n");
         }
 
-        public abstract class DataThree {
+        private abstract class DataThree {
 
             //Areas -> Locations -> Types -> States
             private ArrayList<ArrayList<ArrayList<ArrayList<ArrayList<String>>>>> three;
@@ -1266,7 +1291,18 @@ public class MainActivity extends AppCompatActivity {
             //endregion publicMethods...
 
         }
+    }
 
+    private class UpdateBigStatics extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Area.updateAreas();
+            Location.updateLocations();
+            Observation.updateObservations();
+            Description.descriptions = new String[]{""};
+            return null;
+        }
     }
 
 }

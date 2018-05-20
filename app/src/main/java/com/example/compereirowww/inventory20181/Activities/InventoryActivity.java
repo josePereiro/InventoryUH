@@ -1,5 +1,6 @@
 package com.example.compereirowww.inventory20181.Activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ public class InventoryActivity extends AppCompatActivity {
     //Statics
     private static final int WINDOW = 10;
     private static final int QR_DECODER_REQUEST = 626;
+    private static final int INFO_LENGHT = 5;
 
     //Filters values
     public class FiltersValues {
@@ -93,9 +95,7 @@ public class InventoryActivity extends AppCompatActivity {
                 if (!selectedItem.equals("")) {
                     String number = selectedItem.split("\n", -1)[1];
                     number = number.substring((number.indexOf(":") + 2), number.length());
-                    db.setPreference(PNames.NUMBER_TO_EDIT, number);
-                    db.setPreference(PNames.TEMP_NUMBER, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
-                    startActivity(new Intent(InventoryActivity.this, EditActivity.class));
+                    callEditActivity(number);
                 }
             }
         });
@@ -182,7 +182,6 @@ public class InventoryActivity extends AppCompatActivity {
         filterAL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.EQUIPMENT));
         filterAL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.FURNISHING));
         filterAL.add(FiltersValues.TYPE_ + IT.TypeValues.toString(IT.TypeValues.UNKNOWN));
-        filterAL.add(FiltersValues.OBSERVATION_EMPTY);
         filterAL.add(FiltersValues.LOCATION_EMPTY);
         if (!Arrays.equals(Location.locations, new String[]{""})) {
             for (int i = 0; i < Location.locations.length; i++) {
@@ -199,6 +198,7 @@ public class InventoryActivity extends AppCompatActivity {
                             Area.areas[i]);
             }
         }
+        filterAL.add(FiltersValues.OBSERVATION_EMPTY);
         if (!Arrays.equals(Observation.observations, new String[]{""})) {
             for (int i = 0; i < Observation.observations.length; i++) {
                 if (!Observation.observations[i].equals(""))
@@ -267,7 +267,6 @@ public class InventoryActivity extends AppCompatActivity {
 
                 if (db.numberExist(result)) {
 
-                    //Change state
                     if (db.getNumberState(result) != IT.StateValues.LEFTOVER &&
                             db.getNumberState(result) != IT.StateValues.LEFTOVER_PRESENT) {
 
@@ -284,6 +283,8 @@ public class InventoryActivity extends AppCompatActivity {
                                 "El número ha sido marcado como " +
                                         IT.StateValues.toString(IT.StateValues.LEFTOVER_PRESENT), false);
                     }
+
+                    showNumberDetailDialog(result);
 
                 } else {
                     Tools.showToast(InventoryActivity.this, "Ningún número válido leído!", false);
@@ -338,8 +339,38 @@ public class InventoryActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void showNumberDetailDialog(final String number) {
+        String ms = "Número: " + number + "\n";
+        Cursor numberData = db.getAllNumberData(number);
+        numberData.moveToNext();
+        ms += "Description: " + numberData.getString(IT.Indexes.DESCRIPTION_COLUMN_INDEX) + "\n";
+        ms += "Área: " + numberData.getString(IT.Indexes.AREA_COLUMN_INDEX) + "\n";
+        ms += "Estado: " +
+                IT.StateValues.toString(Integer.
+                        parseInt(numberData.getString(IT.Indexes.STATE_COLUMN_INDEX))) + "\n";
+        ms += "Tipo: " +
+                IT.TypeValues.toString(Integer.
+                        parseInt(numberData.getString(IT.Indexes.TYPE_COLUMN_INDEX))) + "\n";
+        ms += "Localización: " + numberData.getString(IT.Indexes.LOCATION_COLUMN_INDEX) + "\n";
+        ms += "Observación: " + numberData.getString(IT.Indexes.OBSERVATION_COLUMN_INDEX) + "\n";
+        numberData.close();
+
+        Tools.showDialogMessage(InventoryActivity.this, ms, "Editar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                callEditActivity(number);
+            }
+        }, "Continuar", null);
+    }
+
     private void callConfigurations() {
         startActivity(new Intent(InventoryActivity.this, InventoryConfigurationActivity.class));
+    }
+
+    private void callEditActivity(String number) {
+        db.setPreference(PNames.NUMBER_TO_EDIT, number);
+        db.setPreference(PNames.TEMP_NUMBER, DB.PT.PDefaultValues.EMPTY_PREFERENCE);
+        startActivity(new Intent(InventoryActivity.this, EditActivity.class));
     }
 
     private void updateData() {
@@ -347,6 +378,7 @@ public class InventoryActivity extends AppCompatActivity {
         //TODO deb
         Log.d(APP_TAG, "updateData method");
 
+        //region All && All ...
         if (getFilter1().equals(FiltersValues.ALL) && getFilter2().equals(FiltersValues.ALL)) {
 
             data = db.getAllData();
@@ -354,8 +386,11 @@ public class InventoryActivity extends AppCompatActivity {
             //TODO deb
             Log.d(APP_TAG, FiltersValues.ALL);
             Log.d(APP_TAG, FiltersValues.ALL);
+        }
+        //endregion
 
-        } else if (getFilter1().equals(getFilter2()) || (getFilter1().equals(FiltersValues.ALL) ||
+        //region All && * ...
+        else if (getFilter1().equals(getFilter2()) || (getFilter1().equals(FiltersValues.ALL) ||
                 getFilter2().equals(FiltersValues.ALL))) {
 
             //TODO deb
@@ -445,6 +480,26 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
 
+            } else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfObservation(getFilter1().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
+            } else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfObservation(getFilter2().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
@@ -476,7 +531,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter1().equals(FiltersValues.FOLLOWED) ||
+        }
+        //endregion All && * ...
+
+        //region FOLLOWED && * ...
+        else if (getFilter1().equals(FiltersValues.FOLLOWED) ||
                 getFilter2().equals(FiltersValues.FOLLOWED)) {
 
             //TODO deb
@@ -550,6 +609,26 @@ public class InventoryActivity extends AppCompatActivity {
 
                 data = db.getAllDataIfFollowingAndObservation(IT.FollowingValues.YES, "");
 
+            } else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfFollowingAndObservation(IT.FollowingValues.YES, getFilter1().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
+            } else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfFollowingAndObservation(IT.FollowingValues.YES, getFilter2().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
@@ -581,7 +660,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter1().equals(FiltersValues.NOT_FOLLOWED) ||
+        }
+        //endregion FOLLOWED && * ...
+
+        //region NOT_FOLLOWED && * ...
+        else if (getFilter1().equals(FiltersValues.NOT_FOLLOWED) ||
                 getFilter2().equals(FiltersValues.NOT_FOLLOWED)) {
 
             //TODO deb
@@ -655,6 +738,26 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
 
+            } else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfFollowingAndObservation(IT.FollowingValues.NO, getFilter1().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
+            } else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfFollowingAndObservation(IT.FollowingValues.NO, getFilter2().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
@@ -686,7 +789,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter1().equals(FiltersValues.LOCATION_EMPTY) ||
+        }
+        //endregion NOT_FOLLOWED && * ...
+
+        //region LOCATION_EMPTY && * ...
+        else if (getFilter1().equals(FiltersValues.LOCATION_EMPTY) ||
                 getFilter2().equals(FiltersValues.LOCATION_EMPTY)) {
 
             //TODO deb
@@ -732,6 +839,26 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
 
+            } else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfLocationAndObservation("", getFilter1().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
+            } else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfLocationAndObservation("", getFilter2().
+                        substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
@@ -763,7 +890,12 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter1().contains(FiltersValues.LOCATION_) &&
+        }
+
+        //endregion LOCATION_EMPTY && * ...
+
+        //region LOCATION_f1 && * ...
+        else if (getFilter1().contains(FiltersValues.LOCATION_) &&
                 getFilter1().substring(0, FiltersValues.LOCATION_.length()).
                         equals(FiltersValues.LOCATION_)) {
             //TODO deb
@@ -795,6 +927,17 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
 
+            } else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfLocationAndObservation(getFilter1().
+                                substring(FiltersValues.LOCATION_.length()),
+                        getFilter2().substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
             } else if (getFilter2().contains(FiltersValues.AREA_) &&
                     getFilter2().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
@@ -816,7 +959,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter2().contains(FiltersValues.LOCATION_) &&
+        }
+        //endregion LOCATION_f1 && * ...
+
+        //region LOCATION_f2 && * ...
+        else if (getFilter2().contains(FiltersValues.LOCATION_) &&
                 getFilter2().substring(0, FiltersValues.LOCATION_.length()).
                         equals(FiltersValues.LOCATION_)) {
 
@@ -849,6 +996,17 @@ public class InventoryActivity extends AppCompatActivity {
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
 
+            } else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfLocationAndObservation(getFilter2().
+                                substring(FiltersValues.LOCATION_.length()),
+                        getFilter1().substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
                             equals(FiltersValues.AREA_)) {
@@ -871,7 +1029,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter1().contains(FiltersValues.STATE_)) {
+        }
+        //endregion LOCATION_f2 && * ...
+
+        //region STATE_f1 && * ...
+        else if (getFilter1().contains(FiltersValues.STATE_)) {
 
             //TODO Deb
             Log.d(APP_TAG, FiltersValues.STATE_);
@@ -892,6 +1054,17 @@ public class InventoryActivity extends AppCompatActivity {
 
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
+
+            } else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfStateAndObservation(getFilter1().
+                                substring(FiltersValues.STATE_.length()),
+                        getFilter2().substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
 
             } else if (getFilter2().contains(FiltersValues.AREA_) &&
                     getFilter2().substring(0, FiltersValues.AREA_.length()).
@@ -914,7 +1087,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter2().contains(FiltersValues.STATE_)) {
+        }
+        //endregion STATE_f1 && * ...
+
+        //region STATE_f2 && * ...
+        else if (getFilter2().contains(FiltersValues.STATE_)) {
 
             //TODO Deb
             Log.d(APP_TAG, FiltersValues.STATE_);
@@ -935,6 +1112,17 @@ public class InventoryActivity extends AppCompatActivity {
 
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
+
+            } else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfStateAndObservation(getFilter2().
+                                substring(FiltersValues.STATE_.length()),
+                        getFilter1().substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
 
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
@@ -958,7 +1146,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter1().contains(FiltersValues.TYPE_)) {
+        }
+        //endregion STATE_f2 && * ...
+
+        //region TYPE_f1 && * ...
+        else if (getFilter1().contains(FiltersValues.TYPE_)) {
 
             //TODO deb
             Log.d(APP_TAG, FiltersValues.TYPE_);
@@ -970,6 +1162,17 @@ public class InventoryActivity extends AppCompatActivity {
 
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
+
+            } else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfTypeAndObservation(getFilter1().
+                                substring(FiltersValues.TYPE_.length()),
+                        getFilter2().substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
 
             } else if (getFilter2().contains(FiltersValues.AREA_) &&
                     getFilter2().substring(0, FiltersValues.AREA_.length()).
@@ -992,7 +1195,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter2().contains(FiltersValues.TYPE_)) {
+        }
+        //endregion TYPE_f1 && * ...
+
+        //region TYPE_f2 && ...
+        else if (getFilter2().contains(FiltersValues.TYPE_)) {
 
             //TODO Deb
             Log.d(APP_TAG, FiltersValues.TYPE_);
@@ -1004,6 +1211,17 @@ public class InventoryActivity extends AppCompatActivity {
 
                 //TODO deb
                 Log.d(APP_TAG, FiltersValues.OBSERVATION_EMPTY);
+
+            } else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                    getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                            equals(FiltersValues.OBSERVATION_)) {
+
+                data = db.getAllDataIfTypeAndObservation(getFilter2().
+                                substring(FiltersValues.TYPE_.length()),
+                        getFilter1().substring(FiltersValues.OBSERVATION_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.OBSERVATION_);
 
             } else if (getFilter1().contains(FiltersValues.AREA_) &&
                     getFilter1().substring(0, FiltersValues.AREA_.length()).
@@ -1027,7 +1245,11 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else if (getFilter1().equals(FiltersValues.OBSERVATION_EMPTY) ||
+        }
+        //endregion TYPE_f2 && * ...
+
+        //region OBSERVATION_EMPTY && * ...
+        else if (getFilter1().equals(FiltersValues.OBSERVATION_EMPTY) ||
                 getFilter2().equals(FiltersValues.OBSERVATION_EMPTY)) {
 
             //TODO Deb
@@ -1065,7 +1287,77 @@ public class InventoryActivity extends AppCompatActivity {
 
             }
 
-        } else {
+        }
+        //endregion OBSERVATION_EMPTY && * ...
+
+        //region OBSERVATION_f1 && * ...
+        else if (getFilter1().contains(FiltersValues.OBSERVATION_) &&
+                getFilter1().substring(0, FiltersValues.OBSERVATION_.length()).
+                        equals(FiltersValues.OBSERVATION_)) {
+
+            //TODO deb
+            Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
+            if (getFilter2().contains(FiltersValues.AREA_) &&
+                    getFilter2().substring(0, FiltersValues.AREA_.length()).
+                            equals(FiltersValues.AREA_)) {
+
+                data = db.getAllDataIfObservationAndArea(getFilter1().
+                        substring(FiltersValues.OBSERVATION_.length()), getFilter2().
+                        substring(FiltersValues.AREA_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.AREA_);
+
+            } else {
+
+                data = null;
+
+                Tools.showToast(InventoryActivity.this, "Eso no es posible!", false);
+
+                //TODO deb
+                Log.d(APP_TAG, "AMBIGUOUS");
+
+            }
+
+        }
+        //endregion OBSERVATION_f1 && * ...
+
+        //region OBSERVATION_f2 && * ...
+        else if (getFilter2().contains(FiltersValues.OBSERVATION_) &&
+                getFilter2().substring(0, FiltersValues.OBSERVATION_.length()).
+                        equals(FiltersValues.OBSERVATION_)) {
+
+            //TODO deb
+            Log.d(APP_TAG, FiltersValues.OBSERVATION_);
+
+            if (getFilter1().contains(FiltersValues.AREA_) &&
+                    getFilter1().substring(0, FiltersValues.AREA_.length()).
+                            equals(FiltersValues.AREA_)) {
+
+                data = db.getAllDataIfObservationAndArea(getFilter2().
+                        substring(FiltersValues.OBSERVATION_.length()), getFilter1().
+                        substring(FiltersValues.AREA_.length()));
+
+                //TODO deb
+                Log.d(APP_TAG, FiltersValues.AREA_);
+
+            } else {
+
+                data = null;
+
+                Tools.showToast(InventoryActivity.this, "Eso no es posible!", false);
+
+                //TODO deb
+                Log.d(APP_TAG, "AMBIGUOUS");
+
+            }
+
+        }
+        //endregion OBSERVATION_f2 && * ...
+
+        //region DEFAULT...
+        else {
 
             data = null;
             Tools.showToast(InventoryActivity.this, "Eso no es posible!", false);
@@ -1074,6 +1366,7 @@ public class InventoryActivity extends AppCompatActivity {
             Log.d(APP_TAG, "AMBIGUOUS");
 
         }
+        //endregion DEFAULT..
 
 
     }
@@ -1158,15 +1451,28 @@ public class InventoryActivity extends AppCompatActivity {
 
     private void displayData() {
 
-        if (data == null) {
-            String s = "0/0 de 0";
+        if (data == null || data.getCount() == 0) {
+            String s = format(0, INFO_LENGHT) +
+                    "/" + format(0, INFO_LENGHT) + " de "
+                    + format(0, INFO_LENGHT);
             textView.setText(s);
         } else {
-            String s = (getIndex() + 1) + "/" + (getIndex() + WINDOW) + " de " + data.getCount();
+            String s = format(getIndex() + 1, INFO_LENGHT) + "/" +
+                    format(getIndex() + WINDOW, INFO_LENGHT) + " de " +
+                    format(data.getCount(), INFO_LENGHT);
             textView.setText(s);
         }
         AppStatics.formatView(InventoryActivity.this, dataToDisplay, listView);
 
+    }
+
+    private String format(int index, int lenght) {
+
+        String s = String.valueOf(index);
+        while (s.length() < lenght) {
+            s = "0" + s;
+        }
+        return s;
     }
 
     private String getFilter1() {

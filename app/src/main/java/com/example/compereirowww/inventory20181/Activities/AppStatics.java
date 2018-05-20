@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.R;
+import com.example.compereirowww.inventory20181.Tools.Tools;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -152,6 +153,21 @@ public class AppStatics {
 
         }
 
+        /**
+         * add a new one if required
+         */
+        public static void addLocation(String location) {
+
+            if (location.equals("")) return;
+
+            if (!Tools.contain(locations, location)) {
+                locations = Tools.addElement(locations, location);
+            }
+            Arrays.sort(locations, String.CASE_INSENSITIVE_ORDER);
+
+        }
+
+
     }
 
     public static class Area {
@@ -203,6 +219,19 @@ public class AppStatics {
 
         }
 
+        /**
+         * add a new one if required
+         */
+        public static void addObservation(String observation) {
+
+            if (observation.equals("")) return;
+
+            if (!Tools.contain(observations, observation)) {
+                observations = Tools.addElement(observations, observation);
+            }
+            Arrays.sort(observations, String.CASE_INSENSITIVE_ORDER);
+
+        }
     }
 
     public static class Description {
@@ -263,21 +292,6 @@ public class AppStatics {
 
             return areasAsCSV;
         }
-
-    }
-
-    public static class Report {
-
-        public static int NUMBER_INDEX = 0;
-        public static int DESCRIPTION_INDEX = 1;
-        public static int ÁREA_INDEX = 2;
-        public static int ALTA_DATE_INDEX = 3;
-        public static int UPDATE_DATE_INDEX = 4;
-        public static int STATE_INDEX = 5;
-        public static int LAST_CHECKING_INDEX = 6;
-        public static int TYPE_INDEX = 7;
-        public static int LOCATION_INDEX = 8;
-        public static int OBSERVATION_INDEX = 9;
 
     }
 

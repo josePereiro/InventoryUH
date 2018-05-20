@@ -19,7 +19,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -77,7 +76,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
                     formatS.setEnabled(false);
                     startAsyncTask(selectedFormat);
                 } else {
-                    fab.setImageResource(R.drawable.next);
+                    fab.setImageResource(R.drawable.play);
                     currentAT.cancel(true);
                     currentAT = null;
                     importing = false;
@@ -296,7 +295,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
-            fab.setImageResource(R.drawable.next);
+            fab.setImageResource(R.drawable.play);
 
         }
 
@@ -438,7 +437,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
-            fab.setImageResource(R.drawable.next);
+            fab.setImageResource(R.drawable.play);
 
 
         }
@@ -583,7 +582,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
-            fab.setImageResource(R.drawable.next);
+            fab.setImageResource(R.drawable.play);
         }
 
         private void savePage(Bitmap pageBitmap, int page) throws IOException {
@@ -708,7 +707,7 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
             }
             importing = false;
             formatS.setEnabled(true);
-            fab.setImageResource(R.drawable.next);
+            fab.setImageResource(R.drawable.play);
         }
 
         private void savePage(Bitmap pageBitmap, int index, String toCode) throws IOException {

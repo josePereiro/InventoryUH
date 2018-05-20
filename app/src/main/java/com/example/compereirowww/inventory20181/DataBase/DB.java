@@ -344,7 +344,7 @@ public class DB extends SQLiteOpenHelper {
     public Cursor getAllDataIfFollowingAndObservation(int f, String o) {
 
         return getAllDataIfTwoColumn(ITNames.FOLLOWING_COLUMN_NAME, f,
-                ITNames.STATE_COLUMN_NAME, o);
+                ITNames.OBSERVATION_COLUMN_NAME, o);
     }
 
     public Cursor getAllDataIfFollowingAndArea(int f, String a) {
@@ -571,7 +571,7 @@ public class DB extends SQLiteOpenHelper {
 
     public Cursor getNumbersDataThatContain(String[] columnsToSearch, String[] matchesForEachColumn) {
 
-        String query = SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_;
+        String query = SELECT_ + ASTERISK + _FROM_ + ITNames.INVENTORY_TABLE_NAME + _WHERE_;
         int minLength = Math.min(columnsToSearch.length, matchesForEachColumn.length);
         for (int i = 0; i < minLength; i++) {
             if (i == 0) {
@@ -1008,7 +1008,7 @@ public class DB extends SQLiteOpenHelper {
 
         public static class DefaultValues {
 
-            public static final String MANUAL_INTRODUCED_NUMBER_AREA = "51 NIM";
+            public static final String MANUAL_INTRODUCED_NUMBER_AREA = "INTRODUCIDOS MANUALMENTE";
 
             public static String EMPTY_VALUE = "";
         }

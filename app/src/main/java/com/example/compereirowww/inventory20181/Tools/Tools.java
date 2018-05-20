@@ -16,15 +16,9 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.compereirowww.inventory20181.DataBase.DB;
-import com.example.compereirowww.inventory20181.R;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -307,6 +301,14 @@ public class Tools {
         return new Date().getTime();
     }
 
+    public static String[] addElement(String[] array, String element) {
+        String[] newArray = new String[array.length + 1];
+        for (int i = 0; i < array.length; i++) {
+            newArray[i] = array[i];
+        }
+        newArray[newArray.length - 1] = element;
+        return newArray;
+    }
 
     public static void showToast(Context context, String message, boolean LENGTH_LONG) {
         if (LENGTH_LONG) {

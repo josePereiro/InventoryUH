@@ -110,7 +110,6 @@ public class ReportActivity extends AppCompatActivity {
         }
     }
 
-
     public static void setData(Cursor data) {
         ReportActivity.data = data;
     }
@@ -571,7 +570,7 @@ public class ReportActivity extends AppCompatActivity {
 
     }
 
-    public abstract class DataThree {
+    private abstract class DataThree {
 
         //Areas -> Locations -> Types -> States
         private ArrayList<ArrayList<ArrayList<ArrayList<ArrayList<String>>>>> three;

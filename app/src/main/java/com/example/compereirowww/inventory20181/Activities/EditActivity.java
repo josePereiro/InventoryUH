@@ -126,6 +126,8 @@ public class EditActivity extends AppCompatActivity {
 
                 db.updateLocation(getNumber(), locationET.getText().toString());
                 db.updateObservation(getNumber(), observationET.getText().toString());
+                AppStatics.Location.addLocation(locationET.getText().toString());
+                AppStatics.Observation.addObservation(observationET.getText().toString());
                 db.updateFollowing(getNumber(), getTempFollowing());
                 db.updateTypeIfDescription(db.getNumberDescription(getNumber()), getTempType());
                 if (db.getNumberState(getNumber()) != getTempState()) {
@@ -144,6 +146,7 @@ public class EditActivity extends AppCompatActivity {
 
         //region PDefaultValues
 
+
         if (!getNumber().equals(getTempNumber())) {
             setTempNumber(getNumber());
             setTempType(db.getNumberType(getNumber()));
@@ -152,6 +155,9 @@ public class EditActivity extends AppCompatActivity {
             setTempObservation(db.getNumberObservation(getNumber()));
             setTempFollowing(db.getNumberFollowingValue(getNumber()));
         }
+
+        int nt = db.getNumberType(getNumber());
+        int tt = getTempType();
 
         numberTV.setText(getNumber());
         descriptionTV.setText(db.getNumberDescription(getNumber()));
@@ -287,8 +293,8 @@ public class EditActivity extends AppCompatActivity {
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.UNKNOWN));
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.FURNISHING));
         typeAL.add(DB.IT.TypeValues.toString(DB.IT.TypeValues.EQUIPMENT));
-        typeS.setSelection(Tools.getIndexOf(typeAL, DB.IT.TypeValues.toString(getTempType())));
         AppStatics.formatView(EditActivity.this, typeAL, typeS);
+        typeS.setSelection(Tools.getIndexOf(typeAL, DB.IT.TypeValues.toString(getTempType())));
         typeS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override

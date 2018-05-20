@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".Activities.InventoryActivity"
+    tools:context=".Activities.SearchActivity"
     >
 
     <item
@@ -26,24 +26,6 @@
         android:id="@+id/search_by_qr"
         android:orderInCategory="100"
         android:title="@string/search_by_qr"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/insert_new_number"
-        android:orderInCategory="100"
-        android:title="@string/insert_new_number"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/search"
-        android:orderInCategory="100"
-        android:title="@string/search"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/configuration"
-        android:orderInCategory="100"
-        android:title="@string/configuration"
         app:showAsAction="never" />
 
     <item
