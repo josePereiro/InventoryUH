@@ -120,6 +120,13 @@
                     android:layout_margin="2dp"
                     android:text="Tipo" />
 
+                <CheckBox
+                    android:id="@+id/following_cb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="Seguimiento" />
+
                 <Space
                     android:layout_width="60dp"
                     android:layout_height="20dp" />

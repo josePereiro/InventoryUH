@@ -33,6 +33,7 @@ public class SearchActivity extends AppCompatActivity {
     //GUI
     private EditText criteriaET;
     private ListView resultLV;
+    FloatingActionButton fab;
     private static final int MAX_RESULT_TO_SHOW = 50;
     private static final String HIGHLIGHT = "\"";
     Cursor searchResultCursor;
@@ -54,6 +55,7 @@ public class SearchActivity extends AppCompatActivity {
     private final static int LOCATION_CB_INDEX = 4;
     private final static int STATE_CB_INDEX = 5;
     private final static int TYPE_CB_INDEX = 6;
+    private final static int FOLLOWING_CB_INDEX = 7;
 
 
     @Override
@@ -62,6 +64,7 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setTitle("Buscar");
 
         //DB
         db = AppStatics.db;
@@ -80,7 +83,7 @@ public class SearchActivity extends AppCompatActivity {
                 startActivity(new Intent(SearchActivity.this, EditActivity.class));
             }
         });
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -116,6 +119,7 @@ public class SearchActivity extends AppCompatActivity {
         checkBoxes.add((CheckBox) findViewById(R.id.location_cb));
         checkBoxes.add((CheckBox) findViewById(R.id.state_cb));
         checkBoxes.add((CheckBox) findViewById(R.id.type_cb));
+        checkBoxes.add((CheckBox) findViewById(R.id.following_cb));
         for (CheckBox cb : checkBoxes)
             AppStatics.formatView(cb);
 
@@ -368,6 +372,7 @@ public class SearchActivity extends AppCompatActivity {
         private void enableGUI() {
             resultLV.setEnabled(true);
             criteriaET.setEnabled(true);
+            fab.setEnabled(true);
         }
 
         private boolean preSearch() {
@@ -401,14 +406,18 @@ public class SearchActivity extends AppCompatActivity {
         private void disableGUI() {
             resultLV.setEnabled(false);
             criteriaET.setEnabled(false);
+            fab.setEnabled(false);
         }
 
         private void displayListViewData(Cursor data) {
 
             if (data != null) {
                 AppStatics.formatView(SearchActivity.this, formatSearchResultAndReturnsAsList(data), resultLV);
-                Tools.showToast(SearchActivity.this, searchResultCursor.getCount() + " resultados encontrados " +
-                        data.getCount() + " mostrados", false);
+                if (searchResultCursor.getCount() > MAX_RESULT_TO_SHOW)
+                    Tools.showToast(SearchActivity.this, searchResultCursor.getCount() + " resultados encontrados " +
+                            MAX_RESULT_TO_SHOW + " mostrados", false);
+                else
+                    Tools.showToast(SearchActivity.this, searchResultCursor.getCount() + " resultados encontrados", false);
             } else {
                 AppStatics.formatView(SearchActivity.this, new ArrayList<String>(), resultLV);
             }
@@ -482,6 +491,15 @@ public class SearchActivity extends AppCompatActivity {
                         temp.append("Tipo: ").
                                 append(HIGHLIGHT).
                                 append(DB.IT.TypeValues.toString(db.getNumberType(number))).
+                                append(HIGHLIGHT).
+                                append("\n");
+                    }
+
+                    //Type
+                    if (columnsToSearchIn[i].equals(DB.IT.ITNames.FOLLOWING_COLUMN_NAME)) {
+                        temp.append("En seguimineto: ").
+                                append(HIGHLIGHT).
+                                append(DB.IT.FollowingValues.toString(db.getNumberFollowingValue(number))).
                                 append(HIGHLIGHT);
                     }
 
@@ -510,9 +528,7 @@ public class SearchActivity extends AppCompatActivity {
                         criteria[i] = DB.IT.StateValues.IGNORED_MISSING + "";
                     } else {
                         int state = DB.IT.StateValues.parse(criteria[i]);
-                        if (state != -1) {
-                            criteria[i] = String.valueOf(state);
-                        }
+                        criteria[i] = String.valueOf(state);
                     }
                 } else if (columnsToSearchIn[i].equals(DB.IT.ITNames.TYPE_COLUMN_NAME)) {
                     if (criteria[i].toUpperCase().equals("E")) {
@@ -522,10 +538,8 @@ public class SearchActivity extends AppCompatActivity {
                     } else if (criteria[i].toUpperCase().equals("D")) {
                         criteria[i] = DB.IT.TypeValues.UNKNOWN + "";
                     } else {
-                        int followingValue = DB.IT.FollowingValues.parse(criteria[i]);
-                        if (followingValue != -1) {
-                            criteria[i] = String.valueOf(followingValue);
-                        }
+                        int typeValue = DB.IT.TypeValues.parse(criteria[i]);
+                        criteria[i] = String.valueOf(typeValue);
                     }
                 } else if (columnsToSearchIn[i].equals(DB.IT.ITNames.FOLLOWING_COLUMN_NAME)) {
                     if (criteria[i].toUpperCase().equals("S")) {
@@ -533,10 +547,8 @@ public class SearchActivity extends AppCompatActivity {
                     } else if (criteria[i].toUpperCase().equals("N")) {
                         criteria[i] = DB.IT.FollowingValues.NO + "";
                     } else {
-                        int typeValue = DB.IT.TypeValues.parse(criteria[i]);
-                        if (typeValue != -1) {
-                            criteria[i] = String.valueOf(typeValue);
-                        }
+                        int followingValue = DB.IT.FollowingValues.parse(criteria[i]);
+                        criteria[i] = String.valueOf(followingValue);
                     }
                 }
             }
@@ -589,6 +601,9 @@ public class SearchActivity extends AppCompatActivity {
             }
             if (checkBoxes.get(TYPE_CB_INDEX).isChecked()) {
                 columnsToSearch.add(DB.IT.ITNames.TYPE_COLUMN_NAME);
+            }
+            if (checkBoxes.get(FOLLOWING_CB_INDEX).isChecked()) {
+                columnsToSearch.add(DB.IT.ITNames.FOLLOWING_COLUMN_NAME);
             }
 
             if (columnsToSearch.size() == 0) {

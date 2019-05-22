@@ -333,7 +333,7 @@ public class AppStatics {
 
     /**
      * This is a tool, that allow not to load the DB every time you start an Activity
-     * call!!!
+     *
      */
     public static DB db;
 

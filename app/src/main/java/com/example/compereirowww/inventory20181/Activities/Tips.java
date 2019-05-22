@@ -1,13 +1,7 @@
 package com.example.compereirowww.inventory20181.Activities;
 
-import android.os.AsyncTask;
-
 import com.example.compereirowww.inventory20181.DataBase.DB;
 import com.example.compereirowww.inventory20181.DataBase.DB.IT.StateValues;
-import com.example.compereirowww.inventory20181.Tools.Tools;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Tips {
 
@@ -28,10 +22,6 @@ public class Tips {
             " al leer el QR de dicho número";
 
     public static final String ti4 = "";
-
-
-
-
 
 
 }

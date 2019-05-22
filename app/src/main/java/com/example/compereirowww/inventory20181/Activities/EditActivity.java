@@ -30,7 +30,7 @@ public class EditActivity extends AppCompatActivity {
     private EditText locationET, observationET;
     private Spinner followingS, stateS, typeS, locationsS, observationsS;
     private LinearLayout followingLL, stateLL;
-    private static final String YES = "Sí";
+    private static final String YES = "Si";
     private static final String NO = "No";
 
     //DB

@@ -156,12 +156,14 @@ public class DB extends SQLiteOpenHelper {
     }
 
     public void updateLocation(String number, String location) {
+
         ContentValues contents = new ContentValues();
         contents.put(ITNames.LOCATION_COLUMN_NAME, location);
         db.update(ITNames.INVENTORY_TABLE_NAME, contents,
                 ITNames.NUMBER_COLUMN_NAME + _EQUAL_ + QUOTE + number + QUOTE,
                 null);
         contents.clear();
+
     }
 
     public void updateFollowing(String number, int following) {
@@ -259,11 +261,13 @@ public class DB extends SQLiteOpenHelper {
     //region queries
 
     public long getNumberCount() {
-        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + ITNames.INVENTORY_TABLE_NAME, null).getCount();
+        return db.rawQuery(SELECT_ + ASTERISK + _FROM_ + ITNames.INVENTORY_TABLE_NAME,
+                null).getCount();
     }
 
     public Cursor getNumbers() {
-        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME, null);
+        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME,
+                null);
     }
 
     public boolean numberExist(String number) {
@@ -285,7 +289,8 @@ public class DB extends SQLiteOpenHelper {
     }
 
     public Cursor getAllNumbers() {
-        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME, null);
+        return db.rawQuery(SELECT_ + ITNames.NUMBER_COLUMN_NAME + _FROM_ + ITNames.INVENTORY_TABLE_NAME,
+                null);
     }
 
     public Cursor getAllDataIfState(String state) {
@@ -772,7 +777,7 @@ public class DB extends SQLiteOpenHelper {
         }
 
         if (getPreference(PT.PNames.UPDATE_CRITERIA).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
-            setPreference(PT.PNames.UPDATE_CRITERIA, PT.PDefaultValues.MEDIUM_LETTER);
+            setPreference(PT.PNames.UPDATE_CRITERIA, "30");
         }
 
         if (getPreference(PT.PNames.TEMP_UPDATE_CRITERIA).equals(PT.PDefaultValues.PREFERENCE_NOT_FOUND)) {
@@ -804,6 +809,9 @@ public class DB extends SQLiteOpenHelper {
         }
 
     }
+
+
+
 
     //endregion
 
@@ -979,7 +987,7 @@ public class DB extends SQLiteOpenHelper {
 
             public static String toString(int followingValue) {
                 if (followingValue == YES) {
-                    return "Sí";
+                    return "Si";
                 } else {
                     return "No";
                 }
@@ -993,7 +1001,7 @@ public class DB extends SQLiteOpenHelper {
                         return YES;
 
                     case "NO":
-                        return YES;
+                        return NO;
 
                     case "SI":
                         return YES;
@@ -1002,8 +1010,6 @@ public class DB extends SQLiteOpenHelper {
                         return -1;
                 }
             }
-
-
         }
 
         public static class DefaultValues {
@@ -1054,12 +1060,10 @@ public class DB extends SQLiteOpenHelper {
             public static final int LAST_IMPORTED_BACKUP_DATA_HASH = 31;
             public static final int IMPORTING_MESSAGE = 27;
 
-
             //InventoryActivity;
             public static final int CURRENT_INVENTORY_INDEX = 5;
             public static final int CURRENT_FILTER1_VALUE = 6;
             public static final int CURRENT_FILTER2_VALUE = 7;
-
 
             //Files Preferences
             public static final int ROOT_DIRECTORY_PATH = 8;
@@ -1083,7 +1087,6 @@ public class DB extends SQLiteOpenHelper {
             public static final int TEMP_UPDATE_CRITERIA = 21;
             public static final int TEXT_SIZE = 212;
             public static final int TEMP_TEXT_SIZE = 215;
-
 
             //Search preferences
             public static final int TEMP_SEARCH_CRITERIA = 22;

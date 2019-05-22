@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     //GUI
     TextView textView;
 
-    @Override
+        @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         //GUI
         textView = (TextView) findViewById(R.id.text_tv);
         AppStatics.formatView(textView);
-
+        new UpdateBigStatics().execute();
     }
 
     @Override
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         db.updatePresentToMissingIfOutOfDate(Integer.parseInt(db.getPreference(PT.PNames.UPDATE_CRITERIA)));
         new MakeReportTXTAT().execute(db.getAllDataIfFollowing(IT.FollowingValues.YES));
-        new UpdateBigStatics().execute();
+
     }
 
     @Override

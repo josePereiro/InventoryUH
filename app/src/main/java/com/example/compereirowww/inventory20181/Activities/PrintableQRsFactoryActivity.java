@@ -87,10 +87,10 @@ public class PrintableQRsFactoryActivity extends AppCompatActivity {
         imageView = (ImageView) findViewById(R.id.imageView);
         textView = (TextView) findViewById(R.id.textView);
         AppStatics.formatView(textView);
-        AppStatics.formatView((TextView)findViewById(R.id.textView2));
+        AppStatics.formatView((TextView) findViewById(R.id.textView2));
         formatS = (Spinner) findViewById(R.id.format_s);
         AppStatics.formatView(PrintableQRsFactoryActivity.this,
-                new String[]{F1X1, F6X7, F8X9, F8X10}, formatS );
+                new String[]{F1X1, F6X7, F8X9, F8X10}, formatS);
         formatS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
